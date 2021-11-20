@@ -123,6 +123,17 @@ begin
   exact h1.trans t,
 end
 
+
+lemma mod_succ {n :ℕ } : n % n.succ = n :=
+begin
+  sorry
+end
+
+lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
+begin
+  simp only [fin.mk_eq_subtype_mk, fin.coe_of_nat_eq_mod, fin.coe_mk],
+end
+
 /- Lemma 2.1 in Alon's paper. -/
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F)
@@ -139,6 +150,7 @@ begin
   simp only [is_empty_ring_equiv_apply],
   let t := hz fin.is_empty.elim,
   simpa using t,
+  -- I do not know how to prove h00 in a neat way:
   have h00 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) →
     ∀ y : F, y ∈ S n →  
     polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv F n) f)) = 0,
@@ -147,7 +159,37 @@ begin
     rw ← eval_eq_eval_mv_eval',
     rw hz,
     intro i,
-    sorry }, --should be easy: by_cases c : i < n, etc
+    by_cases c : ↑i < n,
+    { rw (ext1_eq_le_n s' y c), 
+      let x:= hs' (fin.mk i c),
+      simp only [fin.coe_eq_cast_succ, fin.mk_eq_subtype_mk, fin.cast_succ_mk, fin.eta] at x,
+      simp only [fin.mk_eq_subtype_mk],
+      exact x,
+    },
+    have hnn1 : n < n+1 := by linarith,
+    have c' : ↑i = n,
+    { have x : ↑i < n+1 := i.2,
+      linarith,
+    },
+    have h : i = fin.mk n hnn1,
+    { simp,
+      ext,
+      rw c',
+      exact cannot_find_this hnn1 },
+    rw h,
+    simp only [fin.mk_eq_subtype_mk],
+    have x:= ext1_eq_n s' y,
+    have x1 : ↑n = fin.mk n hnn1,
+    { simp only [fin.mk_eq_subtype_mk],
+      ext,
+      simp only [fin.coe_of_nat_eq_mod, fin.coe_mk],
+      rw mod_succ },
+    rw x1 at x,
+    simp only [fin.mk_eq_subtype_mk] at x,
+    rw x,
+    simp only [fin.mk_eq_subtype_mk] at x1,
+    rw ← x1,
+    exact hy },
   let d := polynomial.nat_degree ((fin_succ_equiv F n) f),
   have h_f_s'_eq_0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) → 
     polynomial.map (eval s') ((fin_succ_equiv F n) f) = 0,
