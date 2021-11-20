@@ -193,13 +193,13 @@ begin
     rw ← resfin_eq t j,
     have ht' : t' j ≤ t ↑j, 
     { have x := support_f_i f i t',
-      let y : f.support := extfin ↑t' i, 
-      -- have x' : (polynomial.coeff ((fin_succ_equiv F n) f) i).support := ⟨ x ⟩,
-      -- exact ht j (coe x),
-      sorry,
-      },-- usar ht
+      --exact ht j t1, 
+      -- use ht somehow
+     sorry },
     exact ht',
-    sorry, -- usar hS (sutileza tecnica)
+    intro j,
+    rw ← resfin_eq t j,
+    exact hS ↑j,
   },
   have casi : (fin_succ_equiv F n) f = 0,
   { apply (eq_zero_iff_every_coeff_zero ((fin_succ_equiv F n) f)).1,
