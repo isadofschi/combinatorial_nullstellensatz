@@ -68,7 +68,7 @@ private def M'  (n : ℕ ) (F : Type u) [field F] (S : fin n → finset F)
 : mv_polynomial (fin n) F → Prop :=
   λ f, ∃ h : fin n → mv_polynomial (fin n) F,
  (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ( ∀ m : (f - (∑ i : fin n, h i * ∏ s in (S i), (X i - C s))).support,
+  ∧ ( ∀ m : fin n →₀ ℕ, m ∈ (f - (∑ i : fin n, h i * ∏ s in (S i), (X i - C s))).support → 
       ∀ j : fin n, m j < (S j).card)
 
 private def M { n : ℕ } {F : Type u} [field F]{S : fin n → finset F}
@@ -93,6 +93,8 @@ begin
       rw zero_mul },
     rw h1,
     simp, },
+  sorry,
+  /-
   rw h at m,
   rw C_apply at m,
   by_cases c : a = 0,
@@ -100,6 +102,7 @@ begin
     sorry, -- TODO use support_monomial
   },
   sorry -- TODO use support_monomial
+  -/
 end
 
 private lemma h_X { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
@@ -151,7 +154,7 @@ lemma reduce_degree { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F) :
   ∃ h : fin n → mv_polynomial (fin n) F,
   (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ( ∀ m : (f - (∑ i : fin n, h i * ∏ s in (S i), (X i - C s))).support,
+  ∧ ( ∀ m : fin n →₀ ℕ, m ∈ (f - (∑ i : fin n, h i * ∏ s in (S i), (X i - C s))).support → 
       ∀ j : fin n, m j < (S j).card) := 
 begin
   have h : M f,

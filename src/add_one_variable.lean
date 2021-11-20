@@ -83,7 +83,9 @@ end
 
 
 lemma support_f_i {n : ℕ} {R : Type u} [comm_ring R]
-(f : mv_polynomial (fin (n+1)) R) (i : ℕ) (t' : (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
+(f : mv_polynomial (fin (n+1)) R) (i : ℕ) 
+{t' : fin n →₀ ℕ }
+(h_t' : t'∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
 (extfin ↑t' i) ∈ f.support :=
 begin
   sorry,
@@ -100,7 +102,7 @@ end
 lemma nat_degree_le_t { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F)
   (d : ℕ)
-  (h : ∀ t' : f.support,  t' n ≤ d) : 
+  (h : ∀ t' : fin (n+1) →₀ ℕ, t' ∈ f.support → t' n ≤ d) : 
   (fin_succ_equiv F n f).nat_degree < d :=
 begin
   sorry
@@ -138,7 +140,7 @@ end
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F)
   (t : fin n →₀ ℕ)
-  (ht : ∀ i : fin n, ∀ t' : f.support,  t' i ≤ t i)
+  (ht : ∀ i : fin n, ∀ t' : fin n →₀ ℕ, t' ∈ f.support → t' i ≤ t i)
   (S : fin n → finset F)
   (hS : ∀ i : fin n, t i < (S i).card) 
   (hz : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
@@ -234,11 +236,13 @@ begin
     intros j t',
     rw ← resfin_eq t j,
     have ht' : t' j ≤ t ↑j, 
-    { have x := support_f_i f i t',
+    { --have x := support_f_i f i t',
+      --have y := ht j,
       --exact ht j t1, 
       -- use ht somehow
      sorry },
-    exact ht',
+    sorry,
+    --exact ht',
     intro j,
     rw ← resfin_eq t j,
     exact hS ↑j,
@@ -248,5 +252,7 @@ begin
     exact h11 },
   exact (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv F n)).1 casi,
 end
+
+#check lemma_2_1
 
 end mv_polynomial
