@@ -7,6 +7,7 @@ import data.mv_polynomial.basic
 import algebra.field
 import degree
 import monomial_reduction
+import add_one_variable
 import data.mv_polynomial.comm_ring
 
 /-!
@@ -30,38 +31,6 @@ variables {α : Type v}
 open_locale big_operators
 
 namespace mv_polynomial
-
-
-
-/- Lemma 2.1 in Alon's paper. -/
-lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
-  (f : mv_polynomial (fin n) F)
-  (t : fin n →₀ ℕ)
-  (h : ∀ i : fin n, ∀ t' : f.support,  t' i ≤ t i)
-  (S : fin n → finset F)
-  (hS : ∀ i : fin n, t i < (S i).card) 
-  (hz : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
-  f = 0 :=
-begin
-  -- Sea ι : F[x1, ..., xn]→ F[x1, ... xn-1][xn] el isomorfismo
-  -- Lema: ev (s1, ... sn-1) ev sn ι = ev (s1, .... sn) 
-  -- Dado s, puedo ir de F[x1, ... xn-1][xn] a F[xn]
-  -- evaluando las primeras variables en s i. 
-  -- Si ahora evaluo xn también da lo mismo
-  -- Lema: el grado de x n en ι(f) es el grado de x n en f.
-  -- Fijados s1 ,.. sn-1, ev(s1 ... sn-1) f tiene como ceros a todo S n
-  -- Y su grado es a lo sumo t n.
-  -- Luego ev s1 ... sn-1 f = 0
-  -- Luego todos sus coeficientes son 0 evaluados en todos los s1 ... sn-1.
-  -- Lema: el grado de x i en un coeficiente de ι(f) es a lo sumo t i 
-  -- Aplicar h.i. a los coficientes de f para concluir que son 0.
-  --induction n with n hn,
-  -- usar supported R s
-  -- usar supported_equiv_mv_polynomial
-  -- usar sum_ring_equiv
-  -- mirar `equiv.lean`, `supported.lean`
-  sorry
-end
 
 /- Theorem 1.1 in Alon's paper. -/
 theorem combinatorial_nullstellensatz' { n : ℕ } {F : Type u} [field F]
