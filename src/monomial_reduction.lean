@@ -51,7 +51,6 @@ begin
   cc,
 end
 
-
 namespace mv_polynomial
 
 lemma induction_on_monomial 
