@@ -149,7 +149,7 @@ end
 
 private lemma h_add_weak { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
   (hS : ∀ i : fin n, 0 < (S i).card) : 
-∀ (a : fin n →₀ ℕ) (b : F) (f : (fin n →₀ ℕ) →₀ F), 
+∀ (a : fin n →₀ ℕ) (b : F) (f : mv_polynomial (fin n) F), 
     a ∉ f.support → b ≠ 0 → M' n F S hS f → M' n F S hS (single a b + f) :=
 begin
   intros a b f h_a h_b h_Mf,
@@ -201,8 +201,32 @@ begin
   have x' := add_le_add_right x (S i).card,
   rw max_add at x',
   exact x'.trans (max_le_le y z),
-  intros m j,
-  sorry -- TODO
+  intros m hm j,
+  have hh_fm := hh_f.2 m,
+  have hC_am := hhC_a.2 m,
+  clear hh_f hhC_a,
+  -- use support_add and the hypotheses
+  have comp : 
+    monomial a b + f - (∑ (i : fin n), (h_Ca + h_f) i * (∏ (s : F) in S i, (X i - C s)))
+    = (monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
+    + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s)))),
+  sorry, -- computation
+  simp at comp,
+  have hm' : m ∈ ((monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
+    + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s))))).support,
+  {
+    sorry, -- diferencia entre monomial y single?
+  },
+  have t := support_add hm',
+  -- can we use rcases or something else here?
+  by_cases c : m ∈  (monomial a b - (∑ (i : fin n),
+   h_Ca i * (∏ (s : F) in S i, (X i - C s)))).support,
+  { exact hC_am c j },
+  have c' : m ∈ (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s)))).support,
+  { rw finset.mem_union at t,
+    exact what_is_the_name_for_this_one c t,
+  },
+  exact hh_fm c' j,
 end
 
 lemma reduce_degree { n : ℕ } {F : Type u} [field F]
@@ -214,12 +238,10 @@ lemma reduce_degree { n : ℕ } {F : Type u} [field F]
       ∀ j : fin n, m j < (S j).card) := 
 begin
   have h : M f,
-  {
-    apply induction_on'' f,
+  { apply induction_on'' f,
     apply h_C S hS,
     apply h_add_weak S hS,
-    apply h_X S hS,
-  },
+    apply h_X S hS },
   rw M at h, rw M' at h,
   exact h,
 end
