@@ -14,6 +14,11 @@ open set function finsupp add_monoid_algebra
 
 open_locale big_operators
 
+namespace finset
+variable {α : Type*}
+theorem eq_of_mem_singleton {x y : α} (h : x ∈ ({y} : finset α)) : x = y := sorry
+end finset 
+
 namespace mv_polynomial
 
 lemma induction_on_monomial 
@@ -75,6 +80,8 @@ private def M { n : ℕ } {F : Type u} [field F]{S : fin n → finset F}
   {hS : ∀ i : fin n, 0 < (S i).card} 
   : mv_polynomial (fin n) F → Prop := λ f, M' n F S hS f
 
+local attribute [instance] classical.prop_decidable --esta bien usar esto?
+
 private lemma h_C { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
   (hS : ∀ i : fin n, 0 < (S i).card) : ∀ (a : F), M' n F S hS (C a) :=
 begin
@@ -85,24 +92,29 @@ begin
   intro i,
   left,
   refl,
-  intro m,
-  intro j,
+  intros m hm j,
   have h: C a - ∑ (i : fin n), 0 * ∏ (s : F) in S i, (X i - C s) = C a,
   { have h1 : (λ i ,  0 * ∏ s in S i, (X i - C s)) = (λ i, 0),
     { ext,
       rw zero_mul },
     rw h1,
     simp, },
-  sorry,
-  /-
-  rw h at m,
-  rw C_apply at m,
+  rw h at hm,
+  rw C_apply at hm,
   by_cases c : a = 0,
-  {
-    sorry, -- TODO use support_monomial
+  { exfalso,
+    rw c at hm,
+    rw support_monomial at hm,
+    simp only [finset.not_mem_empty, if_true, eq_self_iff_true] at hm,
+    exact hm,
   },
-  sorry -- TODO use support_monomial
-  -/
+  rw support_monomial at hm,
+  rw if_neg at hm,
+  have hm0 : m = 0 := finset.eq_of_mem_singleton hm,
+  rw hm0,
+  simp only [coe_zero, pi.zero_apply],
+  exact hS j,
+  exact c,
 end
 
 private lemma h_X { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)

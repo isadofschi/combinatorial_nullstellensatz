@@ -11,7 +11,7 @@ import add_one_variable
 import data.mv_polynomial.comm_ring
 
 /-!
-# Combinatorial Nullstellensatz [DRAFT]
+# Combinatorial Nullstellensatz
 
 In this file we prove the Combinatorial Nullstellensatz.
 Our reference is
