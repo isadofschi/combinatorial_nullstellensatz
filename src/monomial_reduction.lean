@@ -147,6 +147,27 @@ begin
   sorry
 end
 
+private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
+(S : fin n → finset F) (p q : mv_polynomial (fin n) F) 
+(h1 h2 : fin n → mv_polynomial (fin n) F) : 
+p + q - (∑ (i : fin n), (h1 + h2) i * (∏ (s : F) in S i, (X i - C s)))
+= (p - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s))))
++ (q - (∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s)))) :=
+calc p + q - (∑ (i : fin n), (h1 + h2) i * (∏ (s : F) in S i, (X i - C s)))
+     = p + q - (∑ (i : fin n), (h1 i + h2 i) * (∏ (s : F) in S i, (X i - C s))) : by simp
+...  = p + q - (∑ (i : fin n),(h1 i * (∏ (s : F) in S i, (X i - C s)) + h2 i * (∏ (s : F) in S i, (X i - C s)))) :
+begin
+  sorry
+end
+...  = p + q - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s)) + ∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s))) : 
+begin
+  sorry
+end
+...  = (p - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s))))
+       + (q - (∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s)))) : 
+by rw [← add_sub_assoc, ← sub_sub (p+q), sub_left_inj,sub_add_eq_add_sub]
+
+
 private lemma h_add_weak { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
   (hS : ∀ i : fin n, 0 < (S i).card) : 
 ∀ (a : fin n →₀ ℕ) (b : F) (f : mv_polynomial (fin n) F), 
@@ -205,14 +226,8 @@ begin
   have hh_fm := hh_f.2 m,
   have hC_am := hhC_a.2 m,
   clear hh_f hhC_a,
-  -- use support_add and the hypotheses
-  have comp : 
-    monomial a b + f - (∑ (i : fin n), (h_Ca + h_f) i * (∏ (s : F) in S i, (X i - C s)))
-    = (monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
-    + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s)))),
-  { simp only [pi.add_apply],
-    sorry, -- straightforward computation
-  },
+  -- we now use support_add and our hypotheses
+  have comp := h_add_weak_aux_comp S (monomial a b) f h_Ca h_f,
   simp at comp,
   have hm' : m ∈ ((monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
     + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s))))).support,
