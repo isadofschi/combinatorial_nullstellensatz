@@ -210,13 +210,14 @@ begin
     monomial a b + f - (∑ (i : fin n), (h_Ca + h_f) i * (∏ (s : F) in S i, (X i - C s)))
     = (monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
     + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s)))),
-  sorry, -- computation
+  { simp only [pi.add_apply],
+    sorry, -- straightforward computation
+  },
   simp at comp,
   have hm' : m ∈ ((monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
     + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s))))).support,
-  {
-    sorry, -- diferencia entre monomial y single?
-  },
+  { rw ← comp,
+    exact hm },
   have t := support_add hm',
   -- can we use rcases or something else here?
   by_cases c : m ∈  (monomial a b - (∑ (i : fin n),
