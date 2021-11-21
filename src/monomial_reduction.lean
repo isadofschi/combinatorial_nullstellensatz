@@ -9,6 +9,23 @@ import algebra.field
 import degree
 import topology.metric_space.algebra
 
+
+/-
+# Reduce degree
+
+## Main results
+
+- `reduce_degree`: corresponds to the following paragraph in the proof of Theorem 1.1 in Alon's
+"Combinatorial Nullstellensatz" paper:
+'Let \bar{f} be the polynomial obtained by writing f as a linear combination of monomials and replacing,
+repeatedly, each occurrence of x ^ f_i (for 1 ≤ i ≤ n), where f_i > t_i, by a linear combination 
+of smaller powers of x_i, using the relations g_i = ∏ s in (S i), (X i - C s) = 0. The resulting
+polynomial \bar{f} is clearly of degree at most t_i in x_i, for each 1 ≤ i ≤ n, and is obtained from
+f by subtracting from it products of the form h_i * g_i, where the degree of each polynomial 
+h_i ∈ F[x_1 , ... , x_n] does not exceed deg(f) − deg(g_i)'.
+
+-/
+
 universe u
 
 open set function finsupp add_monoid_algebra
@@ -157,12 +174,14 @@ calc p + q - (∑ (i : fin n), (h1 + h2) i * (∏ (s : F) in S i, (X i - C s)))
      = p + q - (∑ (i : fin n), (h1 i + h2 i) * (∏ (s : F) in S i, (X i - C s))) : by simp
 ...  = p + q - (∑ (i : fin n),(h1 i * (∏ (s : F) in S i, (X i - C s)) + h2 i * (∏ (s : F) in S i, (X i - C s)))) :
 begin
-  sorry
+  simp only [sub_right_inj],
+  congr,
+  ext,
+  congr,
+  rw add_mul,
 end
-...  = p + q - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s)) + ∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s))) : 
-begin
-  sorry
-end
+...  = p + q - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s)) + ∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s))) :
+by simp only [sub_right_inj,finset.sum_add_distrib]
 ...  = (p - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s))))
        + (q - (∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s)))) : 
 by rw [← add_sub_assoc, ← sub_sub (p+q), sub_left_inj,sub_add_eq_add_sub]
