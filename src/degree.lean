@@ -8,6 +8,10 @@ import data.mv_polynomial.variables
 
 import algebra.field
 import data.mv_polynomial.comm_ring
+
+--import algebra.order.ring
+import data.nat.basic
+
 --import combinatorial_nullstellensatz.extra
 
 universes u v
@@ -57,7 +61,7 @@ end
 
 lemma total_degree_add_monomial  { n : ℕ } {F : Type u} [field F] (f : mv_polynomial (fin n) F) 
 (a : fin n →₀ ℕ) (b : F) (h : a ∉ f.support) (h_b: b ≠ 0) :
-total_degree (single a b + f) = max [ total_degree (single a b), total_degree f ] :=
+total_degree (single a b + f) = linear_order.max (total_degree (single a b)) (total_degree f) :=
 begin
   sorry
 end

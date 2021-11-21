@@ -7,6 +7,7 @@ import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
 import algebra.field
 import degree
+import topology.metric_space.algebra
 
 universe u
 
@@ -18,6 +19,21 @@ namespace finset
 variable {α : Type*}
 theorem eq_of_mem_singleton {x y : α} (h : x ∈ ({y} : finset α)) : x = y := sorry
 end finset 
+
+section open decidable tactic
+variables {α : Type u} [linear_order α]
+
+lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ max b d := sorry
+
+lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) := sorry
+
+end
+
+lemma what_is_the_name_for_this_one {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q :=
+begin
+  cc,
+end
+
 
 namespace mv_polynomial
 
@@ -80,7 +96,7 @@ private def M { n : ℕ } {F : Type u} [field F]{S : fin n → finset F}
   {hS : ∀ i : fin n, 0 < (S i).card} 
   : mv_polynomial (fin n) F → Prop := λ f, M' n F S hS f
 
-local attribute [instance] classical.prop_decidable --esta bien usar esto?
+local attribute [instance] classical.prop_decidable --esta permitido usar esto?
 
 private lemma h_C { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
   (hS : ∀ i : fin n, 0 < (S i).card) : ∀ (a : F), M' n F S hS (C a) :=
@@ -144,19 +160,47 @@ begin
   use h_Ca + h_f,
   apply and.intro,
   intro i,
-  by_cases c : (h_Ca + h_f) i = 0,
-  { left,
-    exact c },
-  right,
   rw total_degree_add_monomial f a b h_a h_b,
   have re : ∀i,  (h_Ca + h_f) i = h_Ca i + h_f i,
   { intro i,
     simp,
   },
   rw re,
-  -- split in cases h_Ca = 0, h_f = 0,
-  -- use total_degree_add, total_degree_add_monomial
-  sorry, --TODO
+  by_cases h_Ca0 : h_Ca i = 0,
+  { by_cases h_f0 : h_f i = 0,
+    { left,
+      rw [h_Ca0, h_f0],
+      simp },
+    right,
+    rw h_Ca0,
+    simp only [zero_add],
+    have x : (h_f i).total_degree + (S i).card ≤ total_degree f,
+    { have y := hh_f.1 i,
+      cc },
+    exact x.trans (le_max_right (total_degree (single a b)) (total_degree f)),
+  },
+  by_cases h_f0 : h_f i = 0,
+  { right,
+    rw h_f0,
+    simp only [add_zero],
+    have x : (h_Ca i).total_degree + (S i).card ≤ total_degree (single a b),
+    { have y := hhC_a.1 i,
+      have z : (h_Ca i).total_degree + (S i).card ≤ (monomial a b).total_degree := by cc,
+      simpa using z },
+    exact x.trans (le_max_left (total_degree (single a b)) (total_degree f)),
+  },
+  by_cases c : h_Ca i+ h_f i = 0,
+  { left,
+    exact c },
+  right,
+  have x := total_degree_add (h_Ca i) (h_f i),
+  have y : (h_Ca i).total_degree + (S i).card ≤ total_degree (single a b) :=
+    what_is_the_name_for_this_one h_Ca0 (hhC_a.1 i),
+  have z : (h_f i).total_degree + (S i).card ≤ total_degree f :=
+    what_is_the_name_for_this_one h_f0 (hh_f.1 i),
+  have x' := add_le_add_right x (S i).card,
+  rw max_add at x',
+  exact x'.trans (max_le_le y z),
   intros m j,
   sorry -- TODO
 end
