@@ -48,21 +48,21 @@ lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
 begin
   by_cases h : a ≤ b,
   { rw max_eq_right h,
-    have h' : a+c≤ b+c := by linarith,
+    have h' : a + c ≤ b + c := by linarith,
     rw max_eq_right h',
   },
   rw not_le at h,
   rw max_eq_left h.le,
-  have h' : b+c≤ a+c := by linarith,
+  have h' : b + c≤ a + c := by linarith,
   rw max_eq_left h',
 end
 
 end
 
-lemma what_is_the_name_for_this_one {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q :=
-begin
-  cc,
-end
+/- ¿ is this already in logic.basic or somewhere else in mathlib ? -/
+lemma what_is_the_name_for_this_one {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q := 
+(or_iff_not_imp_left.1 h2) h1
+
 
 namespace mv_polynomial
 
@@ -170,9 +170,9 @@ begin
   -- let x : set (fin n →₀ ℕ) := { m | m ∈ f.support ∧ m j = (S j).card },
   let x : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
   let q : mv_polynomial (fin n) F := ∑ m in x, monomial (m - (single j (S j).card)) (coeff m f),
-  have h_total_degree_q : total_degree q + (S j).card ≤  total_degree (p * X j),
+  have h_total_degree_q : total_degree q + (S j).card ≤  total_degree p + 1,
   { sorry },
-  let h1 : fin n → mv_polynomial (fin n) F := λ i, if i=j then h j * X j - q else h i * X j,
+  let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
   use h1,
   apply and.intro,
   intro i,
@@ -180,27 +180,43 @@ begin
   { left,
     exact c_h1_i_eq_0 },
   right,
-  by_cases c_i_eq_j : i=j,
-  { sorry, },
   simp only [h1],
-  rw if_neg c_i_eq_j,
   rw total_degree_mul_X c_p_eq_0 j,
-  have x := (add_le_add_right (total_degree_mul_X_le (h i) j) (S i).card),
+  have useful := (add_le_add_right (total_degree_mul_X_le (h i) j) (S i).card),
+  by_cases c_i_eq_j : i = j,
+  { rw if_pos c_i_eq_j,
+    rw c_i_eq_j,
+    have x := add_le_add_right (total_degree_add (h j * X j) (-q)) (S j).card,
+    rw ← sub_eq_add_neg at x,
+    have y : linear_order.max (h j * X j).total_degree (-q).total_degree +  (S j).card 
+      ≤ p.total_degree + 1,
+    { by_cases c_comp : (h j * X j).total_degree ≤ (-q).total_degree,
+      { rw [max_eq_right c_comp, total_degree_neg],
+        exact h_total_degree_q },
+      simp only [not_le] at c_comp,
+      rw max_eq_left c_comp.le,
+      rw c_i_eq_j at useful,
+      by_cases c_h_j_eq_0 : h j = 0,
+      { rw [c_h_j_eq_0, zero_mul] at c_comp,
+        simp only [nat.not_lt_zero, total_degree_zero] at c_comp,
+        exfalso,
+        exact c_comp },
+      have y := add_le_add_right (what_is_the_name_for_this_one c_h_j_eq_0 (h_h.1 j)) 1,
+      rw [add_assoc, add_comm (S j).card 1, ← add_assoc ] at y,
+      exact useful.trans y },
+    exact x.trans y },
+  rw if_neg c_i_eq_j,
   have h_i_neq_0 : h i ≠ 0,
-  { let x:= c_h1_i_eq_0,
+  { let x := c_h1_i_eq_0,
     simp only [h1] at x,
-    rw if_neg c_i_eq_j at x,
     by_contradiction,
-    rw h at x,
-    rw zero_mul at x,
+    rw [if_neg c_i_eq_j, h, zero_mul] at x,
     cc },
   have y := add_le_add_right (what_is_the_name_for_this_one h_i_neq_0 (h_h.1 i)) 1,
-  rw add_assoc at y,
-  rw add_comm (S i).card 1 at y,
-  rw ← add_assoc at y,
-  exact x.trans y,
+  rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
+  exact useful.trans y,
   intros m hm j,
-  sorry,
+  sorry, -- the "hard" part of the proof
 end
 
 private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
