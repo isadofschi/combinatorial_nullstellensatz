@@ -167,11 +167,14 @@ begin
   let g := λ j : fin n, ∏ s in S j, (X j - C s),
   let g_j := g j,
   let f := p * X j - ∑ (i : fin n), h i * X j * g i,
-  -- let x : set (fin n →₀ ℕ) := { m | m ∈ f.support ∧ m j = (S j).card },
+  have h_total_degree_f : total_degree f ≤ total_degree p + 1,
+  { sorry }, -- use h_h
   let x : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
   let q : mv_polynomial (fin n) F := ∑ m in x, monomial (m - (single j (S j).card)) (coeff m f),
   have h_total_degree_q : total_degree q + (S j).card ≤  total_degree p + 1,
-  { sorry },
+  { -- use total_degree_sum, h_total_degree_f and the fact that
+    -- each monomial m in the definition of q is in the support of f.
+    sorry },
   let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
   use h1,
   apply and.intro,
