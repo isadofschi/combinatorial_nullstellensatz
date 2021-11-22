@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Ivan Sadofschi Costa.
 -/
 import data.mv_polynomial.basic
-import algebra.field
+import algebra.algebra.basic
 import degree
 import monomial_reduction
 import add_one_variable

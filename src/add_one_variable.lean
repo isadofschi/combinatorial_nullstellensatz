@@ -4,8 +4,7 @@ import data.mv_polynomial.equiv
 import data.mv_polynomial.supported
 import data.polynomial.basic
 import data.polynomial.ring_division
-
-import algebra.field
+import algebra.algebra.basic
 
 universes u v
 

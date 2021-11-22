@@ -5,14 +5,9 @@ Author: Ivan Sadofschi Costa.
 -/
 import data.mv_polynomial.basic
 import data.mv_polynomial.variables
-
-import algebra.field
+import algebra.algebra.basic
 import data.mv_polynomial.comm_ring
-
---import algebra.order.ring
 import data.nat.basic
-
---import combinatorial_nullstellensatz.extra
 
 universes u v
 
@@ -33,13 +28,6 @@ multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0
 
 def monomial_degree {s : Type} (t : s →₀ ℕ) : ℕ := ∑ i in t.support, t i
 
-/- 
--- ya estaba hecha en `variables.lean` :)
-def total_degree {R : Type u} [comm_semiring R] {σ : Type*}
-  (f : mv_polynomial σ R) : ℕ 
-:= max (f.support.1.map (λ t, monomial_degree t))
--/
-
 -- ¿ que pasa con el grado del polinomio 0 ?
 #eval total_degree (0 : mv_polynomial (fin 3) ℚ) 
 -- #eval total_degree ( single (λ i:(fin 3), 1)  0 : mv_polynomial (fin 3) ℚ) 
@@ -51,17 +39,24 @@ begin
   sorry
 end
 
-/--
-lemma total_degree_subadd  { n : ℕ } {F : Type u} [field F] (f g : mv_polynomial (fin n) F) :
-total_degree (f + g) ≤ max [total_degree f, total_degree g ] :=
-begin
-  exact total_degree_add f g, --borrar y usar esta
-end
--/
-
 lemma total_degree_add_monomial  { n : ℕ } {F : Type u} [field F] (f : mv_polynomial (fin n) F) 
 (a : fin n →₀ ℕ) (b : F) (h : a ∉ f.support) (h_b: b ≠ 0) :
 total_degree (single a b + f) = linear_order.max (total_degree (single a b)) (total_degree f) :=
+begin
+  sorry
+end
+
+lemma total_degree_mul_X_le  { n : ℕ } {F : Type u} [field F] 
+(f : mv_polynomial (fin n) F)(j : fin n) :
+total_degree (f * X j) ≤ total_degree f + 1 := 
+begin
+  sorry
+end
+
+
+lemma total_degree_mul_X  { n : ℕ } {F : Type u} [field F] 
+{f : mv_polynomial (fin n) F} (h : f ≠ 0) (j : fin n) :
+total_degree (f * X j) = total_degree f + 1 := 
 begin
   sorry
 end

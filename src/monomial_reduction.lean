@@ -5,9 +5,8 @@ Author: Ivan Sadofschi Costa.
 -/
 import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
-import algebra.field
+import algebra.algebra.basic
 import degree
-import topology.metric_space.algebra
 
 
 /-
@@ -32,17 +31,31 @@ open set function finsupp add_monoid_algebra
 
 open_locale big_operators
 
-namespace finset
-variable {α : Type*}
-theorem eq_of_mem_singleton {x y : α} (h : x ∈ ({y} : finset α)) : x = y := sorry
-end finset 
-
 section open decidable tactic
 variables {α : Type u} [linear_order α]
 
-lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ max b d := sorry
+lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ max b d := begin
+  by_cases h : a ≤ c,
+  { rw max_eq_right h,
+    exact h₂.trans (le_max_right b d),
+  },
+  rw not_le at h,
+  rw max_eq_left h.le,
+  exact h₁.trans (le_max_left b d),
+end
 
-lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) := sorry
+lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
+begin
+  by_cases h : a ≤ b,
+  { rw max_eq_right h,
+    have h' : a+c≤ b+c := by linarith,
+    rw max_eq_right h',
+  },
+  rw not_le at h,
+  rw max_eq_left h.le,
+  have h' : b+c≤ a+c := by linarith,
+  rw max_eq_left h',
+end
 
 end
 
@@ -74,25 +87,13 @@ end
 
 /- This is the flavor of induction we need here -/
 lemma induction_on'' {σ : Type} {R : Type*} [comm_semiring R]
-{M : mv_polynomial σ R → Prop} (p : mv_polynomial σ R)
+  {M : mv_polynomial σ R → Prop} (p : mv_polynomial σ R)
   (h_C : ∀a, M (C a)) 
   (h_add_weak : ∀ (a : σ →₀ ℕ) (b : R) (f : (σ →₀ ℕ) →₀ R), 
     a ∉ f.support → b ≠ 0 → M f → M (single a b + f))
   (h_X : ∀p n, M p → M (p * X n)) :
   M p :=
-have ∀s a, M (monomial s a),
-begin
-  assume s a,
-  apply @finsupp.induction σ ℕ _ _ s,
-  { show M (monomial 0 a), from h_C a, },
-  { assume n e p hpn he ih,
-    have : ∀e:ℕ, M (monomial p a * X n ^ e),
-    { intro e,
-      induction e,
-      { simp [ih] },
-      { simp [ih, pow_succ', (mul_assoc _ _ _).symm, h_X, e_ih] } },
-    simp [add_comm, monomial_add_single, this] }
-end,
+have ∀s a, M (monomial s a) := induction_on_monomial h_C h_X,
 finsupp.induction p
   (by have : M (C 0) := h_C 0; rwa [C_0] at this)
     h_add_weak
@@ -149,18 +150,57 @@ begin
   exact c,
 end
 
+
 private lemma h_X { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
  (hS : ∀ i : fin n, 0 < (S i).card) :  ∀ (p : mv_polynomial (fin n) F) (j : fin n), 
     M' n F S hS p → M' n F S hS (p * X j) :=
 begin
   intros p j h_Mp,
-  cases h_Mp with h_p hhp,
+  cases h_Mp with h h_h,
+  by_cases c_p_eq_0 : p = 0,
+  { rw [ c_p_eq_0, zero_mul ], 
+    rw c_p_eq_0 at h_h,
+    rw M',
+    use h,
+    exact h_h },
   rw M',
-  -- TODO h_p * X j may or not work, depending on the degree of h_p in X j.
-  -- Let g_j =  ∏ s in (S j), (X j - C s)
-  -- If it does not work, we modify it by substracting 
-  -- g_j times the coefficient in h_p (seen as a polynomial in X j) of (X j)^(S j).card-1
-  sorry
+  let g := λ j : fin n, ∏ s in S j, (X j - C s),
+  let g_j := g j,
+  let f := p * X j - ∑ (i : fin n), h i * X j * g i,
+  -- let x : set (fin n →₀ ℕ) := { m | m ∈ f.support ∧ m j = (S j).card },
+  let x : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
+  let q : mv_polynomial (fin n) F := ∑ m in x, monomial (m - (single j (S j).card)) (coeff m f),
+  have h_total_degree_q : total_degree q + (S j).card ≤  total_degree (p * X j),
+  { sorry },
+  let h1 : fin n → mv_polynomial (fin n) F := λ i, if i=j then h j * X j - q else h i * X j,
+  use h1,
+  apply and.intro,
+  intro i,
+  by_cases c_h1_i_eq_0 : h1 i = 0,
+  { left,
+    exact c_h1_i_eq_0 },
+  right,
+  by_cases c_i_eq_j : i=j,
+  { sorry, },
+  simp only [h1],
+  rw if_neg c_i_eq_j,
+  rw total_degree_mul_X c_p_eq_0 j,
+  have x := (add_le_add_right (total_degree_mul_X_le (h i) j) (S i).card),
+  have h_i_neq_0 : h i ≠ 0,
+  { let x:= c_h1_i_eq_0,
+    simp only [h1] at x,
+    rw if_neg c_i_eq_j at x,
+    by_contradiction,
+    rw h at x,
+    rw zero_mul at x,
+    cc },
+  have y := add_le_add_right (what_is_the_name_for_this_one h_i_neq_0 (h_h.1 i)) 1,
+  rw add_assoc at y,
+  rw add_comm (S i).card 1 at y,
+  rw ← add_assoc at y,
+  exact x.trans y,
+  intros m hm j,
+  sorry,
 end
 
 private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
@@ -268,7 +308,7 @@ lemma reduce_degree { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F) :
   ∃ h : fin n → mv_polynomial (fin n) F,
   (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ( ∀ m : fin n →₀ ℕ, m ∈ (f - (∑ i : fin n, h i * ∏ s in (S i), (X i - C s))).support → 
+  ∧ ( ∀ m : fin n →₀ ℕ, m ∈ (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))).support → 
       ∀ j : fin n, m j < (S j).card) := 
 begin
   have h : M f,
