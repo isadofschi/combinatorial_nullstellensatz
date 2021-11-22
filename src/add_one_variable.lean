@@ -27,6 +27,12 @@ begin
   sorry,
 end
 
+private def extfin_eq_le_n {n:ℕ}{i : fin n}
+(s' : fin n →₀  ℕ)(y : ℕ)(h : ↑i < n) : 
+extfin s' y i = s' (fin.mk i h) := sorry 
+
+
+
 --private def refin_eq_le_n {n:ℕ}{R: Type*}{i : fin n}(s : fin (n+1) → R) : 
 --resfin s i = s ↑i := sorry 
 
@@ -86,7 +92,7 @@ lemma support_f_i {n : ℕ} {R : Type u} [comm_ring R]
 (f : mv_polynomial (fin (n+1)) R) (i : ℕ) 
 {t' : fin n →₀ ℕ }
 (h_t' : t'∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
-(extfin ↑t' i) ∈ f.support :=
+(extfin t' i) ∈ f.support :=
 begin
   sorry,
 end
@@ -134,6 +140,11 @@ end
 lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
 begin
   simp only [fin.mk_eq_subtype_mk, fin.coe_of_nat_eq_mod, fin.coe_mk],
+end
+
+lemma cannot_find_this' { m: ℕ }{n : fin m} (h : ↑n < m): n = (fin.mk ↑n h) :=
+begin
+  sorry
 end
 
 /- Lemma 2.1 in Alon's paper. -/
@@ -230,11 +241,16 @@ begin
   { intros i i_le_d,
     --let f_i := polynomial.coeff ((fin_succ_equiv F n) f) i,
     have coso := h_f_s'_i_eq_0' i i_le_d,
-    have x:= hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (resfin t) _ _ _ coso, 
+    have x := hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (resfin t) _ _ _ coso, 
     exact x,
     intros j t' ht',
     rw ← resfin_eq t j,
-    exact ht j (support_f_i f i ht'),
+    let ii : ↑j < n := j.2,
+    have x:= ht j (extfin t' i) (support_f_i f i ht'),
+    rw extfin_eq_le_n t' i ii at x,
+    let z := cannot_find_this' ii,
+    rw ← z at x,
+    exact x,
     intro j,
     rw ← resfin_eq t j,
     exact hS ↑j },
