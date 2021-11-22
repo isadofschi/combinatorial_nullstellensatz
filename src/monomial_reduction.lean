@@ -7,6 +7,7 @@ import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
 import algebra.algebra.basic
 import degree
+import assorted_lemmas
 
 
 /-
@@ -31,72 +32,8 @@ open set function finsupp add_monoid_algebra
 
 open_locale big_operators
 
-section open decidable tactic
-variables {α : Type u} [linear_order α]
-
-lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ max b d := begin
-  by_cases h : a ≤ c,
-  { rw max_eq_right h,
-    exact h₂.trans (le_max_right b d),
-  },
-  rw not_le at h,
-  rw max_eq_left h.le,
-  exact h₁.trans (le_max_left b d),
-end
-
-lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
-begin
-  by_cases h : a ≤ b,
-  { rw max_eq_right h,
-    have h' : a + c ≤ b + c := by linarith,
-    rw max_eq_right h',
-  },
-  rw not_le at h,
-  rw max_eq_left h.le,
-  have h' : b + c≤ a + c := by linarith,
-  rw max_eq_left h',
-end
-
-end
-
-/- ¿ is this already in logic.basic or somewhere else in mathlib ? -/
-lemma what_is_the_name_for_this_one {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q := 
-(or_iff_not_imp_left.1 h2) h1
-
-
 namespace mv_polynomial
-
-lemma induction_on_monomial 
-  {σ : Type} {R : Type*} [comm_semiring R]
-  {M : mv_polynomial σ R → Prop}
-  (h_C : ∀a, M (C a)) 
-  (h_X : ∀p n, M p → M (p * X n)) :
-  ∀s a, M (monomial s a) :=
-begin
-  assume s a,
-  apply @finsupp.induction σ ℕ _ _ s,
-  { show M (monomial 0 a), from h_C a, },
-  { assume n e p hpn he ih,
-    have : ∀e:ℕ, M (monomial p a * X n ^ e),
-    { intro e,
-      induction e,
-      { simp [ih] },
-      { simp [ih, pow_succ', (mul_assoc _ _ _).symm, h_X, e_ih] } },
-    simp [add_comm, monomial_add_single, this] }
-end
-
-/- This is the flavor of induction we need here -/
-lemma induction_on'' {σ : Type} {R : Type*} [comm_semiring R]
-  {M : mv_polynomial σ R → Prop} (p : mv_polynomial σ R)
-  (h_C : ∀a, M (C a)) 
-  (h_add_weak : ∀ (a : σ →₀ ℕ) (b : R) (f : (σ →₀ ℕ) →₀ R), 
-    a ∉ f.support → b ≠ 0 → M f → M (single a b + f))
-  (h_X : ∀p n, M p → M (p * X n)) :
-  M p :=
-have ∀s a, M (monomial s a) := induction_on_monomial h_C h_X,
-finsupp.induction p
-  (by have : M (C 0) := h_C 0; rwa [C_0] at this)
-    h_add_weak
+open set function finsupp add_monoid_algebra
 
 /-
   M' is a workaround for a "cannot sinthetize placeholder context error". How should I do this?
@@ -167,16 +104,16 @@ begin
   let g := λ j : fin n, ∏ s in S j, (X j - C s),
   let g_j := g j,
   let f := p * X j - ∑ (i : fin n), h i * X j * g i,
+  let ms : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
+  let q : mv_polynomial (fin n) F := ∑ m in ms, monomial (m - (single j (S j).card)) (coeff m f),
+  let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
+  use h1,
   have h_total_degree_f : total_degree f ≤ total_degree p + 1,
   { sorry }, -- use h_h
-  let x : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
-  let q : mv_polynomial (fin n) F := ∑ m in x, monomial (m - (single j (S j).card)) (coeff m f),
   have h_total_degree_q : total_degree q + (S j).card ≤  total_degree p + 1,
   { -- use total_degree_sum, h_total_degree_f and the fact that
     -- each monomial m in the definition of q is in the support of f.
     sorry },
-  let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
-  use h1,
   apply and.intro,
   intro i,
   by_cases c_h1_i_eq_0 : h1 i = 0,
@@ -218,8 +155,30 @@ begin
   have y := add_le_add_right (what_is_the_name_for_this_one h_i_neq_0 (h_h.1 i)) 1,
   rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
   exact useful.trans y,
-  intros m hm j,
-  sorry, -- the "hard" part of the proof
+  intros m hm i,
+  by_contradiction h_m_i,
+  --have comp_1 : p * (X j) - ∑ i : fin n, h i * X j  
+  have m_mem_U:= finset.mem_of_mem_of_subset hm (support_sub (p * X j) (∑ (i : fin n), h1 i * g i)),
+  clear hm,
+  by_cases c_m_in_ms : m ∈ ms,
+  { -- arrive at a contradiction by showing the coefficient of m in f is 0
+    sorry }, 
+  by_cases c_m_in_pXj : m ∈ (p * (X j)).support,
+  { -- show that m ∈ ms, contradiction!
+    sorry },
+  have m_in_supp_sum := what_is_the_name_for_this_one c_m_in_pXj (finset.mem_or_mem_of_mem_union m_mem_U),
+  clear m_mem_U,
+  have h_cases := support_sum (λ i : (fin n), h1 i * (g i)) m m_in_supp_sum,
+  clear m_in_supp_sum,
+  cases h_cases with k h_k,
+  simp only [mem_support_iff, ite_mul, ne.def] at h_k,
+  by_cases c_k_is_j : k = j,
+  { rw if_pos c_k_is_j at h_k,
+    -- show that m ∈ ms, contradiction!
+    sorry },
+  rw if_neg c_k_is_j at h_k,
+  -- show that m ∈ ms, contradiction!
+  sorry,
 end
 
 private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
