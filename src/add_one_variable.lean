@@ -21,7 +21,7 @@ private def resfin {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ := s
 
 private def extfin {n:ℕ}(s' : fin n →₀  ℕ) (y : ℕ) : fin (n+1) →₀ ℕ := sorry
 
-lemma resfin_eq {n :ℕ} (s : fin (n+1) →₀ ℕ): ∀ (i : fin n), s i = resfin s i :=
+private lemma resfin_eq {n :ℕ} (s : fin (n+1) →₀ ℕ): ∀ (i : fin n), s i = resfin s i :=
 begin
   intro i,
   sorry,
@@ -31,14 +31,9 @@ private def extfin_eq_le_n {n:ℕ}{i : fin n}
 (s' : fin n →₀  ℕ)(y : ℕ)(h : ↑i < n) : 
 extfin s' y i = s' (fin.mk i h) := sorry 
 
-
-
---private def refin_eq_le_n {n:ℕ}{R: Type*}{i : fin n}(s : fin (n+1) → R) : 
---resfin s i = s ↑i := sorry 
-
 private def res {n: ℕ }{R : Type*} (s : fin (n+1) → R) : fin n → R := λ i , s i
 
-lemma res_eq {n :ℕ} {R :Type*}(s : fin (n+1) → R): ∀ (i : fin n), s i = res s i :=
+private lemma res_eq {n :ℕ} {R :Type*}(s : fin (n+1) → R): ∀ (i : fin n), s i = res s i :=
 begin
   intro i,
   refl,
@@ -55,6 +50,7 @@ ext1 s' y i = s' (fin.mk i h) := sorry
 
 /- Evaluating all the Xi at si is the same as evaluating X(n+1) at s(n+1) and 
   later evaluating X1 ... Xn at s1 ... sn -/
+/- We are not using this one but it might be nice to have this in mathlib -/
 lemma eval_eq_mv_eval_eval {n : ℕ} {R : Type u} [comm_ring R]
 (s : fin (n+1) → R)
  : ∀ f : mv_polynomial (fin (n+1)) R, 
@@ -65,6 +61,7 @@ end
 
 /- Evaluating all the Xi at si is the same as evaluating X1 ... Xn at s1 ... sn and
    later evaluating X(n+1) at s(n+1) -/
+/- We are not using this one but it might be nice to have this in mathlib -/
 lemma eval_eq_eval_mv_eval {n : ℕ} {R : Type u} [comm_ring R]
 (s : fin (n+1) → R) : ∀ f : mv_polynomial (fin (n+1)) R, 
  eval s f = polynomial.eval (s (n+1)) (polynomial.map (eval (res s)) ((fin_succ_equiv R n) f)) :=
@@ -259,7 +256,5 @@ begin
     exact h11 },
   exact (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv F n)).1 casi,
 end
-
-#check lemma_2_1
 
 end mv_polynomial
