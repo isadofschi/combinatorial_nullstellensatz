@@ -87,6 +87,144 @@ begin
   exact c,
 end
 
+section aux_for_h_X
+
+parameters {n : ℕ }{F : Type u} [field F] {S : fin n → finset F}
+parameters {h: fin n → mv_polynomial (fin n) F} {hS: ∀ (i : fin n), 0 < (S i).card}
+parameters {p: mv_polynomial (fin n) F}
+parameters {j : fin n}
+parameters {h_h: (∀ (i : fin n), h i = 0 ∨ (h i).total_degree + (S i).card ≤ p.total_degree) 
+  ∧ ∀ (m : fin n →₀ ℕ), m ∈ (p - ∑ (i : fin n), h i * ∏ (s : F) in S i, (X i - C s)).support 
+    → ∀ (j : fin n), m j < (S j).card}
+
+parameter c_p_eq_0 : ¬p = 0
+
+
+noncomputable def g : fin n → mv_polynomial (fin n) F := λ j : fin n, ∏ s in S j, (X j - C s)
+noncomputable def f : mv_polynomial (fin n) F := (p - ∑ (i : fin n), h i * g i) * X j
+noncomputable def ms : finset (fin n →₀ ℕ) := finset.filter (λ (m : fin n →₀ ℕ), m j = (S j).card) f.support
+noncomputable def q : mv_polynomial (fin n) F := ∑ (m : fin n →₀ ℕ) in ms, (monomial (m - single j (S j).card)) (coeff m f)
+noncomputable def h1 : fin n → mv_polynomial (fin n) F := λ (i : fin n), ite (i = j) (h j * X j - q) (h i * X j)
+
+include c_p_eq_0 g f F ms q h1 S hS j p h_h h n 
+
+
+lemma comp_1 : p * X j - ∑ (i : fin n), h1 i * g i = f - q * g j :=
+begin
+  sorry
+end
+include comp_1
+
+lemma comp_2 : ∀ m, m ∈ ms → coeff m (f - q * g j) = 0 :=
+begin
+  sorry
+end
+include comp_2
+
+lemma h_total_degree_f : total_degree f ≤ total_degree p + 1 :=
+begin
+  sorry -- use h_h
+end
+include h_total_degree_f
+
+lemma h_total_degree_q : total_degree q + (S j).card ≤  total_degree p + 1 :=
+begin
+  -- use total_degree_sum, h_total_degree_f and the fact that
+  -- each monomial m in the definition of q is in the support of f.
+  sorry
+end
+include h_total_degree_q
+
+lemma h_X_1 : (∀ (i : fin n), 
+  h1 i = 0 ∨ (h1 i).total_degree + (S i).card ≤ (p * X j).total_degree) :=
+begin
+  intro i,
+  by_cases c_h1_i_eq_0 : h1 i = 0,
+  { left,
+    exact c_h1_i_eq_0 },
+  right,
+  simp only [h1],
+  rw total_degree_mul_X c_p_eq_0 j,
+  have useful := (add_le_add_right (total_degree_mul_X_le (h i) j) (S i).card),
+  by_cases c_i_eq_j : i = j,
+  { rw if_pos c_i_eq_j,
+    rw c_i_eq_j,
+    have x := add_le_add_right (total_degree_add (h j * X j) (-q)) (S j).card,
+    rw ← sub_eq_add_neg at x,
+    have y : linear_order.max (h j * X j).total_degree (-q).total_degree +  (S j).card 
+      ≤ p.total_degree + 1,
+    { by_cases c_comp : (h j * X j).total_degree ≤ (-q).total_degree,
+      { rw [max_eq_right c_comp, total_degree_neg],
+        exact h_total_degree_q },
+      simp only [not_le] at c_comp,
+      rw max_eq_left c_comp.le,
+      rw c_i_eq_j at useful,
+      by_cases c_h_j_eq_0 : h j = 0,
+      { rw [c_h_j_eq_0, zero_mul] at c_comp,
+        simp only [nat.not_lt_zero, total_degree_zero] at c_comp,
+        exfalso,
+        exact c_comp },
+      have y := add_le_add_right (what_is_the_name_for_this_one c_h_j_eq_0 (h_h.1 j)) 1,
+      rw [add_assoc, add_comm (S j).card 1, ← add_assoc ] at y,
+      exact useful.trans y },
+    exact x.trans y },
+  rw if_neg c_i_eq_j,
+  have h_i_neq_0 : h i ≠ 0,
+  { let x := c_h1_i_eq_0,
+    simp only [h1] at x,
+    by_contradiction,
+    rw [if_neg c_i_eq_j, h, zero_mul] at x,
+    cc },
+  have y := add_le_add_right (what_is_the_name_for_this_one h_i_neq_0 (h_h.1 i)) 1,
+  rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
+  exact useful.trans y,
+end
+
+lemma h_X_2 :
+  ∀ (m : fin n →₀ ℕ), 
+  m ∈ (p * X j - ∑ (i : fin n), h1 i * ∏ (s : F) in S i, (X i - C s)).support
+  → ∀ (j : fin n), m j < (S j).card
+:=
+begin
+  intros m hm i,
+  by_contradiction h_m_i,
+  rw comp_1 at hm,
+  have m_mem_U := finset.mem_of_mem_of_subset hm (support_sub f (q * g j)),
+  clear comp_1,
+  by_cases c_m_in_sup_f : m ∈ f.support,
+  { have x := support_mul_X j (p - ∑ (i : fin n), h i * g i),
+    rw x at c_m_in_sup_f,
+    clear x m_mem_U,
+    simp only [exists_prop, add_right_embedding_apply, finset.mem_map] at c_m_in_sup_f,
+     --mem_support_iff, ne.def, coeff_sub
+    cases c_m_in_sup_f with m' h_m',
+    have h_coeff_m' := h_m'.1,
+    have h_m_m' := h_m'.2,
+    clear h_m',
+    have x := h_h.2 m' h_coeff_m' i,
+    rw ← h_m_m' at h_m_i,
+    simp only [pi.add_apply, not_lt, coe_add] at h_m_i,
+    simp only [single] at h_m_i,
+    simp only [coe_mk] at h_m_i,
+    by_cases c_i_eq_j : i = j,
+    { rw [if_pos c_i_eq_j.symm] at h_m_i,
+      let x := sandwich x h_m_i,
+      have h_m_in_ms : m ∈ ms,
+      { sorry },
+      have m_not_in_supp := comp_2 m h_m_in_ms,
+      simp only [mem_support_iff, ne.def] at hm,
+      tauto },
+    have c_j_eq_i : ¬ j = i, cc,
+    rw [ if_neg c_j_eq_i ] at h_m_i,
+    linarith },
+  have m_in_support_q_g_j := what_is_the_name_for_this_one c_m_in_sup_f (finset.mem_or_mem_of_mem_union m_mem_U),
+  clear m_mem_U,
+  sorry,
+end
+end aux_for_h_X
+
+#check @comp_1
+
 
 private lemma h_X { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
  (hS : ∀ i : fin n, 0 < (S i).card) :  ∀ (p : mv_polynomial (fin n) F) (j : fin n), 
@@ -109,6 +247,8 @@ begin
   let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
   use h1,
   have comp_1 : p * X j - ∑ (i : fin n), h1 i * g i = f - q * g j,
+  { sorry },
+  have comp_2 : ∀ m, m ∈ ms → coeff m (f - q * g j) = 0,
   { sorry },
   have h_total_degree_f : total_degree f ≤ total_degree p + 1,
   { sorry }, -- use h_h
@@ -161,9 +301,10 @@ begin
   by_contradiction h_m_i,
   rw comp_1 at hm,
   have m_mem_U := finset.mem_of_mem_of_subset hm (support_sub f (q * g j)),
-  clear hm comp_1,
+  clear comp_1,
   by_cases c_m_in_sup_f : m ∈ f.support,
   { have x := support_mul_X j (p - ∑ (i : fin n), h i * g i),
+    have c_m_in_sup_f' := c_m_in_sup_f,
     rw x at c_m_in_sup_f,
     clear x m_mem_U,
     simp only [exists_prop, add_right_embedding_apply, finset.mem_map] at c_m_in_sup_f,
@@ -177,16 +318,26 @@ begin
     simp only [pi.add_apply, not_lt, coe_add] at h_m_i,
     simp only [single] at h_m_i,
     simp only [coe_mk] at h_m_i,
-    by_cases c_i_eq_j : i = j,
-    { rw [if_pos c_i_eq_j.symm] at h_m_i,
-      let x := sandwich x h_m_i,
-      -- esto dice que m ∈ ms. Sabiendo esto podemos calcular 
-      -- ver que el coeficiente de m es 0, contradiciendo hm.
-      sorry },
-    have c_j_eq_i : ¬ j = i, cc,
+    by_cases c_j_eq_i : j = i,
+    { rw [if_pos c_j_eq_i] at h_m_i,
+      let xeq := sandwich x h_m_i,
+      have h_m_in_ms : m ∈ ms,
+      { simp only [exists_prop, add_right_embedding_apply, finset.mem_map, finset.mem_filter ],
+        apply and.intro,
+        exact c_m_in_sup_f',
+        rw ← h_m_m',
+        simp only [single_eq_same, pi.add_apply, coe_add],
+        rw c_j_eq_i,
+        exact xeq.symm },
+      have m_not_in_supp := comp_2 m h_m_in_ms,
+      simp only [mem_support_iff, ne.def] at hm,
+      tauto },
     rw [ if_neg c_j_eq_i ] at h_m_i,
     linarith },
   have m_in_support_q_g_j := what_is_the_name_for_this_one c_m_in_sup_f (finset.mem_or_mem_of_mem_union m_mem_U),
+  clear m_mem_U,
+  -- casos segun i = j
+  -- el caso i ≠ j es facil
   sorry,
   /-
   have m_mem_U:= finset.mem_of_mem_of_subset hm (support_sub (p * X j) (∑ (i : fin n), h1 i * g i)),
