@@ -7,6 +7,7 @@ import data.mv_polynomial.basic
 import algebra.algebra.basic
 import degree
 import monomial_reduction
+import assorted_lemmas
 import add_one_variable
 import data.mv_polynomial.comm_ring
 
@@ -200,7 +201,7 @@ begin
   intro i,
   have h' := h_s'.1 i,
   have h'' := h_S_S' i,
-  sorry, -- exact set.mem_of_mem_of_subset h' h''
+  exact finset.mem_of_mem_of_subset h' h'',
   exact h_s'.2,
 end
 
