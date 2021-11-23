@@ -103,11 +103,13 @@ begin
   rw M',
   let g := λ j : fin n, ∏ s in S j, (X j - C s),
   let g_j := g j,
-  let f := p * X j - ∑ (i : fin n), h i * X j * g i,
+  let f := (p - ∑ (i : fin n), h i * g i) * X j ,
   let ms : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
   let q : mv_polynomial (fin n) F := ∑ m in ms, monomial (m - (single j (S j).card)) (coeff m f),
   let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
   use h1,
+  have comp_1 : p * X j - ∑ (i : fin n), h1 i * g i = f - q * g j,
+  { sorry },
   have h_total_degree_f : total_degree f ≤ total_degree p + 1,
   { sorry }, -- use h_h
   have h_total_degree_q : total_degree q + (S j).card ≤  total_degree p + 1,
@@ -157,7 +159,36 @@ begin
   exact useful.trans y,
   intros m hm i,
   by_contradiction h_m_i,
-  --have comp_1 : p * (X j) - ∑ i : fin n, h i * X j  
+  rw comp_1 at hm,
+  have m_mem_U := finset.mem_of_mem_of_subset hm (support_sub f (q * g j)),
+  clear hm comp_1,
+  by_cases c_m_in_sup_f : m ∈ f.support,
+  { have x := support_mul_X j (p - ∑ (i : fin n), h i * g i),
+    rw x at c_m_in_sup_f,
+    clear x m_mem_U,
+    simp only [exists_prop, add_right_embedding_apply, finset.mem_map] at c_m_in_sup_f,
+     --mem_support_iff, ne.def, coeff_sub
+    cases c_m_in_sup_f with m' h_m',
+    have h_coeff_m' := h_m'.1,
+    have h_m_m' := h_m'.2,
+    clear h_m',
+    have x := h_h.2 m' h_coeff_m' i,
+    rw ← h_m_m' at h_m_i,
+    simp only [pi.add_apply, not_lt, coe_add] at h_m_i,
+    simp only [single] at h_m_i,
+    simp only [coe_mk] at h_m_i,
+    by_cases c_i_eq_j : i = j,
+    { rw [if_pos c_i_eq_j.symm] at h_m_i,
+      let x := sandwich x h_m_i,
+      -- esto dice que m ∈ ms. Sabiendo esto podemos calcular 
+      -- ver que el coeficiente de m es 0, contradiciendo hm.
+      sorry },
+    have c_j_eq_i : ¬ j = i, cc,
+    rw [ if_neg c_j_eq_i ] at h_m_i,
+    linarith },
+  have m_in_support_q_g_j := what_is_the_name_for_this_one c_m_in_sup_f (finset.mem_or_mem_of_mem_union m_mem_U),
+  sorry,
+  /-
   have m_mem_U:= finset.mem_of_mem_of_subset hm (support_sub (p * X j) (∑ (i : fin n), h1 i * g i)),
   clear hm,
   by_cases c_m_in_ms : m ∈ ms,
@@ -178,7 +209,7 @@ begin
     sorry },
   rw if_neg c_k_is_j at h_k,
   -- show that m ∈ ms, contradiction!
-  sorry,
+  -/
 end
 
 private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
