@@ -19,7 +19,6 @@ Lemmas for logic
 -/
 
 /- ¿ is this already in logic.basic or somewhere else in mathlib ? -/
-
 lemma right_of_not_of_or {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q := 
 (or_iff_not_imp_left.1 h2) h1
 

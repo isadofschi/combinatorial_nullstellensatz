@@ -14,9 +14,44 @@ open_locale big_operators
 
 namespace mv_polynomial
 
+lemma mod_succ (n :ℕ) : n % n.succ = n :=
+begin
+  sorry
+end
 
--- We surely already have this somewhere in mathlib!
-private def resfin {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ := sorry
+-- Restriction and extension between fin n and fin (n+1)
+
+local attribute [instance] classical.prop_decidable --esta permitido usar esto?
+
+private def res {n: ℕ }{R : Type*} (s : fin (n+1) → R) : fin n → R := λ i , s i
+
+private lemma res_eq {n :ℕ} {R :Type*}(s : fin (n+1) → R): ∀ (i : fin n), s i = res s i :=
+begin
+  intro i,
+  refl,
+end
+
+private noncomputable def ext1 {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) : fin (n+1) → R := 
+λ i, if h : ↑i < n then s' (fin.mk i h) else y
+
+private def ext1_eq_n {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) : 
+ext1 s' y n = y := begin
+  rw ext1,
+  have h : ¬ (n % n.succ < n),
+  { rw mod_succ n,
+    linarith },
+  simp only [fin.coe_of_nat_eq_mod, fin.mk_eq_subtype_mk, h, fin.coe_of_nat_eq_mod, dif_neg, not_false_iff],
+end
+
+private def ext1_eq_le_n {n:ℕ}{R: Type*}{i : fin(n+1)}(s' : fin n → R)(y : R)(h : ↑i < n) : 
+ext1 s' y i = s' (fin.mk i h) :=
+begin
+  rw ext1,
+  simp only [h, dif_pos],
+end
+
+private def resfin {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ 
+:= sorry -- algo así? finsupp.mk (finset.fin_range n ) (res s)  (by sorry)
 
 private def extfin {n:ℕ}(s' : fin n →₀  ℕ) (y : ℕ) : fin (n+1) →₀ ℕ := sorry
 
@@ -29,23 +64,6 @@ end
 private def extfin_eq_le_n {n:ℕ}{i : fin n}
 (s' : fin n →₀  ℕ)(y : ℕ)(h : ↑i < n) : 
 extfin s' y i = s' (fin.mk i h) := sorry 
-
-private def res {n: ℕ }{R : Type*} (s : fin (n+1) → R) : fin n → R := λ i , s i
-
-private lemma res_eq {n :ℕ} {R :Type*}(s : fin (n+1) → R): ∀ (i : fin n), s i = res s i :=
-begin
-  intro i,
-  refl,
-end
-
-private def ext1 {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) : fin (n+1) → R := 
-λ i, if h : ↑i < n then s' (fin.mk i h) else y
-
-private def ext1_eq_n {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) : 
-ext1 s' y n = y := sorry 
-
-private def ext1_eq_le_n {n:ℕ}{R: Type*}{i : fin(n+1)}(s' : fin n → R)(y : R)(h : ↑i < n) : 
-ext1 s' y i = s' (fin.mk i h) := sorry 
 
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_ring R]
 (s' : fin n → R) (y : R): ∀ f : mv_polynomial (fin (n+1)) R, 
@@ -116,10 +134,7 @@ begin
 end
 
 
-lemma mod_succ {n :ℕ } : n % n.succ = n :=
-begin
-  sorry
-end
+
 
 lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
 begin
@@ -181,7 +196,7 @@ begin
     { simp only [fin.mk_eq_subtype_mk],
       ext,
       simp only [fin.coe_of_nat_eq_mod, fin.coe_mk],
-      rw mod_succ },
+      rw mod_succ n},
     rw x1 at x,
     simp only [fin.mk_eq_subtype_mk] at x,
     rw x,
