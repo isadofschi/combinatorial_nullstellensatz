@@ -99,12 +99,21 @@ begin
 end
 
 /- supongo que es mas prolijo usar esta en vez de la siguiente -/
-lemma nat_degree_fin_suc_equiv { n : ℕ } {F : Type u} [field F]
+lemma nat_degree_fin_suc_equiv {n : ℕ} {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F) : 
   (fin_succ_equiv F n f).nat_degree = degree_of ↑n f :=
 begin
   sorry
 end
+
+lemma degree_of_coeff_fin_suc_equiv {n : ℕ} {F : Type u} [field F]
+  (f : mv_polynomial (fin (n+1)) F) (j:fin n)(i:ℕ) : 
+  degree_of j (polynomial.coeff (fin_succ_equiv F n f) i) ≤ degree_of ↑j f :=
+begin
+  sorry
+end
+
+
 
 lemma nat_degree_le_t { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F)
@@ -133,25 +142,25 @@ begin
   exact h1.trans t,
 end
 
-
-
-
 lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
 begin
   simp only [fin.mk_eq_subtype_mk, fin.coe_of_nat_eq_mod, fin.coe_mk],
 end
 
+/-
+unused :D
 lemma cannot_find_this' { m: ℕ }{n : fin m} (h : ↑n < m): n = (fin.mk ↑n h) :=
 begin
   sorry
 end
+-/
+
 
 /- Lemma 2.1 in Alon's paper. -/
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F)
   (t : fin n →₀ ℕ)
-  -- (ht : ∀ i : fin n, degree_of i f ≤ t i) -- seria mejor usar esta hipotesis
-  (ht : ∀ i : fin n, ∀ t' : fin n →₀ ℕ, t' ∈ f.support → t' i ≤ t i)
+  (ht : ∀ i : fin n, degree_of i f ≤ t i)
   (S : fin n → finset F)
   (hS : ∀ i : fin n, t i < (S i).card) 
   (hz : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
@@ -174,7 +183,7 @@ begin
     intro i,
     by_cases c : ↑i < n,
     { rw (ext1_eq_le_n s' y c), 
-      let x:= hs' (fin.mk i c),
+      have x:= hs' (fin.mk i c),
       simp only [fin.coe_eq_cast_succ, fin.mk_eq_subtype_mk, fin.cast_succ_mk, fin.eta] at x,
       simp only [fin.mk_eq_subtype_mk],
       exact x,
@@ -211,12 +220,14 @@ begin
     { exact c },
     exfalso,
     let t1 := number_zeroes_field c (S n) (h00 _ _),
-    have uu : (polynomial.map (eval s') ((fin_succ_equiv F n) f)).nat_degree < t n,
-    { have x := nat_degree_le_t f (t n) (ht n),
+    have uu : (polynomial.map (eval s') ((fin_succ_equiv F n) f)).nat_degree ≤ t n,
+    { have x := nat_degree_fin_suc_equiv f,
       rw ← nat_degree_eval_eq_nat_degree at x,
-      exact x,
+      have y := ht n,
+      rw x,
+      exact y,
       exact n },
-    let cc1 := (lt_of_le_of_lt t1 uu).trans (hS n),
+    let cc1 := lt_of_le_of_lt (t1.trans uu) (hS n),
     simpa using cc1,
     exact hs' },
   have h_f_s'_i_eq_0 :  ∀ i : ℕ, i ≤ d →  
@@ -243,14 +254,9 @@ begin
     have coso := h_f_s'_i_eq_0' i i_le_d,
     have x := hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (resfin t) _ _ _ coso, 
     exact x,
-    intros j t' ht',
+    intro j,
     rw ← resfin_eq t j,
-    let ii : ↑j < n := j.2,
-    have x:= ht j (extfin t' i) (support_f_i f i ht'),
-    rw extfin_eq_le_n t' i ii at x,
-    let z := cannot_find_this' ii,
-    rw ← z at x,
-    exact x,
+    exact (degree_of_coeff_fin_suc_equiv f j i).trans (ht j),
     intro j,
     rw ← resfin_eq t j,
     exact hS ↑j },

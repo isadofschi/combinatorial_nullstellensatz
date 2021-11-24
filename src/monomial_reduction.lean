@@ -341,4 +341,17 @@ begin
   exact h,
 end
 
+
+lemma reduce_degree' { n : ℕ } {F : Type u} [field F]
+  (S : fin n → finset F) (hS : ∀ i : fin n, 0 < (S i).card)
+  (f : mv_polynomial (fin n) F) :
+  ∃ h : fin n → mv_polynomial (fin n) F,
+  (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
+  ∧ ∀ j : fin n, 
+  degree_of j (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))) < (S j).card := 
+begin
+  -- usar reduce_degree o reescribir la demo y dejar esta version solamente
+  sorry
+end
+
 end mv_polynomial
