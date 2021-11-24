@@ -122,14 +122,15 @@ begin
   rw M',
   let g := λ j : fin n, ∏ s in S j, (X j - C s),
   let g_j := g j,
-  let f := (p - ∑ (i : fin n), h i * g i) * X j ,
+  let p1 := p - ∑ (i : fin n), h i * g i,
+  let f :=  p1 * X j ,
   let ms : finset (fin n →₀ ℕ) := f.support.filter (λ m , m j = (S j).card),
   let q : mv_polynomial (fin n) F := ∑ m in ms, monomial (m - (single j (S j).card)) (coeff m f),
   let h1 : fin n → mv_polynomial (fin n) F := λ i, if i = j then h j * X j - q else h i * X j,
   use h1,
   have comp_1 : p * X j - ∑ (i : fin n), h1 i * g i = f - q * g j,
   { sorry },
-  have comp_2 : ∀ m, m ∈ ms → coeff m (f - q * g j) = 0,
+  have comp_2 : ∀ m, m ∈ ms → coeff m f = coeff m (q * g j), --unused ahora
   { sorry },
   have h_total_degree_f : total_degree f ≤ total_degree p + 1,
   { sorry }, -- use h_h
@@ -137,6 +138,30 @@ begin
   { -- use total_degree_sum, h_total_degree_f and the fact that
     -- each monomial m in the definition of q is in the support of f.
     sorry },
+  have H_f : ∀ i (m : (fin n) →₀ ℕ),
+    m ∈ f.support → ((S i).card ≤ m i) → coeff m f = coeff m (q * g j),
+  { intros i m h_m_in_supp_f h_S,
+    have x : degree_of i p1 < (S i).card := h_h.2 i,
+    have z := should_be_in_mathlib i h_m_in_supp_f,
+    by_cases c_i_eq_j : i = j,
+    { have h_m_in_ms : m ∈ ms,
+      { have y := degree_of_mul_X_eq j p1,
+        rw c_i_eq_j at x,
+        rw c_i_eq_j at h_S,
+        rw c_i_eq_j at z,
+        have w := sandwich' h_S ( lt_of_le_of_lt (z.trans y) (add_lt_add_right x 1) ),
+        simp only [exists_prop, add_right_embedding_apply, finset.mem_map, 
+        finset.mem_filter, coeff_sub],
+        exact ⟨h_m_in_supp_f , w.symm⟩ },
+      exact comp_2 m h_m_in_ms },
+    have y := degree_of_mul_X_ne  p1 c_i_eq_j,
+    rw ← y at x, clear y,
+    exfalso,
+    linarith },
+  have H_g : ∀ i (m : (fin n) →₀ ℕ),
+    m ∈ (q * g j).support → ((S i).card ≤ m i) → coeff m f = coeff m (q * g j), 
+  sorry,
+  sorry, -- speedup para que no corra lo que sigue
   apply and.intro,
   intro i,
   by_cases c_h1_i_eq_0 : h1 i = 0,
@@ -179,10 +204,16 @@ begin
   rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
   exact useful.trans y,
   intro i,
+  rw comp_1,
+  exact degree_of_sub_aux i f (q * g j) (S i).card (H_f i) (H_g i),
+end
+
+/-
+  -- old code
   rw ← eee', -- avoiding this may simplify the rest of the proof
   intros m hm,
   by_contradiction h_m_i,
-  rw comp_1 at hm,
+  --rw comp_1 at hm,
   have m_mem_U := finset.mem_of_mem_of_subset hm (support_sub f (q * g j)),
   clear comp_1,
   by_cases c_m_in_sup_f : m ∈ f.support,
@@ -247,6 +278,7 @@ begin
   exact n,
   exact m,
 end
+-/
 
 private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
 (S : fin n → finset F) (p q : mv_polynomial (fin n) F) 

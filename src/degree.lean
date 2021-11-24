@@ -28,12 +28,41 @@ begin
   simp,
 end
 
-lemma degree_of_add_le {σ : Type*} {R : Type*} [comm_semiring R] 
+lemma degree_of_add_le {σ : Type*} {R : Type*} [comm_semiring R]
  (x : σ) (f g : mv_polynomial σ R): 
  degree_of x (f + g) ≤ max (degree_of x f) (degree_of x g) := 
 begin
+  rw degree_of,
+  -- rw degrees,
+  -- have h : multiset.count x (f + g).degrees ≤ multiset.count x (f.degrees ⊔ g.degrees),
+  -- rw degrees_add,
+  -- congr,
   sorry
 end
+
+lemma degree_of_sub_aux {σ : Type*} {R : Type*} [comm_ring R]
+  (x : σ) (f g : mv_polynomial σ R) (k : ℕ)
+  (h1 : ∀ (m : σ →₀ ℕ), m ∈ f.support → (k ≤ m x) → coeff m f = coeff m g) 
+  (h2 : ∀ (m : σ →₀ ℕ), m ∈ g.support → (k ≤ m x) → coeff m f = coeff m g) : 
+  degree_of x (f - g) < k := 
+begin
+   sorry
+end
+
+lemma should_be_in_mathlib {σ : Type*} {R : Type*} [comm_ring R]
+  (i : σ) {f : mv_polynomial σ R}
+  {m : σ →₀ ℕ} (h_m : m ∈ f.support) :
+  m i ≤ degree_of i f := sorry
+
+lemma degree_of_mul_X_ne  {σ : Type*} {R : Type*} [comm_ring R]
+  {i j : σ} (f : mv_polynomial σ R) (h : i ≠ j) :
+  degree_of i (f * X j)  = degree_of i f := sorry
+
+/- in the following we have equality iff f ≠ 0 -/
+lemma degree_of_mul_X_eq  {σ : Type*} {R : Type*} [comm_ring R]
+  (j : σ) (f : mv_polynomial σ R) :
+  degree_of j (f * X j)  ≤ degree_of j f + 1 := sorry
+
 
 /- Todo esto se puede hacer con mas generalidad! -/
 
