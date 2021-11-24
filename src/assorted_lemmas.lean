@@ -19,7 +19,8 @@ Lemmas for logic
 -/
 
 /- ¿ is this already in logic.basic or somewhere else in mathlib ? -/
-lemma what_is_the_name_for_this_one {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q := 
+
+lemma right_of_not_of_or {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q := 
 (or_iff_not_imp_left.1 h2) h1
 
 /-
@@ -95,10 +96,12 @@ lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p q : mv_polynomial (fin n) R): 
 (p - q).support ⊆ p.support ∪ q.support := sorry
 
-lemma support_sum {n : ℕ} [comm_semiring R]
-  (f : (fin n) → mv_polynomial σ R) (m : σ →₀ ℕ): 
-  m ∈ (∑ x : (fin n), f x).support → ∃ x : (fin n), m ∈ (f x).support
-:= sorry
+lemma support_mul' {R : Type*}[comm_ring R]{n : ℕ}
+ {f g : mv_polynomial σ R}{m : σ →₀ ℕ}(m ∈ (f * g).support):
+ ∃ m' m'', m' ∈ f.support ∧ m'' ∈ g.support ∧ m = m' + m'' :=
+begin
+  sorry -- use support_mul
+end 
 
 lemma induction_on_monomial 
   {σ : Type} {R : Type*} [comm_semiring R]

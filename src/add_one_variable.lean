@@ -47,27 +47,6 @@ ext1 s' y n = y := sorry
 private def ext1_eq_le_n {n:ℕ}{R: Type*}{i : fin(n+1)}(s' : fin n → R)(y : R)(h : ↑i < n) : 
 ext1 s' y i = s' (fin.mk i h) := sorry 
 
-/- Evaluating all the Xi at si is the same as evaluating X(n+1) at s(n+1) and 
-  later evaluating X1 ... Xn at s1 ... sn -/
-/- We are not using this one but it might be nice to have this in mathlib -/
-lemma eval_eq_mv_eval_eval {n : ℕ} {R : Type u} [comm_ring R]
-(s : fin (n+1) → R)
- : ∀ f : mv_polynomial (fin (n+1)) R, 
- eval s f = eval (res s) (polynomial.eval (C( s (n+1))) ((fin_succ_equiv R n) f)) :=
-begin
-  sorry
-end
-
-/- Evaluating all the Xi at si is the same as evaluating X1 ... Xn at s1 ... sn and
-   later evaluating X(n+1) at s(n+1) -/
-/- We are not using this one but it might be nice to have this in mathlib -/
-lemma eval_eq_eval_mv_eval {n : ℕ} {R : Type u} [comm_ring R]
-(s : fin (n+1) → R) : ∀ f : mv_polynomial (fin (n+1)) R, 
- eval s f = polynomial.eval (s (n+1)) (polynomial.map (eval (res s)) ((fin_succ_equiv R n) f)) :=
-begin
-  sorry,
-end
-
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_ring R]
 (s' : fin n → R) (y : R): ∀ f : mv_polynomial (fin (n+1)) R, 
  eval (ext1 s' y) f = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
@@ -101,6 +80,14 @@ begin
   sorry,
 end
 
+/- supongo que es mas prolijo usar esta en vez de la siguiente -/
+lemma nat_degree_fin_suc_equiv { n : ℕ } {F : Type u} [field F]
+  (f : mv_polynomial (fin (n+1)) F) : 
+  (fin_succ_equiv F n f).nat_degree = degree_of ↑n f :=
+begin
+  sorry
+end
+
 lemma nat_degree_le_t { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F)
   (d : ℕ)
@@ -121,7 +108,8 @@ theorem number_zeroes_field {F : Type u} [field F]{p : polynomial F}(h : p ≠ 0
 begin
   let t := polynomial.card_roots' h,
   have h1 : Z.card ≤ p.roots.card,
-  {
+  { rw finset.card,
+    apply multiset.card_le_of_le,
      sorry,
   },
   exact h1.trans t,
@@ -147,6 +135,7 @@ end
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F)
   (t : fin n →₀ ℕ)
+  -- (ht : ∀ i : fin n, degree_of i f ≤ t i) -- seria mejor usar esta hipotesis
   (ht : ∀ i : fin n, ∀ t' : fin n →₀ ℕ, t' ∈ f.support → t' i ≤ t i)
   (S : fin n → finset F)
   (hS : ∀ i : fin n, t i < (S i).card) 

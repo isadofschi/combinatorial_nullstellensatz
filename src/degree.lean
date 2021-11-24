@@ -68,6 +68,14 @@ begin
   sorry
 end
 
+/-
+-- seria mejor usar esta definicion:
+def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
+(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
+t ∈ f.support ∧ monomial_degree t = total_degree f
+-/
+
+
 def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
 (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
 (coeff t f ≠ 0) ∧ (∀ t' : fin n →₀ ℕ, monomial_degree t' > monomial_degree t → coeff t' f = 0)
@@ -112,10 +120,6 @@ end
 
 lemma lemita1 { n : ℕ } {F : Type u} [field F] (S : finset F) (t : fin n →₀ ℕ ) (i : fin n) :
   dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
-  /-
-  S.card < monomial_degree t → coeff t (∏ s in S, (X i + C (-s))) = 0 
-  ∧ S.card = monomial_degree t → coeff t (∏ s in S, (X i + C (-s))) ≠ 0 → t = finsupp.single i (S.card) :=
-  -/
 begin
   sorry,
 end
