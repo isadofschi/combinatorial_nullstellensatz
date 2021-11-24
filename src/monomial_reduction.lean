@@ -35,6 +35,40 @@ open_locale big_operators
 namespace mv_polynomial
 open set function finsupp add_monoid_algebra
 
+
+
+
+
+lemma eee { n : ℕ } {F : Type u} [field F] 
+(j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
+f.support.sup (λ m , m j) = degree_of j f :=
+begin
+  sorry
+end
+
+/- casi como finset.sup_le_iff pero es con < en vez de ≤ -/
+lemma aux { a : Type u } (s : finset a) (f : a → ℕ) (d : ℕ) :
+(∀ x, x ∈ s → f x < d ) ↔ s.sup f < d :=
+begin
+  sorry
+end
+
+lemma eee' { n : ℕ } {F : Type u} [field F] 
+(j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
+(∀ m : fin n →₀ ℕ, m ∈ f.support → m j < d)
+↔ degree_of j f < d :=
+begin
+  rw ← eee j f d,
+  rw aux,
+end
+
+
+
+
+
+
+
+
 /-
   M' is a workaround for a "cannot sinthetize placeholder context error". How should I do this?
 -/
@@ -43,8 +77,7 @@ private def M'  (n : ℕ ) (F : Type u) [field F] (S : fin n → finset F)
 : mv_polynomial (fin n) F → Prop :=
   λ f, ∃ h : fin n → mv_polynomial (fin n) F,
  (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ( ∀ m : fin n →₀ ℕ, m ∈ (f - (∑ i : fin n, h i * ∏ s in (S i), (X i - C s))).support → 
-      ∀ j : fin n, m j < (S j).card)
+  ∧ ∀ j : fin n, degree_of j (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))) < (S j).card
 
 private def M { n : ℕ } {F : Type u} [field F]{S : fin n → finset F}
   {hS : ∀ i : fin n, 0 < (S i).card} 
@@ -62,29 +95,16 @@ begin
   intro i,
   left,
   refl,
-  intros m hm j,
+  intro j,
   have h: C a - ∑ (i : fin n), 0 * ∏ (s : F) in S i, (X i - C s) = C a,
   { have h1 : (λ i ,  0 * ∏ s in S i, (X i - C s)) = (λ i, 0),
     { ext,
       rw zero_mul },
     rw h1,
     simp, },
-  rw h at hm,
-  rw C_apply at hm,
-  by_cases c : a = 0,
-  { exfalso,
-    rw c at hm,
-    rw support_monomial at hm,
-    simp only [finset.not_mem_empty, if_true, eq_self_iff_true] at hm,
-    exact hm,
-  },
-  rw support_monomial at hm,
-  rw if_neg at hm,
-  have hm0 : m = 0 := finset.eq_of_mem_singleton hm,
-  rw hm0,
-  simp only [coe_zero, pi.zero_apply],
+  rw h,
+  rw degree_of_C,
   exact hS j,
-  exact c,
 end
 
 private lemma h_X { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
@@ -158,7 +178,9 @@ begin
   have y := add_le_add_right (right_of_not_of_or h_i_neq_0 (h_h.1 i)) 1,
   rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
   exact useful.trans y,
-  intros m hm i,
+  intro i,
+  rw ← eee', -- avoiding this may simplify the rest of the proof
+  intros m hm,
   by_contradiction h_m_i,
   rw comp_1 at hm,
   have m_mem_U := finset.mem_of_mem_of_subset hm (support_sub f (q * g j)),
@@ -174,7 +196,9 @@ begin
     have h_coeff_m' := h_m'.1,
     have h_m_m' := h_m'.2,
     clear h_m',
-    have x := h_h.2 m' h_coeff_m' i,
+    have x0 := h_h.2 i,
+    rw ← eee' at x0,
+    have x := x0 m' h_coeff_m',
     rw ← h_m_m' at h_m_i,
     simp only [pi.add_apply, not_lt, coe_add] at h_m_i,
     simp only [single] at h_m_i,
@@ -301,27 +325,9 @@ begin
   have x' := add_le_add_right x (S i).card,
   rw max_add at x',
   exact x'.trans (max_le_le y z),
-  intros m hm j,
-  have hh_fm := hh_f.2 m,
-  have hC_am := hhC_a.2 m,
-  clear hh_f hhC_a,
-  -- we now use support_add and our hypotheses
-  have comp := h_add_weak_aux_comp S (monomial a b) f h_Ca h_f,
-  simp at comp,
-  have hm' : m ∈ ((monomial a b - (∑ (i : fin n), h_Ca i * (∏ (s : F) in S i, (X i - C s))))
-    + (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s))))).support,
-  { rw ← comp,
-    exact hm },
-  have t := support_add hm',
-  -- can we use rcases or something else here?
-  by_cases c : m ∈  (monomial a b - (∑ (i : fin n),
-   h_Ca i * (∏ (s : F) in S i, (X i - C s)))).support,
-  { exact hC_am c j },
-  have c' : m ∈ (f - (∑ (i : fin n), h_f i * (∏ (s : F) in S i, (X i - C s)))).support,
-  { rw finset.mem_union at t,
-    exact right_of_not_of_or c t,
-  },
-  exact hh_fm c' j,
+  intro j,
+  rw [ h_add_weak_aux_comp S (single a b) f h_Ca h_f],
+  exact lt_of_le_of_lt (degree_of_add_le j _ _) (max_lt (hhC_a.2 j) (hh_f.2 j)),
 end
 
 lemma reduce_degree { n : ℕ } {F : Type u} [field F]
@@ -329,8 +335,8 @@ lemma reduce_degree { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F) :
   ∃ h : fin n → mv_polynomial (fin n) F,
   (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ( ∀ m : fin n →₀ ℕ, m ∈ (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))).support → 
-      ∀ j : fin n, m j < (S j).card) := 
+  ∧ ∀ j : fin n, 
+  degree_of j (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))) < (S j).card := 
 begin
   have h : M f,
   { apply induction_on'' f,
@@ -339,19 +345,6 @@ begin
     apply h_X S hS },
   rw M at h, rw M' at h,
   exact h,
-end
-
-
-lemma reduce_degree' { n : ℕ } {F : Type u} [field F]
-  (S : fin n → finset F) (hS : ∀ i : fin n, 0 < (S i).card)
-  (f : mv_polynomial (fin n) F) :
-  ∃ h : fin n → mv_polynomial (fin n) F,
-  (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ∀ j : fin n, 
-  degree_of j (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))) < (S j).card := 
-begin
-  -- usar reduce_degree o reescribir la demo y dejar esta version solamente
-  sorry
 end
 
 end mv_polynomial

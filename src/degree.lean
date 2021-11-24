@@ -20,8 +20,22 @@ open_locale big_operators
 
 namespace mv_polynomial 
 
-/- Todo esto se puede hacer con mas generalidad! -/
+lemma degree_of_C {σ : Type*} {R : Type*} [comm_semiring R] (a : R) (x : σ): 
+  degree_of x (C a : mv_polynomial σ R) = 0 := 
+begin
+  rw degree_of,
+  rw degrees_C,
+  simp,
+end
 
+lemma degree_of_add_le {σ : Type*} {R : Type*} [comm_semiring R] 
+ (x : σ) (f g : mv_polynomial σ R): 
+ degree_of x (f + g) ≤ max (degree_of x f) (degree_of x g) := 
+begin
+  sorry
+end
+
+/- Todo esto se puede hacer con mas generalidad! -/
 
 def max : multiset ℕ  → ℕ :=
 multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0

@@ -59,7 +59,7 @@ begin
     apply nat.sub_add_cancel,
     have hSi := hS i,
     linarith },
-  have exists_h := reduce_degree' S hS f,
+  have exists_h := reduce_degree S hS f,
   cases exists_h with h h_h,
   use h,
   apply and.intro,
