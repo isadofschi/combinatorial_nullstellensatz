@@ -8,10 +8,14 @@ import algebra.algebra.basic
 Sandwich (this is probably on mathlib!)
 -/
 lemma sandwich {a b : ℕ} (h : a < b) (h' : b ≤ a + 1) : b = a + 1 :=
-begin
+begin -- add_lt_add_right
   sorry
 end
 
+lemma sandwich' {a b : ℕ} (h : a ≤ b) (h' : b < a + 1) : a = b :=
+begin
+  sorry
+end
 /-
 
 Lemmas for logic
@@ -95,7 +99,7 @@ lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p q : mv_polynomial (fin n) R): 
 (p - q).support ⊆ p.support ∪ q.support := sorry
 
-lemma support_mul' {R : Type*}[comm_ring R]{n : ℕ}
+lemma support_mul' {R : Type*}[comm_ring R]
  {f g : mv_polynomial σ R}{m : σ →₀ ℕ}(m ∈ (f * g).support):
  ∃ m' m'', m' ∈ f.support ∧ m'' ∈ g.support ∧ m = m' + m'' :=
 begin
