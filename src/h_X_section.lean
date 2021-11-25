@@ -32,23 +32,29 @@ open set function finsupp add_monoid_algebra
 
 open_locale big_operators
 
-namespace hX 
+section mv_polynomial
 open set function finsupp add_monoid_algebra mv_polynomial
-
 
 /-
   M' is a workaround for a "cannot sinthetize placeholder context error". How should I do this?
 -/
-private def M'  (n : ℕ ) (F : Type u) [field F] (S : fin n → finset F)
+def M'  (n : ℕ ) (F : Type u) [field F] (S : fin n → finset F)
 (hS : ∀ i : fin n, 0 < (S i).card)
 : mv_polynomial (fin n) F → Prop :=
   λ f, ∃ h : fin n → mv_polynomial (fin n) F,
  (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
   ∧ ∀ j : fin n, degree_of j (f - (∑ i : fin n, h i * ∏ s in S i, (X i - C s))) < (S j).card
 
-private def M { n : ℕ } {F : Type u} [field F]{S : fin n → finset F}
+def M { n : ℕ } {F : Type u} [field F]{S : fin n → finset F}
   {hS : ∀ i : fin n, 0 < (S i).card} 
   : mv_polynomial (fin n) F → Prop := λ f, M' n F S hS f
+
+end mv_polynomial
+
+namespace hX 
+open set function finsupp add_monoid_algebra mv_polynomial
+
+
 
 noncomputable theory
 
