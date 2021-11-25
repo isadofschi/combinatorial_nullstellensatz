@@ -15,7 +15,14 @@ import assorted_lemmas
 
 ## Main results
 
-- `reduce_degree`: corresponds to the following paragraph in the proof of Theorem 1.1 in Alon's
+- `reduce_degree`: Let F be a field and Sᵢ be finite nonempty subsets of $F$,
+   defined for i ∈ {0, … , n - 1}. Let f ∈ F[x₀, … x_₁]. Let gᵢ = ∏ (xᵢ - s)
+   where the product is taken over s ∈ Sᵢ.Then there are polynomials 
+   hᵢ ∈ F[x₀, … x_₁] such that:
+   (i) For each i, either hᵢ = 0 or deg hᵢ + |Sᵢ| ≤ deg f.
+  (ii) For each j, the degⱼ (f - ∑ᵢ hᵢ gᵢ) < |Sⱼ|.
+
+This corresponds to the following paragraph in the proof of Theorem 1.1 in Alon's
 "Combinatorial Nullstellensatz" paper:
 'Let \bar{f} be the polynomial obtained by writing f as a linear combination of monomials and replacing,
 repeatedly, each occurrence of x ^ f_i (for 1 ≤ i ≤ n), where f_i > t_i, by a linear combination 
