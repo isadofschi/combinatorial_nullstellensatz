@@ -188,6 +188,10 @@ begin
   sorry
 end
 
+lemma lemita7 { n : ℕ } {F : Type u} [field F] {S : finset F} {i: fin n}
+  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) : m i ≤ S.card
+:= sorry
+
 
 lemma eval_is_zero { n : ℕ } {F : Type u} [field F]
   (S : finset F)

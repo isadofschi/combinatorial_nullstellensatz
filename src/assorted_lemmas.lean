@@ -107,6 +107,37 @@ open_locale big_operators
 variable {R : Type*}
 variables {σ : Type*} 
 
+universe u
+
+lemma eee { n : ℕ } {F : Type u} [field F] 
+(j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
+f.support.sup (λ m , m j) = degree_of j f :=
+begin
+  sorry
+end
+
+/- casi como finset.sup_le_iff pero es con < en vez de ≤ -/
+lemma aux { a : Type u } (s : finset a) (f : a → ℕ) (d : ℕ) :
+(∀ x, x ∈ s → f x < d ) ↔ s.sup f < d :=
+begin
+  sorry
+end
+
+lemma eee' { n : ℕ } {F : Type u} [field F] 
+{j : fin n} {f : mv_polynomial (fin n) F} {d : ℕ}:
+(∀ m : fin n →₀ ℕ, m ∈ f.support → m j < d)
+↔ degree_of j f < d :=
+begin
+  rw ← eee j f d,
+  rw aux,
+end
+
+
+
+lemma mem_support_iff_nonzero_coeff [comm_semiring R]
+(p : mv_polynomial σ R) (m : σ →₀ ℕ): 
+m ∈ p.support ↔ coeff m p ≠ 0 := sorry
+
 lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p q : mv_polynomial (fin n) R): 
 (p - q).support ⊆ p.support ∪ q.support := sorry

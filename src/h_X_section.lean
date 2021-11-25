@@ -36,39 +36,6 @@ namespace hX
 open set function finsupp add_monoid_algebra mv_polynomial
 
 
-
-
-
-lemma eee { n : ℕ } {F : Type u} [field F] 
-(j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
-f.support.sup (λ m , m j) = degree_of j f :=
-begin
-  sorry
-end
-
-/- casi como finset.sup_le_iff pero es con < en vez de ≤ -/
-lemma aux { a : Type u } (s : finset a) (f : a → ℕ) (d : ℕ) :
-(∀ x, x ∈ s → f x < d ) ↔ s.sup f < d :=
-begin
-  sorry
-end
-
-lemma eee' { n : ℕ } {F : Type u} [field F] 
-{j : fin n} {f : mv_polynomial (fin n) F} {d : ℕ}:
-(∀ m : fin n →₀ ℕ, m ∈ f.support → m j < d)
-↔ degree_of j f < d :=
-begin
-  rw ← eee j f d,
-  rw aux,
-end
-
-
-
-
-
-
-
-
 /-
   M' is a workaround for a "cannot sinthetize placeholder context error". How should I do this?
 -/
@@ -130,6 +97,14 @@ def q: mv_polynomial (fin n) F :=
 def h1: fin n → mv_polynomial (fin n) F :=
    λ (i : fin n), ite (i = j) (h j * X j - (@q n F _ S j p h)) (h i * X j)
 #check @h1 n F _ S j p h
+
+lemma prop_ms (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  m j = (S j).card := sorry
+#check @prop_ms n F _ S j p h
+
+lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
+  ∃ m1 : (fin n →₀ ℕ),
+   m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := sorry
+#check @exists_m1 n F _ S j p h
 
 lemma comp_1:  p * X j - ∑ (i : fin n), (@h1 n F _ S j p h) i * (@g n F _ S) i = (@f n F _ S j p h
 ) - (@q n F _ S j p h) *  (@g n F _ S) j
@@ -204,24 +179,19 @@ begin
   have h_mi_eq_mi'_add_mi'' : m i = m' i + m'' i,
   { rw h_m_eq_m'_add_m'',
     refl },
-  --since m' ∈ q.support we have:
-  have exists_m1 : exists m1 : fin n →₀ ℕ, m1 ∈ ms ∧ m' = m1 - (single j (S j).card),
-  { rw q at h_m'_in_supp_q,
-    --simp [ms] at h_m'_in_supp_q,
-    sorry,
-  },
+  have exists_m1 := (@exists_m1 n F _ S j p h m') h_m'_in_supp_q,
   cases exists_m1 with m1 h0m1,
   cases h0m1 with h_m1 h_m'_m1,
   by_cases c_i_eq_j : j = i,
   { have h_m_in_ms : m ∈ ms,
-    { have x : m'' j ≤ (S j).card, sorry, -- by h_m''_in_supp_gj 
+    { have x : m'' j ≤ (S j).card := mv_polynomial.lemita7 h_m''_in_supp_gj,
       rw ← c_i_eq_j at h_S,
       rw ← c_i_eq_j at h_mi_eq_mi'_add_mi'',
       have h_m'_m1_j : m' j = m1 j - (S j).card,
       { rw h_m'_m1,
         simp only [single_eq_same, coe_tsub, pi.sub_apply] },
       have h_S' := add_le_add_left h_S (m' j),
-      have m1_j : m1 j = (S j).card, sorry, -- use h_m1
+      have m1_j : m1 j = (S j).card := prop_ms m1 h_m1,
       have m'_j_eq_0 : m' j = 0,
       { rw h_m'_m1_j,
         exact nat.sub_eq_zero_of_le (le_of_eq m1_j) },
@@ -231,7 +201,10 @@ begin
         rw zero_add,
         exact x },
       have h' : m j = (S j).card := eq_of_le_of_le h h_S,
-      have x' : m'' j = (S j).card, sorry,
+      have x' : m'' j = (S j).card, {
+        rw ←  h',
+        rw h_m_eq_m'_add_m'',
+        simpa using m'_j_eq_0 },
       have h'' : m'' = single j (S j).card := lemita5 h_m''_in_supp_gj x',
       have h_m_eq_m1 : m = m1,
       { rw [h_m_eq_m'_add_m'', h_m'_m1, h''],
@@ -259,7 +232,7 @@ begin
     have x := h_h.2 i,
     have x' := degree_of_mul_X_ne (p - ∑ (i : fin n), h i * g i) c_i_eq_j',
     rw ← x' at x, clear x',
-    apply eee'.2 x m1,
+    apply mv_polynomial.eee'.2 x m1,
     simp,
     simp [ms] at h_m1,
     exact h_m1.1 },
