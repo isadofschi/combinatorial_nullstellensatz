@@ -167,11 +167,27 @@ begin
   sorry,
 end
 
+-- t sobra!
 lemma lemita4 { n : ℕ } {F : Type u} [field F] (S : finset F) (t : fin n →₀ ℕ ) (i : fin n) :
   total_degree (∏ s in S, (X i - C s)) = S.card :=
 begin
   sorry
 end
+
+lemma lemita5 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n}
+  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support)
+  (h_m_i : m i = S.card) : m = single i S.card :=
+begin
+  sorry
+end
+
+lemma lemita6 { n : ℕ } {F : Type u} [field F] {S : finset F} {i j: fin n}
+  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) 
+  (h : i ≠ j) : m j = 0 :=
+begin
+  sorry
+end
+
 
 lemma eval_is_zero { n : ℕ } {F : Type u} [field F]
   (S : finset F)

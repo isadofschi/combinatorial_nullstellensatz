@@ -3,6 +3,14 @@ import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
 import algebra.algebra.basic
 
+section ne_symm
+universe u
+
+variables {α : Type u} 
+
+lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := sorry
+
+end ne_symm
 
 /-
 Sandwich (this is probably on mathlib!)
@@ -16,6 +24,10 @@ lemma sandwich' {a b : ℕ} (h : a ≤ b) (h' : b < a + 1) : a = b :=
 begin
   sorry
 end
+
+lemma eq_of_le_of_le {a b :ℕ } (h : a ≤ b)(h' : b ≤ a) : a = b :=
+sorry
+
 /-
 
 Lemmas for logic
