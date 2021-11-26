@@ -48,4 +48,24 @@ begin
   sorry,
 end
 
+
+lemma eq_zero_iff_every_coeff_zero_strong {R : Type u} [comm_ring R](p : polynomial R)
+: (∀ i:ℕ, i ≤ polynomial.nat_degree p → polynomial.coeff p i = 0) ↔ p = 0 :=
+begin
+  apply iff.intro,
+  intro h,
+  ext,
+  rw h n,
+  simp,
+  sorry,
+  intros h i h',
+  rw h,
+  simp,
+end
+
+lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
+begin
+  simp only [fin.mk_eq_subtype_mk, fin.coe_of_nat_eq_mod, fin.coe_mk],
+end
+
 end mv_polynomial

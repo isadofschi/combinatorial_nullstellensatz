@@ -111,6 +111,12 @@ begin
   sorry
 end
 
+lemma total_degree_sum {σ : Type*} {R : Type*} [comm_semiring R]
+(s : finset α) (p : α → mv_polynomial σ R) :
+total_degree (∑ i : α in s, p i) ≤ s.sup (λ i , total_degree(p i))
+:= sorry
+
+
 /-
 -- seria mejor usar esta definicion:
 def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
@@ -167,8 +173,7 @@ begin
   sorry,
 end
 
--- t sobra!
-lemma lemita4 { n : ℕ } {F : Type u} [field F] (S : finset F) (t : fin n →₀ ℕ ) (i : fin n) :
+lemma lemita4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
   total_degree (∏ s in S, (X i - C s)) = S.card :=
 begin
   sorry

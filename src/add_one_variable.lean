@@ -6,6 +6,9 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 
+import assorted_lemmas 
+-- only le_of_val_subset, mod_succ_self_eq_self
+
 universes u v
 
 variables {α : Type v}
@@ -14,10 +17,6 @@ open_locale big_operators
 
 namespace mv_polynomial
 
-lemma mod_succ (n :ℕ) : n % n.succ = n :=
-begin
-  sorry
-end
 
 -- Restriction and extension between fin n and fin (n+1)
 
@@ -38,7 +37,7 @@ private def ext1_eq_n {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) :
 ext1 s' y n = y := begin
   rw ext1,
   have h : ¬ (n % n.succ < n),
-  { rw mod_succ n,
+  { rw mod_succ_self_eq_self n,
     linarith },
   simp only [fin.coe_of_nat_eq_mod, fin.mk_eq_subtype_mk, h, fin.coe_of_nat_eq_mod, dif_neg, not_false_iff],
 end
@@ -84,21 +83,20 @@ end
 lemma support_f_i {n : ℕ} {R : Type u} [comm_ring R]
 (f : mv_polynomial (fin (n+1)) R) (i : ℕ) 
 {t' : fin n →₀ ℕ }
-(h_t' : t'∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
+(h_t' : t' ∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
 (extfin t' i) ∈ f.support :=
 begin
   sorry,
 end
 
-lemma nat_degree_eval_eq_nat_degree {n : ℕ} {R : Type u} [comm_ring R]
-(s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) (i : ℕ):
-polynomial.nat_degree (polynomial.map (eval s') f) =  polynomial.nat_degree f
+lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_ring R]
+(s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) :
+polynomial.nat_degree (polynomial.map (eval s') f) ≤ polynomial.nat_degree f
 :=
 begin
   sorry,
 end
 
-/- supongo que es mas prolijo usar esta en vez de la siguiente -/
 lemma nat_degree_fin_suc_equiv {n : ℕ} {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F) : 
   (fin_succ_equiv F n f).nat_degree = degree_of ↑n f :=
@@ -113,8 +111,6 @@ begin
   sorry
 end
 
-
-
 lemma nat_degree_le_t { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F)
   (d : ℕ)
@@ -125,36 +121,34 @@ begin
 end
 
 lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_ring R](p : polynomial R)
-: (∀ i:ℕ, i ≤ polynomial.nat_degree p → polynomial.coeff p i = 0) ↔ p = 0 :=
+: (∀ i:ℕ, polynomial.coeff p i = 0) ↔ p = 0 :=
 begin
-  sorry,
+  apply iff.intro,
+  intro h,
+  ext,
+  rw h n,
+  simp only [polynomial.coeff_zero],
+  intros h i,
+  rw h,
+  simp,
 end
 
 theorem number_zeroes_field {F : Type u} [field F]{p : polynomial F}(h : p ≠ 0)
 (Z : finset F ) (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
 begin
-  let t := polynomial.card_roots' h,
+  have h0 : Z.val ⊆ p.roots,
+  { rw multiset.subset_iff,
+    intros x hx,
+    let z := hZ x hx,
+    rw polynomial.mem_roots h,
+    exact z },
   have h1 : Z.card ≤ p.roots.card,
   { rw finset.card,
     apply multiset.card_le_of_le,
-     sorry,
+    exact le_of_val_subset h0,
   },
-  exact h1.trans t,
+  exact h1.trans (polynomial.card_roots' h),
 end
-
-lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
-begin
-  simp only [fin.mk_eq_subtype_mk, fin.coe_of_nat_eq_mod, fin.coe_mk],
-end
-
-/-
-unused :D
-lemma cannot_find_this' { m: ℕ }{n : fin m} (h : ↑n < m): n = (fin.mk ↑n h) :=
-begin
-  sorry
-end
--/
-
 
 /- Lemma 2.1 in Alon's paper. -/
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
@@ -194,18 +188,12 @@ begin
       linarith,
     },
     have h : i = fin.mk n hnn1,
-    { simp,
-      ext,
-      rw c',
-      exact cannot_find_this hnn1 },
+    { apply fin.eq_of_veq,
+      exact c' },
     rw h,
     simp only [fin.mk_eq_subtype_mk],
     have x:= ext1_eq_n s' y,
-    have x1 : ↑n = fin.mk n hnn1,
-    { simp only [fin.mk_eq_subtype_mk],
-      ext,
-      simp only [fin.coe_of_nat_eq_mod, fin.coe_mk],
-      rw mod_succ n},
+    have x1 := coe_eq_mk hnn1,
     rw x1 at x,
     simp only [fin.mk_eq_subtype_mk] at x,
     rw x,
@@ -222,36 +210,31 @@ begin
     let t1 := number_zeroes_field c (S n) (h00 _ _),
     have uu : (polynomial.map (eval s') ((fin_succ_equiv F n) f)).nat_degree ≤ t n,
     { have x := nat_degree_fin_suc_equiv f,
-      rw ← nat_degree_eval_eq_nat_degree at x,
+      have x' := nat_degree_eval_le_nat_degree s' (fin_succ_equiv F n f),
+      rw x at x',
       have y := ht n,
-      rw x,
-      exact y,
-      exact n },
+      exact x'.trans y },
     let cc1 := lt_of_le_of_lt (t1.trans uu) (hS n),
     simpa using cc1,
     exact hs' },
-  have h_f_s'_i_eq_0 :  ∀ i : ℕ, i ≤ d →  
+  have h_f_s'_i_eq_0 :  ∀ i : ℕ,
     ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) →
      polynomial.coeff (polynomial.map (eval s') ((fin_succ_equiv F n) f)) i = 0,
-  { intros i i_le_d s' hs',
+  { intros i  s' hs',
       let p :=  h_f_s'_eq_0 s' hs',
       let t:= eq_zero_iff_every_coeff_zero (polynomial.map (eval s') ((fin_succ_equiv F n) f)),
       let tev := t.2 p i,
-      rw tev,
-      clear tev t p,
-      rw nat_degree_eval_eq_nat_degree s' ((fin_succ_equiv F n) f),
-      exact i_le_d,
-      exact n },
-  have h_f_s'_i_eq_0' :  ∀ i : ℕ, i ≤ d →  
+      rw tev },
+  have h_f_s'_i_eq_0' :  ∀ i : ℕ, 
     ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) →
      eval s' (polynomial.coeff ((fin_succ_equiv F n) f) i) = 0,
-  { intros i i_le_d s' hs',
+  { intros i s' hs',
     rw ← coeff_eval_eq_eval_coeff,
-    exact  h_f_s'_i_eq_0 i i_le_d s' hs' },
-  have h11 : ∀ i : ℕ, i ≤ d → polynomial.coeff ((fin_succ_equiv F n) f) i = 0,
-  { intros i i_le_d,
+    exact  h_f_s'_i_eq_0 i s' hs' },
+  have h11 : ∀ i : ℕ, polynomial.coeff ((fin_succ_equiv F n) f) i = 0,
+  { intros i,
     --let f_i := polynomial.coeff ((fin_succ_equiv F n) f) i,
-    have coso := h_f_s'_i_eq_0' i i_le_d,
+    have coso := h_f_s'_i_eq_0' i,
     have x := hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (resfin t) _ _ _ coso, 
     exact x,
     intro j,

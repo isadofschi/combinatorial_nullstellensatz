@@ -129,24 +129,59 @@ def h1: fin n → mv_polynomial (fin n) F :=
    λ (i : fin n), ite (i = j) (h j * X j - (@q n F _ S j p h)) (h i * X j)
 #check @h1 n F _ S j p h
 
-lemma prop_ms (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  m j = (S j).card := sorry
+lemma prop_ms (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  m j = (S j).card := 
+begin
+  intro h_m,
+  simp at h_m,
+  exact h_m.2,
+end
 #check @prop_ms n F _ S j p h
 
 lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
   ∃ m1 : (fin n →₀ ℕ),
-   m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := sorry
+   m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := 
+begin
+  rw q at h_m,
+  simp at h_m,
+  --rw coeff at h_m,
+  sorry
+end
 #check @exists_m1 n F _ S j p h
 
+include h_h
 lemma comp_1:  p * X j - ∑ (i : fin n), (@h1 n F _ S j p h) i * (@g n F _ S) i = (@f n F _ S j p h
 ) - (@q n F _ S j p h) *  (@g n F _ S) j
 :=
 begin
+  rw h1,
+  ext,
+  rw coeff_sub,
+  rw coeff_sub,
+  rw coeff_sum,
+  rw coeff_mul_X',
+  rw coeff_mul_X',
+  --rw q,
+  by_cases c_j_m : j ∈ m.support,
+  { simp [if_pos, c_j_m],
+    rw sub_sub,
+    congr,
+    rw coeff_sum,
+    sorry,
+  },
+  simp [if_neg, c_j_m],
+  
   sorry
 end
+omit h_h
 #check @comp_1 n F _ S j p h
 
 lemma comp_2 : ∀ m, m ∈ (@ms  n F _ S j p h) → coeff m (@f n F _ S j p h) = coeff m ((@q n F _ S j p h) * (@g n F _ S) j)
 :=begin
+  intros m' hm',
+  --rw ← sub_eq_zero,
+  --rw ←  coeff_sub,
+  rw q,
+  
   sorry
 end
 #check @comp_2 n F _ S j p h
@@ -154,13 +189,33 @@ end
 include h_h
 lemma h_total_degree_f : total_degree (@f n F _ S j p h) ≤ total_degree p + 1 :=
 begin
-  sorry -- use h_h
+  apply (total_degree_mul_X_le p1 j).trans,
+  apply add_le_add_right,
+  let r := ∑ (i : fin n), h i * @g n F _ S i,
+  have t:= total_degree_sub p r,
+  apply t.trans, clear t,
+  by_cases h : p.total_degree ≤ r.total_degree,
+  { rw max_eq_right h,
+    have t := total_degree_sum, -- _ (λ i,  h i * @g n F _ S i),
+    sorry,
+  },
+  rw not_le at h,
+  rw max_eq_left h.le,
 end
 #check @h_total_degree_f n F _ S j p h h_h
 omit h_h
 
 lemma h_total_degree_q : total_degree (@q n F _ S j p h) + (S j).card ≤  total_degree p + 1 :=
 begin
+  rw q,
+  have t:= total_degree_sum ms (λm , (monomial (m - single j (S j).card)) (coeff m f) ),
+  have t' := add_le_add_right t (S j).card,
+  clear t,
+  apply t'.trans ,
+  clear t',
+  
+  --have ∀ m, 
+  --rw total_degree_sum,
   -- use total_degree_sum, h_total_degree_f and the fact that
   -- each monomial m in the definition of q is in the support of f.
   sorry
@@ -264,8 +319,9 @@ begin
     have x' := degree_of_mul_X_ne (p - ∑ (i : fin n), h i * g i) c_i_eq_j',
     rw ← x' at x, clear x',
     apply mv_polynomial.eee'.2 x m1,
-    simp,
-    simp [ms] at h_m1,
+    simp only [exists_prop, add_right_embedding_apply, finset.mem_map, support_mul_X, mem_support_iff, ne.def, coeff_sub],
+    simp only [exists_prop, add_right_embedding_apply, finset.mem_map, support_mul_X, mem_support_iff, ne.def, finset.mem_filter,
+  coeff_sub] at h_m1,
     exact h_m1.1 },
   exfalso,
   linarith,
@@ -337,7 +393,7 @@ begin
   have H_g : ∀ i (m : (fin n) →₀ ℕ),
     m ∈ (q * g j).support → ((S i).card ≤ m i) → coeff m f = coeff m (q * g j)
     := @H_g n F _ S j p h h_h,
-  rw @comp_1 n F _ S j p h,
+  rw @comp_1 n F _ S j p h h_h,
   exact degree_of_sub_aux i f (q * g j) (S i).card (H_f i) (H_g i),
 end
 omit h_h
@@ -446,7 +502,7 @@ begin
     right_of_not_of_or h_f0 (hh_f.1 i),
   have x' := add_le_add_right x (S i).card,
   rw max_add at x',
-  exact x'.trans (max_le_le y z),
+  exact x'.trans (max_le_max y z),
   intro j,
   rw [ h_add_weak_aux_comp S (single a b) f h_Ca h_f],
   exact lt_of_le_of_lt (degree_of_add_le j _ _) (max_lt (hhC_a.2 j) (hh_f.2 j)),

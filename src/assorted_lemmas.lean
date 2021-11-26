@@ -8,6 +8,59 @@ universe u
 
 variables {α : Type u} 
 
+/-
+Natural numbers and fin
+-/
+
+lemma mod_succ_self_eq_self (n : ℕ) : n % n.succ = n :=
+begin
+  apply nat.mod_eq_of_lt,
+  apply nat.lt_succ_self,
+end
+
+lemma coe_eq_mk {n : ℕ }(h : n < n+1): ↑n = fin.mk n h :=
+begin
+  apply fin.eq_of_veq,
+  simp,
+  exact mod_succ_self_eq_self n
+end
+
+/-
+Finsets and multisets
+-/
+
+/- these would be useful to have (assuming not already on mathlib!)-/
+lemma one_le_count_of_mem 
+{α : Type u} [decidable_eq α ]{x :α}
+{a : multiset α} (h : x ∈ a) : 1 ≤ a.count x := 
+begin
+  have t := multiset.count_le_of_le x ( multiset.singleton_le.2 h),
+  simp only [multiset.count_singleton, if_pos] at t,
+  exact t,
+end
+
+lemma le_of_subset_of_nodup 
+{α : Type u} [decidable_eq α ]
+{a b : multiset α} (h : a ⊆ b) (h' : a.nodup) : a ≤ b 
+:=
+begin
+  apply multiset.le_iff_count.2,
+  intro x,
+  by_cases c : x ∈ a,
+  { rw multiset.count_eq_one_of_mem h' c,
+    exact one_le_count_of_mem (multiset.mem_of_subset h c) },
+  rw multiset.count_eq_zero_of_not_mem c,
+  simp,
+end
+
+lemma le_of_val_subset
+{α : Type u} [decidable_eq α]
+{a : finset α} {b : multiset α} (h : a.val ⊆ b) : a.val ≤ b := 
+begin 
+  exact le_of_subset_of_nodup h a.2,
+end
+
+
 lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := sorry
 
 end ne_symm
@@ -50,6 +103,7 @@ universe u
 
 variables {α : Type u} [linear_order α]
 
+/-
 lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ max b d := begin
   by_cases h : a ≤ c,
   { rw max_eq_right h,
@@ -59,6 +113,7 @@ lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ m
   rw max_eq_left h.le,
   exact h₁.trans (le_max_left b d),
 end
+-/
 
 lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
 begin

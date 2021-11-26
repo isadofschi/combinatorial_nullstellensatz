@@ -146,8 +146,7 @@ begin
           },
           cc },
         have r := h_deg_h i,
-        cc,
-        exact t },
+        cc },
       by_cases c : monomial_degree t > total_degree (h i * ∏ (s : F) in S i, (X i - C s)),
       { exact coeff_zero_of_degree_greater_than_total_degree t _ c },
       have c' : monomial_degree t = total_degree (h i * ∏ (s : F) in S i, (X i - C s)) :=
