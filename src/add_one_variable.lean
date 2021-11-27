@@ -6,9 +6,6 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 
-import assorted_lemmas 
--- only le_of_val_subset, mod_succ_self_eq_self
-
 universes u v
 
 variables {α : Type v}
@@ -17,52 +14,132 @@ open_locale big_operators
 
 namespace mv_polynomial
 
+/-
+Natural numbers and fin
+-/
 
--- Restriction and extension between fin n and fin (n+1)
+lemma mod_succ_self_eq_self (n : ℕ) : n % n.succ = n :=
+begin
+  apply nat.mod_eq_of_lt,
+  apply nat.lt_succ_self,
+end
+
+lemma coe_eq_mk {n : ℕ }(h : n < n+1): ↑n = fin.mk n h :=
+begin
+  apply fin.eq_of_veq,
+  simp,
+  exact mod_succ_self_eq_self n
+end
+
+/-
+Finsets and multisets
+-/
+
+/- these would be useful to have (assuming not already on mathlib!)-/
+lemma one_le_count_of_mem 
+{α : Type u} [decidable_eq α ]{x :α}
+{a : multiset α} (h : x ∈ a) : 1 ≤ a.count x := 
+begin
+  have t := multiset.count_le_of_le x ( multiset.singleton_le.2 h),
+  simp only [multiset.count_singleton, if_pos] at t,
+  exact t,
+end
+
+lemma le_of_subset_of_nodup 
+{α : Type u} [decidable_eq α ]
+{a b : multiset α} (h : a ⊆ b) (h' : a.nodup) : a ≤ b 
+:=
+begin
+  apply multiset.le_iff_count.2,
+  intro x,
+  by_cases c : x ∈ a,
+  { rw multiset.count_eq_one_of_mem h' c,
+    exact one_le_count_of_mem (multiset.mem_of_subset h c) },
+  rw multiset.count_eq_zero_of_not_mem c,
+  simp,
+end
+
+lemma le_of_val_subset
+{α : Type u} [decidable_eq α]
+{a : finset α} {b : multiset α} (h : a.val ⊆ b) : a.val ≤ b := 
+begin 
+  exact le_of_subset_of_nodup h a.2,
+end
+
+/-
+
+  init and snoc for maps fin n → R and fin n →₀ M
+
+-/ 
 
 local attribute [instance] classical.prop_decidable --esta permitido usar esto?
 
-private def res {n: ℕ }{R : Type*} (s : fin (n+1) → R) : fin n → R := λ i , s i
+private def point.snoc {n:ℕ}{α: Type*}(s' : fin n → α)(y : α) : fin (n+1) → α := 
+fin.snoc s' y
 
-private lemma res_eq {n :ℕ} {R :Type*}(s : fin (n+1) → R): ∀ (i : fin n), s i = res s i :=
+private def ext1_eq_n {n:ℕ}{α: Type*}(s' : fin n → α)(y : α) : 
+point.snoc s' y n = y :=
+begin
+  rw point.snoc,
+  rw fin.snoc,
+  have h : ¬ (n: fin (n+1)).val < n,
+  { simp only [fin.val_eq_coe, not_lt, fin.coe_of_nat_eq_mod],
+    rw mod_succ_self_eq_self },
+  simp only [ fin.coe_of_nat_eq_mod, fin.mk_eq_subtype_mk, h, fin.coe_of_nat_eq_mod, dif_neg,
+              not_false_iff, cast_eq],
+end
+
+def ext1_eq_le_n {n:ℕ}{α: Type*}{i : fin(n+1)}
+(s' : fin n → α)(y : α)(h : ↑i < n) : 
+point.snoc s' y i = s' (fin.mk i h) :=
+begin
+  rw point.snoc,
+  rw fin.snoc,
+  simp only [fin.mk_eq_subtype_mk, cast_eq, fin.val_eq_coe, h, dif_pos ],
+  congr,
+end
+
+noncomputable def fin.support
+{M : Type*} [has_zero M] {n : ℕ} (f : fin n → M) : finset (fin n) :=
+(finset.fin_range n).filter (λ i, f i ≠ 0)
+
+lemma fin.mem_support_to_fun 
+{M : Type*} [has_zero M] {n : ℕ} (f : fin n → M)
+: ∀ a, a ∈ fin.support f ↔ f a ≠ 0 := begin
+intro a,
+rw fin.support,
+simp,
+end
+
+noncomputable def fin.to_finsupp
+{M : Type*} [has_zero M] {n:ℕ } (f : fin n → M ) : fin n →₀ M :=
+⟨ fin.support f , f, fin.mem_support_to_fun f ⟩
+
+
+noncomputable def resfin {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ 
+:= fin.to_finsupp (fin.init s.to_fun)
+
+noncomputable def extfin {n:ℕ}(s' : fin n →₀  ℕ) (y : ℕ) : fin (n+1) →₀ ℕ := 
+fin.to_finsupp (fin.snoc s'.to_fun y)
+
+lemma resfin_eq {n :ℕ} (s : fin (n+1) →₀ ℕ): ∀ (i : fin n), s i = resfin s i :=
 begin
   intro i,
-  refl,
+  rw resfin,
+  congr,
+  simp,
 end
 
-private noncomputable def ext1 {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) : fin (n+1) → R := 
-λ i, if h : ↑i < n then s' (fin.mk i h) else y
-
-private def ext1_eq_n {n:ℕ}{R: Type*}(s' : fin n → R)(y : R) : 
-ext1 s' y n = y := begin
-  rw ext1,
-  have h : ¬ (n % n.succ < n),
-  { rw mod_succ_self_eq_self n,
-    linarith },
-  simp only [fin.coe_of_nat_eq_mod, fin.mk_eq_subtype_mk, h, fin.coe_of_nat_eq_mod, dif_neg, not_false_iff],
+lemma extfin_eq_le_n {n:ℕ}(i : fin n) /- unused -/
+(s' : fin n →₀  ℕ)(y : ℕ) : 
+extfin s' y i = s' i := 
+begin 
+  rw extfin,
+  rw fin.to_finsupp,
+  simp only [fin.coe_eq_cast_succ, fin.mk_eq_subtype_mk, fin.eta, fin.snoc_cast_succ, finsupp.coe_mk],
+  rw [coe_fn, finsupp.has_coe_to_fun],
 end
 
-private def ext1_eq_le_n {n:ℕ}{R: Type*}{i : fin(n+1)}(s' : fin n → R)(y : R)(h : ↑i < n) : 
-ext1 s' y i = s' (fin.mk i h) :=
-begin
-  rw ext1,
-  simp only [h, dif_pos],
-end
-
-private def resfin {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ 
-:= sorry -- algo así? finsupp.mk (finset.fin_range n ) (res s)  (by sorry)
-
-private def extfin {n:ℕ}(s' : fin n →₀  ℕ) (y : ℕ) : fin (n+1) →₀ ℕ := sorry
-
-private lemma resfin_eq {n :ℕ} (s : fin (n+1) →₀ ℕ): ∀ (i : fin n), s i = resfin s i :=
-begin
-  intro i,
-  sorry,
-end
-
-private def extfin_eq_le_n {n:ℕ}{i : fin n}
-(s' : fin n →₀  ℕ)(y : ℕ)(h : ↑i < n) : 
-extfin s' y i = s' (fin.mk i h) := sorry 
 
 /-
 
@@ -71,8 +148,8 @@ Lemmas
 -/
 
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_ring R]
-(s' : fin n → R) (y : R): ∀ f : mv_polynomial (fin (n+1)) R, 
- eval (ext1 s' y) f = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
+(s' : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
+ eval (point.snoc s' y  : fin (n+1) → R) f = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
 begin
   sorry,
 end
@@ -145,8 +222,8 @@ begin
   sorry
 end
 
-lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_ring R](p : polynomial R)
-: (∀ i:ℕ, polynomial.coeff p i = 0) ↔ p = 0 :=
+lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_semiring R](p : polynomial R) :
+  (∀ i:ℕ, polynomial.coeff p i = 0) ↔ p = 0 :=
 begin
   apply iff.intro,
   intro h,
@@ -222,7 +299,7 @@ begin
     have r : ↑n = i,
     { apply fin.eq_of_veq,
       simp,
-      rw ← (sandwich' (le_of_not_lt c) i.property),
+      rw nat.eq_of_le_of_lt_succ (le_of_not_lt c) i.property,
       rw mod_succ_self_eq_self },
     rwa [ ← r, ext1_eq_n s' y ] },
   by_contradiction c,

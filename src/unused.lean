@@ -16,6 +16,24 @@ universe u
 
 variable {R : Type*}
 variables {σ : Type*} 
+/-
+Sandwich
+-/
+
+lemma sandwich' {a b : ℕ} (h : a ≤ b) (h' : b < a + 1) : a = b :=
+begin
+  symmetry,
+  exact (nat.eq_of_le_of_lt_succ h h'),
+end
+
+lemma sandwich {a b : ℕ} (h : a < b) (h' : b ≤ a + 1) : b = a + 1 :=
+begin -- add_lt_add_right
+  linarith,
+  --symmetry,
+  --apply nat.eq_of_lt_succ_of_not_lt,
+  --linarith,
+  --rw not_lt, exact h',
+end
 
 
 lemma support_sum {n : ℕ} [comm_semiring R]
