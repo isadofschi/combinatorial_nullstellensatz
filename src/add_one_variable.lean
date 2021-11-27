@@ -64,6 +64,12 @@ private def extfin_eq_le_n {n:ℕ}{i : fin n}
 (s' : fin n →₀  ℕ)(y : ℕ)(h : ↑i < n) : 
 extfin s' y i = s' (fin.mk i h) := sorry 
 
+/-
+
+Lemmas
+
+-/
+
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_ring R]
 (s' : fin n → R) (y : R): ∀ f : mv_polynomial (fin (n+1)) R, 
  eval (ext1 s' y) f = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
@@ -71,7 +77,7 @@ begin
   sorry,
 end
 
-lemma coeff_eval_eq_eval_coeff {n : ℕ} {R : Type u} [comm_ring R]
+lemma coeff_eval_eq_eval_coeff {n : ℕ} {R : Type u} [comm_semiring R]
 (s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) (i : ℕ):
 polynomial.coeff (polynomial.map (eval s') f) i =  eval s' (polynomial.coeff f i) 
 :=
@@ -79,21 +85,49 @@ begin
   simp only [polynomial.coeff_map],
 end
 
-
-lemma support_f_i {n : ℕ} {R : Type u} [comm_ring R]
-(f : mv_polynomial (fin (n+1)) R) (i : ℕ) 
-{t' : fin n →₀ ℕ }
-(h_t' : t' ∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
-(extfin t' i) ∈ f.support :=
+lemma support_eval' {n : ℕ} {R : Type u} [comm_semiring R]
+(s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) (i : ℕ):
+i ∈ (polynomial.map (eval s') f).support → i ∈ f.support :=
 begin
-  sorry,
+  intro hi,
+  simp only [polynomial.mem_support_iff, polynomial.coeff_map, ne.def] at hi,
+  by_contradiction,
+  simp only [polynomial.mem_support_iff, not_not, ne.def] at h,
+  rw h at hi,
+  simpa using hi,
 end
+
+
+lemma support_eval {n : ℕ} {R : Type u} [comm_semiring R]
+(s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)):
+(polynomial.map (eval s') f).support ⊆ f.support :=
+begin
+rw finset.subset_iff,
+intros x hx,
+exact support_eval' s' f x hx,
+end
+
+lemma degree_eval_le_degree {n : ℕ} {R : Type u} [comm_ring R]
+(s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) :
+polynomial.degree (polynomial.map (eval s') f) ≤ polynomial.degree f
+:=
+begin
+  rw polynomial.degree,
+  rw polynomial.degree,
+  rw finset.sup_le_iff,
+  intro b,
+  intro hb,
+  apply finset.le_sup (support_eval' s' f b hb),
+end
+
 
 lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_ring R]
 (s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) :
 polynomial.nat_degree (polynomial.map (eval s') f) ≤ polynomial.nat_degree f
 :=
 begin
+  rw polynomial.nat_degree,
+  rw polynomial.nat_degree,
   sorry,
 end
 
@@ -107,15 +141,6 @@ end
 lemma degree_of_coeff_fin_suc_equiv {n : ℕ} {F : Type u} [field F]
   (f : mv_polynomial (fin (n+1)) F) (j:fin n)(i:ℕ) : 
   degree_of j (polynomial.coeff (fin_succ_equiv F n f) i) ≤ degree_of ↑j f :=
-begin
-  sorry
-end
-
-lemma nat_degree_le_t { n : ℕ } {F : Type u} [field F]
-  (f : mv_polynomial (fin (n+1)) F)
-  (d : ℕ)
-  (h : ∀ t' : fin (n+1) →₀ ℕ, t' ∈ f.support → t' n ≤ d) : 
-  (fin_succ_equiv F n f).nat_degree < d :=
 begin
   sorry
 end
@@ -140,12 +165,10 @@ begin
   { rw multiset.subset_iff,
     intros x hx,
     let z := hZ x hx,
-    rw polynomial.mem_roots h,
-    exact z },
+    rwa polynomial.mem_roots h },
   have h1 : Z.card ≤ p.roots.card,
   { rw finset.card,
-    apply multiset.card_le_of_le,
-    exact le_of_val_subset h0,
+    exact multiset.card_le_of_le (le_of_val_subset h0),
   },
   exact h1.trans (polynomial.card_roots' h),
 end
@@ -196,12 +219,12 @@ begin
       simp only [fin.mk_eq_subtype_mk],
       exact x,
     },
-    have hnueva' : ↑n = i,
+    have r : ↑n = i,
     { apply fin.eq_of_veq,
       simp,
       rw ← (sandwich' (le_of_not_lt c) i.property),
       rw mod_succ_self_eq_self },
-    rwa [ ← hnueva', ext1_eq_n s' y ] },
+    rwa [ ← r, ext1_eq_n s' y ] },
   by_contradiction c,
   let t1 := number_zeroes_field c (S n) (h0 _ _),
   have u : (polynomial.map (eval s) ((fin_succ_equiv F n) f)).nat_degree ≤ t n,

@@ -24,7 +24,8 @@ lemma support_sum {n : ℕ} [comm_semiring R]
 := sorry
 
 /- esta def se usa -/
-private def res {n: ℕ }{R : Type*} (s : fin (n+1) → R) : fin n → R := λ i , s i
+private def extfin {n:ℕ}(s' : fin n →₀  ℕ) (y : ℕ) : fin (n+1) →₀ ℕ := sorry
+--(fin.snoc s' y, sorry)
 
 
 /- Evaluating all the Xi at si is the same as evaluating X(n+1) at s(n+1) and 
@@ -33,9 +34,19 @@ private def res {n: ℕ }{R : Type*} (s : fin (n+1) → R) : fin n → R := λ i
 lemma eval_eq_mv_eval_eval {n : ℕ} {R : Type u} [comm_ring R]
 (s : fin (n+1) → R)
  : ∀ f : mv_polynomial (fin (n+1)) R, 
- eval s f = eval (res s) (polynomial.eval (C( s (n+1))) ((fin_succ_equiv R n) f)) :=
+ eval s f = eval (fin.init s) (polynomial.eval (C( s (n+1))) ((fin_succ_equiv R n) f)) :=
 begin
   sorry
+end
+
+
+lemma support_f_i {n : ℕ} {R : Type u} [comm_ring R]
+(f : mv_polynomial (fin (n+1)) R) (i : ℕ) 
+{t' : fin n →₀ ℕ }
+(h_t' : t' ∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
+(extfin t' i) ∈ f.support :=
+begin
+  sorry,
 end
 
 /- Evaluating all the Xi at si is the same as evaluating X1 ... Xn at s1 ... sn and
@@ -43,7 +54,7 @@ end
 /- We are not using this one but it might be nice to have this in mathlib -/
 lemma eval_eq_eval_mv_eval {n : ℕ} {R : Type u} [comm_ring R]
 (s : fin (n+1) → R) : ∀ f : mv_polynomial (fin (n+1)) R, 
- eval s f = polynomial.eval (s (n+1)) (polynomial.map (eval (res s)) ((fin_succ_equiv R n) f)) :=
+ eval s f = polynomial.eval (s (n+1)) (polynomial.map (eval (fin.init s)) ((fin_succ_equiv R n) f)) :=
 begin
   sorry,
 end
@@ -67,5 +78,15 @@ lemma cannot_find_this {n m: ℕ } (h : n < m): n = ↑(fin.mk n h) :=
 begin
   simp only [fin.mk_eq_subtype_mk, fin.coe_of_nat_eq_mod, fin.coe_mk],
 end
+
+lemma nat_degree_le_t { n : ℕ } {F : Type u} [field F]
+  (f : mv_polynomial (fin (n+1)) F)
+  (d : ℕ)
+  (h : ∀ t' : fin (n+1) →₀ ℕ, t' ∈ f.support → t' n ≤ d) : 
+  (fin_succ_equiv F n f).nat_degree < d :=
+begin
+  sorry
+end
+
 
 end mv_polynomial
