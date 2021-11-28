@@ -16,8 +16,11 @@ import algebra.algebra.basic
 
 ## Main results
 
-- `lemma_2_1`: TODO
+- `lemma_2_1`: Let F be a field and f ∈ F[x₀,…,xₙ]. Suppose that for 0 ≤ i ≤ n,
+  the degree of f in xᵢ is at most tᵢ. Let S₀,…,Sₙ ⊆ F be subsets such that tᵢ < |Sᵢ|.
+  Suppose that f(s₀,…,sₙ) = 0 for each (s₀,…,sₙ) ∈ S₀ × … × Sₙ. Then f = 0.
 
+  This is Lemma 2.1 in Alon's paper "Combinatorial Nullstellensatz".
 -/
 
 universes u v
@@ -157,9 +160,42 @@ end
 
 /-
 
-Lemmas
+More lemmas
 
 -/
+lemma fin_succ_equiv_add {n : ℕ} {R : Type u} [comm_semiring R] 
+(f g : mv_polynomial (fin (n+1)) R) :
+  fin_succ_equiv R n (f + g) = fin_succ_equiv R n f + fin_succ_equiv R n g :=
+begin
+  simp
+end
+
+lemma fin_succ_equiv_mul {n : ℕ} {R : Type u} [comm_semiring R] 
+(f g : mv_polynomial (fin (n+1)) R) :
+  fin_succ_equiv R n (f * g) = fin_succ_equiv R n f * fin_succ_equiv R n g :=
+begin
+  simp
+end
+
+lemma fin_succ_equiv_eq_n {n : ℕ} {R : Type u} [comm_semiring R] :
+  fin_succ_equiv R n (X n) = polynomial.X :=
+begin
+  sorry
+end
+
+lemma fin_succ_equiv_lt_n {n : ℕ} {R : Type u} [comm_semiring R]
+  {j : fin (n+1)} (h : ↑j < n) :
+  fin_succ_equiv R n (X j) = polynomial.C (X (fin.mk j h)) :=
+begin
+  sorry
+end
+
+lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
+  (m : fin n →₀  ℕ) (f : mv_polynomial (fin (n+1)) R ) (i : ℕ) :
+  coeff m (polynomial.coeff (fin_succ_equiv R n f) i) = coeff (extfin m i) f :=
+begin  
+  sorry -- by induction?
+end
 
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_semiring R]
   (s' : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
@@ -170,22 +206,33 @@ begin
   intro a,
   simp,
   intros p q hp hq,
-  simp, --nonterminal simp!
+  rw fin_succ_equiv_add,
+  simp only [ring_hom.map_add, polynomial.map_add, polynomial.eval_add],
   congr,
-  simpa using hp,
-  simpa using hq,
+  exact hp,
+  exact hq,
   intros p j h,
-  simp, --nonterminal simp!
+  rw fin_succ_equiv_mul,
+  simp only [eval_X, polynomial.map_mul, ring_hom.map_mul, polynomial.eval_mul],
   congr,
-  simpa using h,
+  exact h,
+  clear h f,
   by_cases c : ↑j < n,
-    rw ext1_eq_lt_n s' y c,
-    simp, --nonterminal simp!
-    sorry,
-  have c' : j = ↑n := sorry,
+  { rw ext1_eq_lt_n s' y c,
+    rw fin_succ_equiv_lt_n c,
+    simp },
+  have c' : j = ↑n, -- this looks similar to `coe_eq_mk` above
+  { have x := j.2,
+    have y := le_of_not_lt c,
+    have z := (nat.eq_of_le_of_lt_succ y x),
+    apply fin.eq_of_veq,
+    simp only [fin.val_eq_coe, fin.coe_of_nat_eq_mod],
+    rw z,
+    rw mod_succ_self_eq_self n },
   rw c',
   rw ext1_eq_n s' y,
-  sorry
+  rw fin_succ_equiv_eq_n,
+  simp,
 end
 
 lemma coeff_eval_eq_eval_coeff {n : ℕ} {R : Type u} [comm_semiring R]
@@ -218,7 +265,7 @@ intros x hx,
 exact support_eval' s' f x hx,
 end
 
-lemma degree_eval_le_degree {n : ℕ} {R : Type u} [comm_ring R]
+lemma degree_eval_le_degree {n : ℕ} {R : Type u} [comm_semiring R]
 (s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) :
 polynomial.degree (polynomial.map (eval s') f) ≤ polynomial.degree f
 :=
@@ -231,32 +278,39 @@ begin
   apply finset.le_sup (support_eval' s' f b hb),
 end
 
+lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_semiring R]
+(s : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) :
+polynomial.nat_degree (polynomial.map (eval s) f) ≤ polynomial.nat_degree f
+:= polynomial.nat_degree_le_nat_degree (degree_eval_le_degree s f)
 
-lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_ring R]
-(s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)) :
-polynomial.nat_degree (polynomial.map (eval s') f) ≤ polynomial.nat_degree f
-:=
+lemma support_f_i {n : ℕ} {R : Type u} [comm_semiring R]
+  {f : mv_polynomial (fin (n+1)) R} {i : ℕ} 
+  {m : fin n →₀ ℕ }
+  (h : m ∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
+  (extfin m i) ∈ f.support :=
 begin
-  -- rw polynomial.nat_degree,
-  -- rw polynomial.nat_degree,
-  sorry,
+  simp only [mem_support_iff, ne.def],
+  rw ← fin_succ_equiv_coeff_coeff,
+  simpa using h,
 end
 
-lemma nat_degree_fin_suc_equiv {n : ℕ} {F : Type u} [field F]
-  (f : mv_polynomial (fin (n+1)) F) : 
-  (fin_succ_equiv F n f).nat_degree = degree_of ↑n f :=
+lemma nat_degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
+  (f : mv_polynomial (fin (n+1)) R) : 
+  (fin_succ_equiv R n f).nat_degree = degree_of ↑n f :=
 begin
+  -- usar fin_succ_equiv_supp o support_f_i
   sorry
 end
 
-lemma degree_of_coeff_fin_suc_equiv {n : ℕ} {F : Type u} [field F]
-  (f : mv_polynomial (fin (n+1)) F) (j:fin n)(i:ℕ) : 
-  degree_of j (polynomial.coeff (fin_succ_equiv F n f) i) ≤ degree_of ↑j f :=
+lemma degree_of_coeff_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
+  (f : mv_polynomial (fin (n+1)) R) (j : fin n) (i : ℕ) : 
+  degree_of j (polynomial.coeff (fin_succ_equiv R n f) i) ≤ degree_of ↑j f :=
 begin
+  -- usar fin_succ_equiv_supp o support_f_i
   sorry
 end
 
-lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_semiring R](p : polynomial R) :
+lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_semiring R] (p : polynomial R) :
   (∀ i:ℕ, polynomial.coeff p i = 0) ↔ p = 0 :=
 begin
   apply iff.intro,
