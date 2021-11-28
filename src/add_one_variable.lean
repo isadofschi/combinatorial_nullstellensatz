@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2021 Ivan Sadofschi Costa. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Author: Ivan Sadofschi Costa.
+-/
 import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
 import data.mv_polynomial.equiv
@@ -5,6 +10,15 @@ import data.mv_polynomial.supported
 import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
+
+/-
+# Add one variable
+
+## Main results
+
+- `lemma_2_1`: TODO
+
+-/
 
 universes u v
 
@@ -89,7 +103,7 @@ begin
               not_false_iff, cast_eq],
 end
 
-def ext1_eq_le_n {n:ℕ}{α: Type*}{i : fin(n+1)}
+def ext1_eq_lt_n {n:ℕ}{α: Type*}{i : fin(n+1)}
 (s' : fin n → α)(y : α)(h : ↑i < n) : 
 point.snoc s' y i = s' (fin.mk i h) :=
 begin
@@ -147,11 +161,31 @@ Lemmas
 
 -/
 
-lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_ring R]
-(s' : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
- eval (point.snoc s' y  : fin (n+1) → R) f = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
+lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_semiring R]
+  (s' : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
+  eval (point.snoc s' y  : fin (n+1) → R) f
+  = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
 begin
-  sorry,
+  apply induction_on f,
+  intro a,
+  simp,
+  intros p q hp hq,
+  simp, --nonterminal simp!
+  congr,
+  simpa using hp,
+  simpa using hq,
+  intros p j h,
+  simp, --nonterminal simp!
+  congr,
+  simpa using h,
+  by_cases c : ↑j < n,
+    rw ext1_eq_lt_n s' y c,
+    simp, --nonterminal simp!
+    sorry,
+  have c' : j = ↑n := sorry,
+  rw c',
+  rw ext1_eq_n s' y,
+  sorry
 end
 
 lemma coeff_eval_eq_eval_coeff {n : ℕ} {R : Type u} [comm_semiring R]
@@ -203,8 +237,8 @@ lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_ring R]
 polynomial.nat_degree (polynomial.map (eval s') f) ≤ polynomial.nat_degree f
 :=
 begin
-  rw polynomial.nat_degree,
-  rw polynomial.nat_degree,
+  -- rw polynomial.nat_degree,
+  -- rw polynomial.nat_degree,
   sorry,
 end
 
@@ -250,7 +284,7 @@ begin
   exact h1.trans (polynomial.card_roots' h),
 end
 
-/- Lemma 2.1 in Alon's paper. -/
+/- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F)
   (t : fin n →₀ ℕ)
@@ -264,14 +298,12 @@ begin
   simp only [forall_const] at hz,
   apply (ring_equiv.map_eq_zero_iff (is_empty_ring_equiv F (fin 0))).1,
   simp only [is_empty_ring_equiv_apply],
-  --let t := ,
   simpa using (hz fin.is_empty.elim),
   apply (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv F n)).1,
   apply (eq_zero_iff_every_coeff_zero ((fin_succ_equiv F n) f)).1,
   intro i,
   apply hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (resfin t),
   intro j,
-  --let f_i := polynomial.coeff ((fin_succ_equiv F n) f) i,
   rw ← resfin_eq t j,
   exact (degree_of_coeff_fin_suc_equiv f j i).trans (ht j),
   intro j,
@@ -280,37 +312,28 @@ begin
   intros s hs,
   rw ← coeff_eval_eq_eval_coeff,
   rw (eq_zero_iff_every_coeff_zero (polynomial.map (eval s) ((fin_succ_equiv F n) f))).2,
-  -- I do not know how to prove h00 in a neat way:
-  have h0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) →
-    ∀ y : F, y ∈ S n →  
+  by_contradiction c1,
+  have h0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) → ∀ y : F, y ∈ S n →  
     polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv F n) f)) = 0,
   {
     intros s' hs' y hy,
-    rw ← eval_eq_eval_mv_eval',
-    rw hz,
+    rw [← eval_eq_eval_mv_eval', hz],
     intro i,
     by_cases c : ↑i < n,
-    { rw (ext1_eq_le_n s' y c), 
+    { rw (ext1_eq_lt_n s' y c), 
       have x:= hs' (fin.mk i c),
       simp only [fin.coe_eq_cast_succ, fin.mk_eq_subtype_mk, fin.cast_succ_mk, fin.eta] at x,
-      simp only [fin.mk_eq_subtype_mk],
-      exact x,
-    },
+      simpa only [fin.mk_eq_subtype_mk] using x },
     have r : ↑n = i,
     { apply fin.eq_of_veq,
-      simp,
+      simp only [fin.val_eq_coe, fin.coe_of_nat_eq_mod],
       rw nat.eq_of_le_of_lt_succ (le_of_not_lt c) i.property,
       rw mod_succ_self_eq_self },
     rwa [ ← r, ext1_eq_n s' y ] },
-  by_contradiction c,
-  let t1 := number_zeroes_field c (S n) (h0 _ _),
-  have u : (polynomial.map (eval s) ((fin_succ_equiv F n) f)).nat_degree ≤ t n,
-  { have x := nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
-    rw nat_degree_fin_suc_equiv f at x,
-    have y := ht n,
-    exact x.trans y },
-  simpa using lt_of_le_of_lt (t1.trans u) (hS n),
-  exact hs,
+  simpa using lt_of_le_of_lt ((number_zeroes_field c1 (S n) (h0 _ hs)).trans _) (hS n),
+  have x := nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
+  rw nat_degree_fin_suc_equiv f at x,
+  exact x.trans (ht n),
 end
 
 end mv_polynomial

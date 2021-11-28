@@ -196,7 +196,7 @@ begin
   apply t.trans, clear t,
   by_cases h : p.total_degree ≤ r.total_degree,
   { rw max_eq_right h,
-    have t := total_degree_sum, -- _ (λ i,  h i * @g n F _ S i),
+    --have t := total_degree_sum, -- _ (λ i,  h i * @g n F _ S i),
     sorry,
   },
   rw not_le at h,
