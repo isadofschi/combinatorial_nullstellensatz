@@ -597,16 +597,14 @@ end
 theorem number_zeroes_field {F : Type u} [field F]{p : polynomial F}(h : p ≠ 0)
 (Z : finset F ) (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
 begin
+  apply trans _ (polynomial.card_roots' h),
+  rw finset.card,
   have h0 : Z.val ⊆ p.roots,
   { rw multiset.subset_iff,
     intros x hx,
     let z := hZ x hx,
-    rwa polynomial.mem_roots h },
-  have h1 : Z.card ≤ p.roots.card,
-  { rw finset.card,
-    exact multiset.card_le_of_le (le_of_val_subset h0),
-  },
-  exact h1.trans (polynomial.card_roots' h),
+    rwa polynomial.mem_roots h,},
+  apply multiset.card_le_of_le (le_of_val_subset h0),
 end
 
 /- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/
