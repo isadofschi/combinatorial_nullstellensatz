@@ -128,9 +128,8 @@ private noncomputable def fin.to_finsupp
 private noncomputable def fin.finsupp.tail {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ 
 := fin.to_finsupp (fin.tail s.to_fun)
 
-private noncomputable def fin.finsupp.cons {n:ℕ} (y : ℕ) (s' : fin n →₀  ℕ) : fin (n+1) →₀ ℕ := 
-fin.to_finsupp (fin.cons y s'.to_fun)
-
+private noncomputable def fin.finsupp.cons {n:ℕ} (y : ℕ) (s : fin n →₀  ℕ) : fin (n+1) →₀ ℕ := 
+fin.to_finsupp (fin.cons y s.to_fun)
 
 private lemma fin.finsupp.tail_eq {n :ℕ} (s : fin (n+1) →₀ ℕ) : 
 ∀ (i : fin n), s i.succ = fin.finsupp.tail s i :=
@@ -155,6 +154,30 @@ begin
   rw [fin.finsupp.cons, fin.cons, fin.to_finsupp],
   simp only [fin.cases_succ, finsupp.coe_mk],
   rw [coe_fn, finsupp.has_coe_to_fun],
+end
+
+
+private lemma fin.finsupp.tail_cons {n:ℕ} (y : ℕ) (s : fin n →₀  ℕ) :
+  fin.finsupp.tail (fin.finsupp.cons y s) = s :=
+begin
+  simp only [fin.finsupp.cons, fin.cons, fin.finsupp.tail, fin.tail],
+  ext,
+  simp only [fin.to_finsupp, finsupp.coe_mk,fin.cases_succ],
+  rw [coe_fn, finsupp.has_coe_to_fun],
+end
+
+private lemma fin.finsupp.cons_tail {n:ℕ} (y : ℕ) (s : fin (n+1) →₀  ℕ) :
+  fin.finsupp.cons (s 0) (fin.finsupp.tail s) = s :=
+begin
+  ext,
+  by_cases c_a : a = 0,
+  { rw c_a,
+    rw fin.finsupp.cons_zero },
+  let a' := fin.pred a c_a,
+  have h : a = a'.succ := by simp,
+  rw h,
+  rw fin.finsupp.cons_succ,
+  rw fin.finsupp.tail_eq,
 end
 
 private lemma fin.finsupp.cons_zero_zero {n : ℕ}:
@@ -243,7 +266,11 @@ begin
 end
 
 lemma well_known_but_cannot_find {n : ℕ} (h : ¬ n = 0) : 0 < n :=
- sorry
+begin
+  by_contradiction h',
+  simp only [not_lt, le_zero_iff] at h',
+  cc,
+end
 
 lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
   (m : fin n →₀  ℕ) (f : mv_polynomial (fin (n+1)) R ) (i : ℕ) :
@@ -481,32 +508,26 @@ begin
   have t:= finsupp.support_nonempty_iff.2 h,
   rw polynomial.degree,
   have h : (fin_succ_equiv R n f).support.sup (λ x , x)  = degree_of 0 f,
-  {
-    apply decidable.eq_iff_le_not_lt.2,
-    apply and.intro,
+  { apply nat.le_antisymm,
     apply finset.sup_le,
     intros i hi,
     rw degree_of_eq,
     cases fin_succ_equiv_support.1 hi with m hm,
     have t2 := @finset.le_sup ℕ _ _ _ (λ m, m 0 : (fin (n + 1) →₀ ℕ) → ℕ) _ hm,
-    simp at t2, -- nonterminal simp!
-    rw fin.finsupp.cons_zero at t2,
-    sorry,
-    sorry,
-    sorry,
-    /-
-    rwa [with_bot.some_eq_coe, with_bot.coe_le_coe],
-    rw not_lt,
+    simp only at t2,
+    rwa fin.finsupp.cons_zero at t2,
     rw degree_of_eq,
-    have t2:= @finset.sup_le _ _ _ (f.support) (λ (m : fin (n + 1) →₀ ℕ), m 0),
-    rw ← with_bot.some_eq_coe,
-    have h : f.support.sup (λ (m : fin (n + 1) →₀ ℕ), m 0)
-    ≤ (fin_succ_equiv R n f).support.sup (λ x, x),
-    { apply t2,
-      intros m hm,
-      simp,
-      sorry },-/
-  },
+    apply @finset.sup_le _ _ _ (f.support) (λ (m : fin (n + 1) →₀ ℕ), m 0),
+    intros m hm,
+    simp only,
+    let m' := fin.finsupp.tail m,
+    have hm' : fin.finsupp.cons (m 0) m' = m,
+    { rw fin.finsupp.cons_tail (m 0) },
+    have h'' : m 0 ∈ (fin_succ_equiv R n f).support, {
+      apply (@fin_succ_equiv_support R _ n (m 0) f).2,
+      use m',
+      rwa hm' },
+    apply @finset.le_sup ℕ  _ _ _ (λ x, x) _ h'' },
   sorry, -- detalle tecnico
 end
 
