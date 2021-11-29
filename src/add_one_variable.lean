@@ -85,42 +85,35 @@ end
 
 /-
 
-  init and snoc for maps fin n → R and fin n →₀ M
+  cons and tail for maps fin n → R and fin n →₀ M
 
 -/ 
 
-local attribute [instance] classical.prop_decidable --esta permitido usar esto?
+local attribute [instance] classical.prop_decidable
 
-private def point.snoc {n:ℕ}{α: Type*}(s' : fin n → α)(y : α) : fin (n+1) → α := 
-fin.snoc s' y
+private def point.cons  {n:ℕ}{α: Type*}(y : α) (s' : fin n → α) : fin (n+1) → α := 
+fin.cons y s'
 
-private def ext1_eq_n {n:ℕ}{α: Type*}(s' : fin n → α)(y : α) : 
-point.snoc s' y n = y :=
+private def point.cons_zero {n:ℕ}{α: Type*}(s' : fin n → α)(y : α) : 
+point.cons y s' 0 = y :=
 begin
-  rw point.snoc,
-  rw fin.snoc,
-  have h : ¬ (n: fin (n+1)).val < n,
-  { simp only [fin.val_eq_coe, not_lt, fin.coe_of_nat_eq_mod],
-    rw mod_succ_self_eq_self },
-  simp only [ fin.coe_of_nat_eq_mod, fin.mk_eq_subtype_mk, h, fin.coe_of_nat_eq_mod, dif_neg,
-              not_false_iff, cast_eq],
+  rw point.cons,
+  simp,
 end
 
-def ext1_eq_lt_n {n:ℕ}{α: Type*}{i : fin(n+1)}
-(s' : fin n → α)(y : α)(h : ↑i < n) : 
-point.snoc s' y i = s' (fin.mk i h) :=
+private def point.cons_succ {n:ℕ}{α: Type*}{i : fin n}
+(y : α) (s' : fin n → α) : 
+point.cons y s' i.succ = s' i :=
 begin
-  rw point.snoc,
-  rw fin.snoc,
-  simp only [fin.mk_eq_subtype_mk, cast_eq, fin.val_eq_coe, h, dif_pos ],
-  congr,
+  rw point.cons,
+  simp,
 end
 
-noncomputable def fin.support
+private noncomputable def fin.support
 {M : Type*} [has_zero M] {n : ℕ} (f : fin n → M) : finset (fin n) :=
 (finset.fin_range n).filter (λ i, f i ≠ 0)
 
-lemma fin.mem_support_to_fun 
+private lemma fin.mem_support_to_fun 
 {M : Type*} [has_zero M] {n : ℕ} (f : fin n → M)
 : ∀ a, a ∈ fin.support f ↔ f a ≠ 0 := begin
 intro a,
@@ -128,41 +121,48 @@ rw fin.support,
 simp,
 end
 
-noncomputable def fin.to_finsupp
+private noncomputable def fin.to_finsupp
 {M : Type*} [has_zero M] {n:ℕ } (f : fin n → M ) : fin n →₀ M :=
 ⟨ fin.support f , f, fin.mem_support_to_fun f ⟩
 
+private noncomputable def fin.finsupp.tail {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ 
+:= fin.to_finsupp (fin.tail s.to_fun)
 
-noncomputable def resfin {n: ℕ } (s : fin (n+1) →₀ ℕ ) : fin n →₀ ℕ 
-:= fin.to_finsupp (fin.init s.to_fun)
+private noncomputable def fin.finsupp.cons {n:ℕ} (y : ℕ) (s' : fin n →₀  ℕ) : fin (n+1) →₀ ℕ := 
+fin.to_finsupp (fin.cons y s'.to_fun)
 
-noncomputable def extfin {n:ℕ}(s' : fin n →₀  ℕ) (y : ℕ) : fin (n+1) →₀ ℕ := 
-fin.to_finsupp (fin.snoc s'.to_fun y)
 
-lemma resfin_eq {n :ℕ} (s : fin (n+1) →₀ ℕ): ∀ (i : fin n), s i = resfin s i :=
+private lemma fin.finsupp.tail_eq {n :ℕ} (s : fin (n+1) →₀ ℕ) : 
+∀ (i : fin n), s i.succ = fin.finsupp.tail s i :=
 begin
   intro i,
-  rw resfin,
+  rw [fin.finsupp.tail, fin.tail],
   congr,
+end
+
+private lemma fin.finsupp.cons_zero {n:ℕ}
+(y : ℕ) (s : fin n →₀  ℕ) : 
+fin.finsupp.cons y s 0 = y := 
+begin 
+  rw [fin.finsupp.cons, fin.cons, fin.to_finsupp],
   simp,
 end
 
-lemma extfin_eq_le_n {n:ℕ}(i : fin n) /- unused -/
-(s' : fin n →₀  ℕ)(y : ℕ) : 
-extfin s' y i = s' i := 
+private lemma fin.finsupp.cons_succ {n:ℕ} (i : fin n)
+(y : ℕ) (s : fin n →₀  ℕ) : 
+fin.finsupp.cons y s i.succ = s i := 
 begin 
-  rw extfin,
-  rw fin.to_finsupp,
-  simp only [fin.coe_eq_cast_succ, fin.mk_eq_subtype_mk, fin.eta, fin.snoc_cast_succ, finsupp.coe_mk],
+  rw [fin.finsupp.cons, fin.cons, fin.to_finsupp],
+  simp only [fin.cases_succ, finsupp.coe_mk],
   rw [coe_fn, finsupp.has_coe_to_fun],
 end
-
 
 /-
 
 More lemmas
 
 -/
+
 lemma fin_succ_equiv_add {n : ℕ} {R : Type u} [comm_semiring R] 
 (f g : mv_polynomial (fin (n+1)) R) :
   fin_succ_equiv R n (f + g) = fin_succ_equiv R n f + fin_succ_equiv R n g :=
@@ -177,30 +177,63 @@ begin
   simp
 end
 
-lemma fin_succ_equiv_eq_n {n : ℕ} {R : Type u} [comm_semiring R] :
-  fin_succ_equiv R n (X n) = polynomial.X :=
+lemma fin_succ_equiv_zero {n : ℕ} {R : Type u} [comm_semiring R] :
+  fin_succ_equiv R n 0 = 0 :=
 begin
-  sorry
+  simp,
 end
 
-lemma fin_succ_equiv_lt_n {n : ℕ} {R : Type u} [comm_semiring R]
-  {j : fin (n+1)} (h : ↑j < n) :
-  fin_succ_equiv R n (X j) = polynomial.C (X (fin.mk j h)) :=
+lemma degree_of_zero {R : Type*}[comm_semiring R]{σ : Type*}(i : σ) :
+degree_of i (0 : mv_polynomial σ R) = 0 :=
 begin
-  sorry
+  rw degree_of,
+  simp,
+end
+
+lemma fin_succ_equiv_eq_zero {n : ℕ} {R : Type u} [comm_semiring R] :
+  fin_succ_equiv R n (X 0) = polynomial.X :=
+begin
+  simp,  
+end
+
+lemma fin_succ_equiv_ne_zero {n : ℕ} {R : Type u} [comm_semiring R] {j : fin n} :
+  fin_succ_equiv R n (X j.succ) = polynomial.C (X j) :=
+begin
+  simp,
 end
 
 lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
   (m : fin n →₀  ℕ) (f : mv_polynomial (fin (n+1)) R ) (i : ℕ) :
-  coeff m (polynomial.coeff (fin_succ_equiv R n f) i) = coeff (extfin m i) f :=
-begin  
-  sorry -- by induction?
+  coeff m (polynomial.coeff (fin_succ_equiv R n f) i) = coeff (fin.finsupp.cons i m) f :=
+begin
+  apply induction_on f,
+  intro a,
+  simp, --nonterminal simp
+  sorry, -- casos en i y en m?
+  intros p q hp hq,
+  sorry, -- sale
+  intros p j hp,
+  sorry -- casos segun j = n o j < n
+
+end
+
+lemma degree_of_eq {R : Type*}[comm_semiring R]{σ : Type*}
+ (p : mv_polynomial σ R) (j : σ) :
+  degree_of j p = p.support.sup (λm, m j) :=
+begin
+  rw degree_of,
+  rw degrees,
+  simp,
+  rw multiset.count_sup,
+  congr,
+  ext,
+  simp,
 end
 
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_semiring R]
-  (s' : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
-  eval (point.snoc s' y  : fin (n+1) → R) f
-  = polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) :=
+  (s : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
+  eval (point.cons y s) f
+  = polynomial.eval y (polynomial.map (eval s) ((fin_succ_equiv R n) f)) :=
 begin
   apply induction_on f,
   intro a,
@@ -217,21 +250,15 @@ begin
   congr,
   exact h,
   clear h f,
-  by_cases c : ↑j < n,
-  { rw ext1_eq_lt_n s' y c,
-    rw fin_succ_equiv_lt_n c,
+  simp,
+  by_cases c : j = 0,
+  { rw c,
+    rw point.cons_zero,
     simp },
-  have c' : j = ↑n, -- this looks similar to `coe_eq_mk` above
-  { have x := j.2,
-    have y := le_of_not_lt c,
-    have z := (nat.eq_of_le_of_lt_succ y x),
-    apply fin.eq_of_veq,
-    simp only [fin.val_eq_coe, fin.coe_of_nat_eq_mod],
-    rw z,
-    rw mod_succ_self_eq_self n },
-  rw c',
-  rw ext1_eq_n s' y,
-  rw fin_succ_equiv_eq_n,
+  have c' : j ≠ 0 := by simpa only [ne.def],
+  let i := fin.pred j c',
+  have r : j = i.succ := by simp,
+  rw [r, point.cons_succ],
   simp,
 end
 
@@ -285,29 +312,108 @@ polynomial.nat_degree (polynomial.map (eval s) f) ≤ polynomial.nat_degree f
 
 lemma support_f_i {n : ℕ} {R : Type u} [comm_semiring R]
   {f : mv_polynomial (fin (n+1)) R} {i : ℕ} 
-  {m : fin n →₀ ℕ }
-  (h : m ∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support) :
-  (extfin m i) ∈ f.support :=
+  {m : fin n →₀ ℕ }:
+  m ∈ (polynomial.coeff ((fin_succ_equiv R n) f) i).support
+  ↔ (fin.finsupp.cons i m) ∈ f.support :=
 begin
+  apply iff.intro,
+  intro h,
   simp only [mem_support_iff, ne.def],
   rw ← fin_succ_equiv_coeff_coeff,
   simpa using h,
+  intro h,
+  rw mem_support_iff,
+  rw fin_succ_equiv_coeff_coeff m f i,
+  simpa using h,
+end
+
+lemma fin_succ_equiv_support {R : Type u}[comm_semiring R] {n i : ℕ} {f : mv_polynomial (fin (n+1)) R} :
+i ∈ (fin_succ_equiv R n f).support ↔ ∃ m , (fin.finsupp.cons i m)  ∈ f.support :=
+begin
+  apply iff.intro,
+  intro h,
+  have h' := ne_zero_iff.1 (polynomial.mem_support_iff.1 h),
+  cases h' with m' hm',
+  use m',
+  apply support_f_i.1,
+  simpa using hm',
+  intro hm,
+  cases hm with m' hm',
+  have h1 : (fin_succ_equiv R n f).coeff i ≠ 0,
+  { apply ne_zero_iff.2,
+    use m',
+    simpa using support_f_i.2 hm' },
+  simpa using h1,
+end
+
+namespace with_bot
+open nat
+
+lemma aa (s : finset ℕ )
+  --[semilattice_sup_bot α] [semilattice_sup_bot (option α)]
+  :
+  s.sup (some : ℕ → option ℕ) = some (s.sup (λ (i:ℕ), (i:ℕ)))  :=
+begin
+  sorry
+end
+end with_bot
+
+lemma degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
+  {f : mv_polynomial (fin (n+1)) R} (h : f ≠ 0): 
+  (fin_succ_equiv R n f).degree = degree_of 0 f :=
+begin
+  have t:= finsupp.support_nonempty_iff.2 h,
+  rw polynomial.degree,
+  apply decidable.eq_iff_le_not_lt.2,
+  apply and.intro,
+  apply finset.sup_le,
+  intros i hi,
+  rw degree_of_eq,
+  cases fin_succ_equiv_support.1 hi with m hm,
+  have t2 := @finset.le_sup ℕ _ _ _ (λ m, m 0 : (fin (n + 1) →₀ ℕ) → ℕ) _ hm,
+  simp at t2, -- nonterminal simp!
+  rw fin.finsupp.cons_zero at t2,
+  rwa [with_bot.some_eq_coe, with_bot.coe_le_coe],
+  rw not_lt,
+  rw degree_of_eq,
+  have t2:= @finset.sup_le _ _ _ (f.support) (λ (m : fin (n + 1) →₀ ℕ), m 0),
+  rw ← with_bot.some_eq_coe,
+  have h : f.support.sup (λ (m : fin (n + 1) →₀ ℕ), m 0)
+  ≤ (fin_succ_equiv R n f).support.sup (λ x, x),
+  { apply t2,
+    intros b hb,
+    simp,
+    sorry },
+  rw ← with_bot.some_le_some at h,
+  rw ← with_bot.aa at h,
+  sorry,
+  sorry,
 end
 
 lemma nat_degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
   (f : mv_polynomial (fin (n+1)) R) : 
-  (fin_succ_equiv R n f).nat_degree = degree_of ↑n f :=
+  (fin_succ_equiv R n f).nat_degree = degree_of 0 f :=
 begin
-  -- usar fin_succ_equiv_supp o support_f_i
-  sorry
+  by_cases c : f = 0,
+  { rw [c, fin_succ_equiv_zero, polynomial.nat_degree_zero, degree_of_zero] },
+  have c' : f ≠ 0 := by simpa only [ne.def],
+  rw polynomial.nat_degree,
+  rw degree_fin_suc_equiv c',
+  simp,
 end
 
 lemma degree_of_coeff_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
-  (f : mv_polynomial (fin (n+1)) R) (j : fin n) (i : ℕ) : 
-  degree_of j (polynomial.coeff (fin_succ_equiv R n f) i) ≤ degree_of ↑j f :=
+  (p : mv_polynomial (fin (n+1)) R) (j : fin n) (i : ℕ) : 
+  degree_of j (polynomial.coeff (fin_succ_equiv R n p) i) ≤ degree_of j.succ p :=
 begin
-  -- usar fin_succ_equiv_supp o support_f_i
-  sorry
+  rw [degree_of_eq, degree_of_eq, finset.sup_le_iff],
+  intros m hm,
+  have t := support_f_i.1 hm,
+  rw ← fin.finsupp.cons_succ j i m,
+  have h : (fin.finsupp.cons i m) j.succ 
+    = (λ (m1 : fin n.succ →₀ ℕ), m1 j.succ) (fin.finsupp.cons i m) := by simp,
+  rw h,
+  apply finset.le_sup t,
 end
 
 lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_semiring R] (p : polynomial R) :
@@ -356,38 +462,35 @@ begin
   apply (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv F n)).1,
   apply (eq_zero_iff_every_coeff_zero ((fin_succ_equiv F n) f)).1,
   intro i,
-  apply hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (resfin t),
+  apply hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (fin.finsupp.tail t),
   intro j,
-  rw ← resfin_eq t j,
-  exact (degree_of_coeff_fin_suc_equiv f j i).trans (ht j),
+  rw ← fin.finsupp.tail_eq t j,
+  exact (degree_of_coeff_fin_suc_equiv f j i).trans (ht j.succ),
   intro j,
-  rw ← resfin_eq t j,
-  exact hS ↑j,
+  rw ← fin.finsupp.tail_eq t j,
+  exact hS j.succ,
   intros s hs,
   rw ← coeff_eval_eq_eval_coeff,
   rw (eq_zero_iff_every_coeff_zero (polynomial.map (eval s) ((fin_succ_equiv F n) f))).2,
   by_contradiction c1,
-  have h0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i) → ∀ y : F, y ∈ S n →  
+  have h0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i.succ) → ∀ y : F, y ∈ S 0 →  
     polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv F n) f)) = 0,
   {
     intros s' hs' y hy,
     rw [← eval_eq_eval_mv_eval', hz],
     intro i,
-    by_cases c : ↑i < n,
-    { rw (ext1_eq_lt_n s' y c), 
-      have x:= hs' (fin.mk i c),
-      simp only [fin.coe_eq_cast_succ, fin.mk_eq_subtype_mk, fin.cast_succ_mk, fin.eta] at x,
-      simpa only [fin.mk_eq_subtype_mk] using x },
-    have r : ↑n = i,
-    { apply fin.eq_of_veq,
-      simp only [fin.val_eq_coe, fin.coe_of_nat_eq_mod],
-      rw nat.eq_of_le_of_lt_succ (le_of_not_lt c) i.property,
-      rw mod_succ_self_eq_self },
-    rwa [ ← r, ext1_eq_n s' y ] },
-  simpa using lt_of_le_of_lt ((number_zeroes_field c1 (S n) (h0 _ hs)).trans _) (hS n),
+    by_cases c : i ≠ 0,
+    { let i' := fin.pred i c,
+      have r : i = i'.succ := by simp,
+      rw r,
+      rw (point.cons_succ y s'),
+      exact hs' i' },
+    simp only [not_not] at c,
+    rwa [c, point.cons_zero] },
+  simpa using lt_of_le_of_lt ((number_zeroes_field c1 (S 0) (h0 _ hs)).trans _) (hS 0),
   have x := nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
   rw nat_degree_fin_suc_equiv f at x,
-  exact x.trans (ht n),
+  exact x.trans (ht 0),
 end
 
 end mv_polynomial
