@@ -501,11 +501,33 @@ begin
   simpa using h1,
 end
 
+lemma coe_with_bottom_sup {α : Type*} {s : finset α} (h : s.nonempty) (f : α → ℕ): 
+ (↑(s.sup f) : (with_bot ℕ)) = s.sup (λ i, ↑(f i) ) := 
+ begin
+  rw ← finset.coe_sup' h,
+  congr, 
+  simp only [finset.sup'_eq_sup],
+ end 
+
 lemma degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
   {f : mv_polynomial (fin (n+1)) R} (h : f ≠ 0): 
   (fin_succ_equiv R n f).degree = degree_of 0 f :=
 begin
-  have t:= finsupp.support_nonempty_iff.2 h,
+  have t : (fin_succ_equiv R n f).support.nonempty,
+  { by_contradiction c,
+    simp only [finset.not_nonempty_iff_eq_empty, polynomial.support_eq_empty] at c,
+    let t'' : (fin_succ_equiv R n f) ≠ 0,
+    { let ii := (fin_succ_equiv R n).symm,
+      have h' : f = 0 :=
+        calc f =  ii (fin_succ_equiv R n f) :
+        begin
+          simp only [ii, ←alg_equiv.inv_fun_eq_symm],
+          exact ((fin_succ_equiv R n).left_inv f).symm,
+        end
+        ...    =  ii 0 : by rw c
+        ...    = 0 : by simp,
+      cc },
+    cc },
   rw polynomial.degree,
   have h : (fin_succ_equiv R n f).support.sup (λ x , x)  = degree_of 0 f,
   { apply nat.le_antisymm,
@@ -528,7 +550,9 @@ begin
       use m',
       rwa hm' },
     apply @finset.le_sup ℕ  _ _ _ (λ x, x) _ h'' },
-  sorry, -- detalle tecnico
+  rw ← h,
+  rw coe_with_bottom_sup t,
+  congr,
 end
 
 lemma nat_degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
