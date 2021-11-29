@@ -251,7 +251,6 @@ lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
 begin
   revert i m,
   apply induction_on f,
-  /-
   intros a i m,
   by_cases c_i : i = 0,
   { rw c_i,
@@ -282,15 +281,10 @@ begin
   rw polynomial.coeff_add,
   repeat { rw coeff_add },
   rw [hp, hq],
-  -/
-  sorry,
-  sorry, -- speedup :D
   intros p j hp i m,
   rw coeff_mul_X' (fin.finsupp.cons i m) j p,
   rw [ fin_succ_equiv_mul ],
   by_cases c_j : j = 0,
-  sorry, -- speedup
-  /-
   { rw c_j,
     by_cases c_i : i = 0,
     { rw c_i,
@@ -307,7 +301,7 @@ begin
     rw r,
     rw polynomial.coeff_mul_X,
     rw hp i',
-    simp only [finsupp.mem_support_iff, ne.def], -- TODO nonterminal simp
+    simp only [finsupp.mem_support_iff, ne.def],
     simp only [fin.finsupp.cons_zero],
     rw ← r,
     simp only [c_i, if_true, not_false_iff],
@@ -327,7 +321,7 @@ begin
     repeat {rw fin.finsupp.cons_succ},
     rw finsupp.single,
     have c_a' : ¬ 0 = a := by cc,
-    simp [c_a', if_false] },-/
+    simp [c_a', if_false] },
   let j' := fin.pred j c_j,
   have r : j = j'.succ := by simp,
   rw [r, fin_succ_equiv_ne_zero],
