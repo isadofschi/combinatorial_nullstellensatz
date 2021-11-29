@@ -242,14 +242,17 @@ begin
   simp,
 end
 
+lemma well_known_but_cannot_find {n : ℕ} (h : ¬ n = 0) : 0 < n :=
+ sorry
+
 lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
   (m : fin n →₀  ℕ) (f : mv_polynomial (fin (n+1)) R ) (i : ℕ) :
   coeff m (polynomial.coeff (fin_succ_equiv R n f) i) = coeff (fin.finsupp.cons i m) f :=
 begin
-  revert i,
+  revert i m,
   apply induction_on f,
   /-
-  intros a i,
+  intros a i m,
   by_cases c_i : i = 0,
   { rw c_i,
     simp only [fin_succ_equiv_apply, polynomial.coeff_C_zero, coeff_C, ring_hom.coe_comp, eval₂_hom_C],
@@ -274,7 +277,7 @@ begin
     simpa using c_i },
   have x' :  ¬ 0 = fin.finsupp.cons i m := by cc,
   simp only [x', if_false ],
-  intros p q hp hq i,
+  intros p q hp hq i m,
   rw fin_succ_equiv_add,
   rw polynomial.coeff_add,
   repeat { rw coeff_add },
@@ -282,10 +285,12 @@ begin
   -/
   sorry,
   sorry, -- speedup :D
-  intros p j hp i,
+  intros p j hp i m,
   rw coeff_mul_X' (fin.finsupp.cons i m) j p,
   rw [ fin_succ_equiv_mul ],
   by_cases c_j : j = 0,
+  sorry, -- speedup
+  /-
   { rw c_j,
     by_cases c_i : i = 0,
     { rw c_i,
@@ -298,12 +303,12 @@ begin
     let i' := nat.pred i,
     have r : i = i'.succ,
     { rw nat.succ_pred_eq_of_pos _,
-      sorry },
+      exact well_known_but_cannot_find c_i },
     rw r,
     rw polynomial.coeff_mul_X,
     rw hp i',
-    simp, -- TODO nonterminal simp
-    rw fin.finsupp.cons_zero,
+    simp only [finsupp.mem_support_iff, ne.def], -- TODO nonterminal simp
+    simp only [fin.finsupp.cons_zero],
     rw ← r,
     simp only [c_i, if_true, not_false_iff],
     congr,
@@ -322,8 +327,28 @@ begin
     repeat {rw fin.finsupp.cons_succ},
     rw finsupp.single,
     have c_a' : ¬ 0 = a := by cc,
-    simp [c_a', if_false] },
-  sorry 
+    simp [c_a', if_false] },-/
+  let j' := fin.pred j c_j,
+  have r : j = j'.succ := by simp,
+  rw [r, fin_succ_equiv_ne_zero],
+  rw polynomial.coeff_mul_C,
+  rw coeff_mul_X',
+  rw hp i,
+  simp only [fin.succ_pred, finsupp.mem_support_iff, ne.def],
+  by_cases c_mj' : m j' = 0,
+  { simp only [ r, fin.finsupp.cons_succ, c_mj',if_false, eq_self_iff_true, not_true ] },
+  simp only [ r, fin.finsupp.cons_succ, c_mj', if_true, not_false_iff ],
+  congr,
+  ext,
+  by_cases c_a : a = 0,
+  { rw c_a,
+    simp [fin.finsupp.cons_zero, finsupp.single, c_j] },
+  let a' := fin.pred a c_a,
+  have r : a = a'.succ := by simp,
+  simp only [finsupp.coe_tsub, pi.sub_apply],
+  rw r,
+  repeat {rw fin.finsupp.cons_succ},
+  simp [finsupp.single, c_j],
 end
 
 lemma degree_of_eq {R : Type*}[comm_semiring R]{σ : Type*}
@@ -576,15 +601,13 @@ begin
   by_contradiction c1,
   have h0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i.succ) → ∀ y : F, y ∈ S 0 →  
     polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv F n) f)) = 0,
-  {
-    intros s' hs' y hy,
+  { intros s' hs' y hy,
     rw [← eval_eq_eval_mv_eval', hz],
     intro i,
     by_cases c : i ≠ 0,
     { let i' := fin.pred i c,
       have r : i = i'.succ := by simp,
-      rw r,
-      rw (point.cons_succ y s'),
+      rwa [ r, point.cons_succ y s'],
       exact hs' i' },
     simp only [not_not] at c,
     rwa [c, point.cons_zero] },
