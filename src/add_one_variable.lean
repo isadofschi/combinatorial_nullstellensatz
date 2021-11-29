@@ -157,7 +157,7 @@ begin
   rw [coe_fn, finsupp.has_coe_to_fun],
 end
 
-private lemma cons_zero_zero {n : ℕ}:
+private lemma fin.finsupp.cons_zero_zero {n : ℕ}:
   fin.finsupp.cons 0 (0: fin n →₀  ℕ ) = 0 :=
 begin
   ext,
@@ -172,6 +172,31 @@ begin
   simp,
   rw fin.finsupp.cons_zero 0 0,
 end
+
+private lemma fin.finsupp.cons_nonzero_any  {n : ℕ}{y : ℕ} {m: fin n →₀  ℕ } (h : y ≠ 0):
+  fin.finsupp.cons y m ≠ 0 :=
+begin
+  by_contradiction c,
+  have h1 : fin.finsupp.cons y m 0 = 0,
+  { rw c,
+    refl },
+  rw fin.finsupp.cons_zero at h1,
+  cc,
+end
+
+private lemma fin.finsupp.cons_any_nonzero {n : ℕ}{y : ℕ} {m: fin n →₀  ℕ } (h : m ≠ 0):
+  fin.finsupp.cons y m ≠ 0 :=
+begin
+  by_contradiction c,
+  have h' : m = 0,
+  { ext,
+    rw ← fin.finsupp.cons_succ a y m,
+    rw c,
+    simp },
+  cc,
+end
+
+
 /-
 
 More lemmas
@@ -221,25 +246,84 @@ lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
   (m : fin n →₀  ℕ) (f : mv_polynomial (fin (n+1)) R ) (i : ℕ) :
   coeff m (polynomial.coeff (fin_succ_equiv R n f) i) = coeff (fin.finsupp.cons i m) f :=
 begin
+  revert i,
   apply induction_on f,
-  intro a,
+  /-
+  intros a i,
   by_cases c_i : i = 0,
   { rw c_i,
-    simp,
-    by_cases c_m : m = 0,
-    { rw c_m,
+    simp only [fin_succ_equiv_apply, polynomial.coeff_C_zero, coeff_C, ring_hom.coe_comp, eval₂_hom_C],
+    by_cases c_m : 0 = m,
+    { rw ← c_m,
+      simp only [if_true, eq_self_iff_true],
+      rw fin.finsupp.cons_zero_zero,
+      simp },
+    simp only [c_m, if_false],
+    have x : ¬ fin.finsupp.cons 0 m = 0,
+    { apply fin.finsupp.cons_any_nonzero,
+      symmetry,
+      simpa using c_m },
+    have x' : ¬ 0 = fin.finsupp.cons 0 m := by cc,
+    simp only [x', if_false ] },
+  simp only [fin_succ_equiv_apply, coeff_C, function.comp_app, ring_hom.coe_comp, eval₂_hom_C],
+  rw polynomial.coeff_C,
+  simp only [c_i, if_false],
+  rw coeff_zero,
+  have x : ¬ fin.finsupp.cons i m = 0,
+  { apply fin.finsupp.cons_nonzero_any,
+    simpa using c_i },
+  have x' :  ¬ 0 = fin.finsupp.cons i m := by cc,
+  simp only [x', if_false ],
+  intros p q hp hq i,
+  rw fin_succ_equiv_add,
+  rw polynomial.coeff_add,
+  repeat { rw coeff_add },
+  rw [hp, hq],
+  -/
+  sorry,
+  sorry, -- speedup :D
+  intros p j hp i,
+  rw coeff_mul_X' (fin.finsupp.cons i m) j p,
+  rw [ fin_succ_equiv_mul ],
+  by_cases c_j : j = 0,
+  { rw c_j,
+    by_cases c_i : i = 0,
+    { rw c_i,
       simp,
-      apply ite_pos,
+      have t : ¬¬(fin.finsupp.cons 0 m) 0 = 0,
+      { simp only [not_not],
+        rw fin.finsupp.cons_zero },
+      simp only [t, if_false] },
+    rw fin_succ_equiv_eq_zero,
+    let i' := nat.pred i,
+    have r : i = i'.succ,
+    { rw nat.succ_pred_eq_of_pos _,
       sorry },
-    sorry
-  },
-
-  sorry, -- casos en i y en m?
-  intros p q hp hq,
-  sorry, -- sale
-  intros p j hp,
-  sorry -- casos segun j = n o j < n
-
+    rw r,
+    rw polynomial.coeff_mul_X,
+    rw hp i',
+    simp, -- TODO nonterminal simp
+    rw fin.finsupp.cons_zero,
+    rw ← r,
+    simp only [c_i, if_true, not_false_iff],
+    congr,
+    ext,
+    by_cases c_a : a = 0,
+    { rw c_a,
+      simp only [finsupp.single_eq_same, finsupp.coe_tsub, pi.sub_apply],
+      repeat { rw fin.finsupp.cons_zero },
+      refl },
+    simp only [finsupp.single_eq_same, finsupp.coe_tsub, pi.sub_apply],
+    have c_a' : a ≠ 0,
+    { simpa using c_a },
+    let a' := fin.pred a c_a',
+    have r : a = a'.succ := by simp,
+    rw r,
+    repeat {rw fin.finsupp.cons_succ},
+    rw finsupp.single,
+    have c_a' : ¬ 0 = a := by cc,
+    simp [c_a', if_false] },
+  sorry 
 end
 
 lemma degree_of_eq {R : Type*}[comm_semiring R]{σ : Type*}
