@@ -157,6 +157,21 @@ begin
   rw [coe_fn, finsupp.has_coe_to_fun],
 end
 
+private lemma cons_zero_zero {n : ℕ}:
+  fin.finsupp.cons 0 (0: fin n →₀  ℕ ) = 0 :=
+begin
+  ext,
+  by_cases c : a ≠ 0,
+  { let a' := fin.pred a c,
+    have r : a = a'.succ := by simp,
+    rw r,
+    rw fin.finsupp.cons_succ,
+    simp },
+  simp only [not_not] at c,
+  rw c,
+  simp,
+  rw fin.finsupp.cons_zero 0 0,
+end
 /-
 
 More lemmas
@@ -208,7 +223,17 @@ lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
 begin
   apply induction_on f,
   intro a,
-  simp, --nonterminal simp
+  by_cases c_i : i = 0,
+  { rw c_i,
+    simp,
+    by_cases c_m : m = 0,
+    { rw c_m,
+      simp,
+      apply ite_pos,
+      sorry },
+    sorry
+  },
+
   sorry, -- casos en i y en m?
   intros p q hp hq,
   sorry, -- sale
@@ -346,48 +371,40 @@ begin
   simpa using h1,
 end
 
-namespace with_bot
-open nat
-
-lemma aa (s : finset ℕ )
-  --[semilattice_sup_bot α] [semilattice_sup_bot (option α)]
-  :
-  s.sup (some : ℕ → option ℕ) = some (s.sup (λ (i:ℕ), (i:ℕ)))  :=
-begin
-  sorry
-end
-end with_bot
-
 lemma degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
   {f : mv_polynomial (fin (n+1)) R} (h : f ≠ 0): 
   (fin_succ_equiv R n f).degree = degree_of 0 f :=
 begin
   have t:= finsupp.support_nonempty_iff.2 h,
   rw polynomial.degree,
-  apply decidable.eq_iff_le_not_lt.2,
-  apply and.intro,
-  apply finset.sup_le,
-  intros i hi,
-  rw degree_of_eq,
-  cases fin_succ_equiv_support.1 hi with m hm,
-  have t2 := @finset.le_sup ℕ _ _ _ (λ m, m 0 : (fin (n + 1) →₀ ℕ) → ℕ) _ hm,
-  simp at t2, -- nonterminal simp!
-  rw fin.finsupp.cons_zero at t2,
-  rwa [with_bot.some_eq_coe, with_bot.coe_le_coe],
-  rw not_lt,
-  rw degree_of_eq,
-  have t2:= @finset.sup_le _ _ _ (f.support) (λ (m : fin (n + 1) →₀ ℕ), m 0),
-  rw ← with_bot.some_eq_coe,
-  have h : f.support.sup (λ (m : fin (n + 1) →₀ ℕ), m 0)
-  ≤ (fin_succ_equiv R n f).support.sup (λ x, x),
-  { apply t2,
-    intros b hb,
-    simp,
-    sorry },
-  rw ← with_bot.some_le_some at h,
-  rw ← with_bot.aa at h,
-  sorry,
-  sorry,
+  have h : (fin_succ_equiv R n f).support.sup (λ x , x)  = degree_of 0 f,
+  {
+    apply decidable.eq_iff_le_not_lt.2,
+    apply and.intro,
+    apply finset.sup_le,
+    intros i hi,
+    rw degree_of_eq,
+    cases fin_succ_equiv_support.1 hi with m hm,
+    have t2 := @finset.le_sup ℕ _ _ _ (λ m, m 0 : (fin (n + 1) →₀ ℕ) → ℕ) _ hm,
+    simp at t2, -- nonterminal simp!
+    rw fin.finsupp.cons_zero at t2,
+    sorry,
+    sorry,
+    sorry,
+    /-
+    rwa [with_bot.some_eq_coe, with_bot.coe_le_coe],
+    rw not_lt,
+    rw degree_of_eq,
+    have t2:= @finset.sup_le _ _ _ (f.support) (λ (m : fin (n + 1) →₀ ℕ), m 0),
+    rw ← with_bot.some_eq_coe,
+    have h : f.support.sup (λ (m : fin (n + 1) →₀ ℕ), m 0)
+    ≤ (fin_succ_equiv R n f).support.sup (λ x, x),
+    { apply t2,
+      intros m hm,
+      simp,
+      sorry },-/
+  },
+  sorry, -- detalle tecnico
 end
 
 lemma nat_degree_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
