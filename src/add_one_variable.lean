@@ -265,13 +265,6 @@ begin
   simp,
 end
 
-lemma well_known_but_cannot_find {n : ℕ} (h : ¬ n = 0) : 0 < n :=
-begin
-  by_contradiction h',
-  simp only [not_lt, le_zero_iff] at h',
-  cc,
-end
-
 lemma fin_succ_equiv_coeff_coeff {n : ℕ} {R : Type u} [comm_semiring R]
   (m : fin n →₀  ℕ) (f : mv_polynomial (fin (n+1)) R ) (i : ℕ) :
   coeff m (polynomial.coeff (fin_succ_equiv R n f) i) = coeff (fin.finsupp.cons i m) f :=
@@ -324,7 +317,8 @@ begin
     let i' := nat.pred i,
     have r : i = i'.succ,
     { rw nat.succ_pred_eq_of_pos _,
-      exact well_known_but_cannot_find c_i },
+      apply nat.pos_of_ne_zero,
+      simpa },
     rw r,
     rw polynomial.coeff_mul_X,
     rw hp i',
