@@ -125,8 +125,8 @@ def q: mv_polynomial (fin n) F :=
   ∑ (m : fin n →₀ ℕ) in (@ms  n F _ S j p h), (monomial (m - single j (S j).card)) (coeff m (@f n F _ S j p h))
 #check @q n F _ S j p h
 
-def h1: fin n → mv_polynomial (fin n) F :=
-   λ (i : fin n), ite (i = j) (h j * X j - (@q n F _ S j p h)) (h i * X j)
+def h1: fin n → mv_polynomial (fin n) F := (λ i,  h i * (X j)) + single j  (@q n F _ S j p h)
+   --λ (i : fin n), ite (i = j) (h j * X j + (@q n F _ S j p h)) (h i * X j)
 #check @h1 n F _ S j p h
 
 lemma prop_ms (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  m j = (S j).card := 
@@ -142,6 +142,7 @@ lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
    m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := 
 begin
   rw q at h_m,
+
   simp at h_m,
   --rw coeff at h_m,
   sorry
@@ -149,8 +150,9 @@ end
 #check @exists_m1 n F _ S j p h
 
 include h_h
-lemma comp_1:  p * X j - ∑ (i : fin n), (@h1 n F _ S j p h) i * (@g n F _ S) i = (@f n F _ S j p h
-) - (@q n F _ S j p h) *  (@g n F _ S) j
+lemma comp_1:  
+  p * X j - ∑ (i : fin n), (@h1 n F _ S j p h) i * (@g n F _ S) i 
+  = (@f n F _ S j p h) - (@q n F _ S j p h) *  (@g n F _ S) j
 :=
 begin
   rw h1,
@@ -160,24 +162,67 @@ begin
   rw coeff_sum,
   rw coeff_mul_X',
   rw coeff_mul_X',
-  --rw q,
+  let q := @q n F _ S j p h,
   by_cases c_j_m : j ∈ m.support,
   { simp [if_pos, c_j_m],
     rw sub_sub,
     congr,
     rw coeff_sum,
-    sorry,
-  },
+    have h : (λ x, coeff m ((h x * X j + single j q x) * g x ))
+      = (λ x, coeff (m - single j 1) (h x * g x))
+      + single j (coeff m (q * g j)),
+    { ext,
+      simp,
+      rw add_mul,
+      rw coeff_add,
+      rw mul_assoc,
+      rw mul_comm (X j) (g x),
+      rw ← mul_assoc,
+      rw coeff_mul_X',
+      simp [if_pos, c_j_m],
+      congr,
+      by_cases c_x : j = x,
+      { rw [←c_x, finsupp.single_eq_same, finsupp.single_eq_same] },
+      rw finsupp.single_eq_of_ne,
+      rw finsupp.single_eq_of_ne,
+      simp,
+      simpa,
+      simpa, },
+    rw h,
+    simp,
+    rw finset.sum_add_distrib,
+    clear h,
+    congr,
+    rw finsupp.sum_single' },
   simp [if_neg, c_j_m],
-  
-  sorry
+  have h : (λ x, coeff m ((h x * X j + single j q x) * g x ))
+  = -- (λ x, coeff m (h x * X j * g x)) +
+   single j (coeff m (q * g j)),
+  { ext,
+    rw add_mul,
+    rw coeff_add,
+    simp,
+    rw mul_assoc,
+    rw mul_comm (X j) (g x),
+    rw ← mul_assoc,
+    rw coeff_mul_X',
+    simp [if_neg, c_j_m],
+    by_cases c_x : j = x,
+    { rw [←c_x, finsupp.single_eq_same, finsupp.single_eq_same] },
+    rw finsupp.single_eq_of_ne,
+    rw finsupp.single_eq_of_ne,
+    simp,
+    simpa,
+    simpa, },
+  rw h,
+  rw finsupp.sum_single' j,
 end
 omit h_h
 #check @comp_1 n F _ S j p h
 
 lemma comp_2 : ∀ m, m ∈ (@ms  n F _ S j p h) → coeff m (@f n F _ S j p h) = coeff m ((@q n F _ S j p h) * (@g n F _ S) j)
 :=begin
-  intros m' hm',
+  intros m hm,
   --rw ← sub_eq_zero,
   --rw ←  coeff_sub,
   rw q,
@@ -286,7 +331,7 @@ begin
         rw m'_j_eq_0,
         rw zero_add,
         exact x },
-      have h' : m j = (S j).card := eq_of_le_of_le h h_S,
+      have h' : m j = (S j).card := nat.le_antisymm h h_S,
       have x' : m'' j = (S j).card, {
         rw ←  h',
         rw h_m_eq_m'_add_m'',
@@ -345,14 +390,14 @@ lemma h_X_1 :
   rw total_degree_mul_X c_p_eq_0 j,
   have useful := (add_le_add_right (total_degree_mul_X_le (h i) j) (S i).card),
   by_cases c_i_eq_j : i = j,
-  { rw if_pos c_i_eq_j,
-    rw c_i_eq_j,
-    have x := add_le_add_right (total_degree_add (h j * X j) (-q)) (S j).card,
-    rw ← sub_eq_add_neg at x,
-    have y : linear_order.max (h j * X j).total_degree (-q).total_degree +  (S j).card 
+  { rw c_i_eq_j,
+    simp only [single_eq_same, pi.add_apply],
+    --rw if_pos c_i_eq_j,
+    have x := add_le_add_right (total_degree_add (h j * X j) q) (S j).card,
+    have y : linear_order.max (h j * X j).total_degree q.total_degree + (S j).card 
       ≤ p.total_degree + 1,
-    { by_cases c_comp : (h j * X j).total_degree ≤ (-q).total_degree,
-      { rw [max_eq_right c_comp, total_degree_neg],
+    { by_cases c_comp : (h j * X j).total_degree ≤ q.total_degree,
+      { rw [max_eq_right c_comp],
         exact (@h_total_degree_q n F _ S j p h) },
       simp only [not_le] at c_comp,
       rw max_eq_left c_comp.le,
@@ -366,16 +411,25 @@ lemma h_X_1 :
       rw [add_assoc, add_comm (S j).card 1, ← add_assoc ] at y,
       exact useful.trans y },
     exact x.trans y },
-  simp only [hX.h1, if_neg c_i_eq_j],
+  simp only [pi.add_apply, hX.h1, if_neg c_i_eq_j],
   have h_i_neq_0 : h i ≠ 0,
   { let x := c_h1_i_eq_0,
     simp only [h1] at x,
     by_contradiction,
-    simp only [hX.h1, if_neg c_i_eq_j, h, zero_mul] at x,
-    cc },
+    simp only [hX.h1, if_neg c_i_eq_j, h, zero_mul, pi.add_apply] at x,
+    rw [zero_add, single_eq_of_ne] at x,
+    simp only [eq_self_iff_true, not_true] at x,
+    exact x,
+    symmetry,
+    simp only [ne.def],
+    exact c_i_eq_j },
   have y := add_le_add_right (right_of_not_of_or h_i_neq_0 (h_h.1 i)) 1,
   rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
+  rw [single_eq_of_ne, add_zero],
   exact useful.trans y,
+  symmetry,
+  simp only [ne.def],
+  exact c_i_eq_j,
 end
 omit c_p_eq_0 h_h
 #check @h_X_1 n F _ S j p h h_h c_p_eq_0

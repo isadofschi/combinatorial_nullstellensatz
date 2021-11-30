@@ -8,15 +8,9 @@ universe u
 
 variables {α : Type u} 
 
-
-
-
 lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := sorry
 
 end ne_symm
-
-lemma eq_of_le_of_le {a b :ℕ } (h : a ≤ b)(h' : b ≤ a) : a = b :=
-sorry
 
 /-
 
@@ -66,6 +60,23 @@ begin
 end
 
 end
+
+
+namespace finsupp
+
+open set function finsupp add_monoid_algebra
+open_locale big_operators
+
+lemma sum_single' {M : Type*} [has_zero M] [add_comm_monoid M] {n : ℕ}
+(j : fin n) (a : M) : 
+  ∑ ( x : fin n) , (single j a) x  = a := 
+begin
+  sorry
+end
+
+
+end finsupp
+
 
 /-
 
