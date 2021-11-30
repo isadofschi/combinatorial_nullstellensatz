@@ -135,6 +135,10 @@ begin
   rw aux,
 end
 
+lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
+  {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
+  ∃ x ∈ s, m ∈ (f x).support
+:= sorry
 
 
 lemma mem_support_iff_nonzero_coeff [comm_semiring R]

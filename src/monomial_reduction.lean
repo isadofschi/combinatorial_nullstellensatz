@@ -142,10 +142,15 @@ lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
    m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := 
 begin
   rw q at h_m,
-
-  simp at h_m,
-  --rw coeff at h_m,
-  sorry
+  have h_m' := support_sum h_m,
+  cases h_m' with m1 h_m1',
+  clear h_m,
+  cases h_m1' with H h_m1,
+  use m1,
+  apply and.intro,
+  exact H,
+  simp only [exists_prop, mem_support_iff, coeff_monomial, ite_eq_right_iff, ne.def, not_forall] at h_m1,
+  exact h_m1.1.symm,
 end
 #check @exists_m1 n F _ S j p h
 
@@ -164,7 +169,7 @@ begin
   rw coeff_mul_X',
   let q := @q n F _ S j p h,
   by_cases c_j_m : j ∈ m.support,
-  { simp [if_pos, c_j_m],
+  { simp only [if_pos, c_j_m, pi.add_apply, coeff_sub],
     rw sub_sub,
     congr,
     rw coeff_sum,
@@ -172,14 +177,14 @@ begin
       = (λ x, coeff (m - single j 1) (h x * g x))
       + single j (coeff m (q * g j)),
     { ext,
-      simp,
+      simp only [pi.add_apply],
       rw add_mul,
       rw coeff_add,
       rw mul_assoc,
       rw mul_comm (X j) (g x),
       rw ← mul_assoc,
       rw coeff_mul_X',
-      simp [if_pos, c_j_m],
+      simp only [if_pos, c_j_m],
       congr,
       by_cases c_x : j = x,
       { rw [←c_x, finsupp.single_eq_same, finsupp.single_eq_same] },
@@ -187,26 +192,25 @@ begin
       rw finsupp.single_eq_of_ne,
       simp,
       simpa,
-      simpa, },
+      simpa },
     rw h,
-    simp,
+    simp, -- nonterminal simp
     rw finset.sum_add_distrib,
     clear h,
     congr,
     rw finsupp.sum_single' },
   simp [if_neg, c_j_m],
   have h : (λ x, coeff m ((h x * X j + single j q x) * g x ))
-  = -- (λ x, coeff m (h x * X j * g x)) +
-   single j (coeff m (q * g j)),
+  = single j (coeff m (q * g j)),
   { ext,
     rw add_mul,
     rw coeff_add,
-    simp,
+    simp only,
     rw mul_assoc,
     rw mul_comm (X j) (g x),
     rw ← mul_assoc,
     rw coeff_mul_X',
-    simp [if_neg, c_j_m],
+    simp only [if_neg, c_j_m, zero_add, not_false_iff],
     by_cases c_x : j = x,
     { rw [←c_x, finsupp.single_eq_same, finsupp.single_eq_same] },
     rw finsupp.single_eq_of_ne,
