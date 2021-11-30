@@ -91,24 +91,6 @@ end
 
 local attribute [instance] classical.prop_decidable
 
-private def point.cons  {n:ℕ}{α: Type*}(y : α) (s' : fin n → α) : fin (n+1) → α := 
-fin.cons y s'
-
-private def point.cons_zero {n:ℕ}{α: Type*}(s' : fin n → α)(y : α) : 
-point.cons y s' 0 = y :=
-begin
-  rw point.cons,
-  simp,
-end
-
-private def point.cons_succ {n:ℕ}{α: Type*}{i : fin n}
-(y : α) (s' : fin n → α) : 
-point.cons y s' i.succ = s' i :=
-begin
-  rw point.cons,
-  simp,
-end
-
 private noncomputable def fin.support
 {M : Type*} [has_zero M] {n : ℕ} (f : fin n → M) : finset (fin n) :=
 (finset.fin_range n).filter (λ i, f i ≠ 0)
@@ -381,7 +363,7 @@ end
 
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_semiring R]
   (s : fin n → R) (y : R) (f : mv_polynomial (fin (n+1)) R) : 
-  eval (point.cons y s) f
+  eval (fin.cons y s : fin (n+1) → R) f
   = polynomial.eval y (polynomial.map (eval s) ((fin_succ_equiv R n) f)) :=
 begin
   apply induction_on f,
@@ -402,12 +384,12 @@ begin
   simp,
   by_cases c : j = 0,
   { rw c,
-    rw point.cons_zero,
+    rw fin.cons_zero,
     simp },
   have c' : j ≠ 0 := by simpa only [ne.def],
   let i := fin.pred j c',
   have r : j = i.succ := by simp,
-  rw [r, point.cons_succ],
+  rw [r, fin.cons_succ],
   simp,
 end
 
@@ -430,7 +412,6 @@ begin
   rw h at hi,
   simpa using hi,
 end
-
 
 lemma support_eval {n : ℕ} {R : Type u} [comm_semiring R]
 (s' : fin n → R) (f : polynomial (mv_polynomial (fin n) R)):
@@ -638,10 +619,10 @@ begin
     by_cases c : i ≠ 0,
     { let i' := fin.pred i c,
       have r : i = i'.succ := by simp,
-      rwa [ r, point.cons_succ y s'],
+      rwa [ r, fin.cons_succ],
       exact hs' i' },
     simp only [not_not] at c,
-    rwa [c, point.cons_zero] },
+    rwa [c, fin.cons_zero] },
   simpa using lt_of_le_of_lt ((number_zeroes_field c1 (S 0) (h0 _ hs)).trans _) (hS 0),
   have x := nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
   rw nat_degree_fin_suc_equiv f at x,
