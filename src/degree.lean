@@ -193,10 +193,22 @@ begin
   sorry
 end
 
+lemma lemita6' { n : ℕ } {F : Type u} [field F] {S : finset F} {i j: fin n}
+  {m: fin n →₀ ℕ} (h : j ≠ i) (h' : m j ≠ 0) :  coeff m  (∏ s in S, (X i - C s)) = 0 :=
+begin
+  sorry
+end
+
+
 lemma lemita7 { n : ℕ } {F : Type u} [field F] {S : finset F} {i: fin n}
   {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) : m i ≤ S.card
 := sorry
 
+lemma lemita8  { n : ℕ } {F : Type u} [field F] {S : finset F} {i: fin n}
+  : coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
+begin
+  sorry,
+end
 
 lemma eval_is_zero { n : ℕ } {F : Type u} [field F]
   (S : finset F)

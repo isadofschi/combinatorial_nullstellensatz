@@ -67,11 +67,20 @@ namespace finsupp
 open set function finsupp add_monoid_algebra
 open_locale big_operators
 
+
+lemma sum_single'' {M : Type*} [has_zero M] [add_comm_monoid M] {α : Type*}{ s : finset α}
+{j : α} (h : j ∈ s) (a : M) : 
+  ∑ x in s , (single j a) x  = a := 
+begin
+  sorry
+end
+
 lemma sum_single' {M : Type*} [has_zero M] [add_comm_monoid M] {n : ℕ}
 (j : fin n) (a : M) : 
   ∑ ( x : fin n) , (single j a) x  = a := 
 begin
-  sorry
+  rw sum_single'',
+  simp,
 end
 
 
@@ -97,6 +106,12 @@ theorem mem_or_mem_of_mem_union {n : ℕ} {x : (fin n →₀ ℕ)} {a b : finset
 
 end finset
 
+namespace finsupp
+variables {σ : Type*} 
+
+lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h1 : m ≤ n) : m ≠ n → m < n := sorry
+
+end finsupp
 /-
 
 Lemmas for mv_polynomial
@@ -155,6 +170,20 @@ lemma support_mul' {R : Type*}[comm_ring R]
 begin
   sorry -- use support_mul
 end 
+
+
+lemma coeff_monomial_mul [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
+  coeff m ((monomial m' a) * f) = a * coeff (m-m') f := 
+begin
+  sorry
+end
+
+lemma coeff_monomial_mul' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' ≤ m) (f : mv_polynomial σ R) (a : R): 
+  coeff m ((monomial m' a) * f) = 0 := 
+begin
+  sorry
+end
+
 
 lemma induction_on_monomial 
   {σ : Type} {R : Type*} [comm_semiring R]
