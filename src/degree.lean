@@ -71,6 +71,35 @@ multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0
 
 def monomial_degree {s : Type} (t : s →₀ ℕ) : ℕ := ∑ i in t.support, t i
 
+lemma le_monomial_degree  {s : Type} (t : s →₀ ℕ) (j : s) : t j ≤ monomial_degree t :=
+begin
+  sorry
+end
+
+lemma monomial_degree_sub  {σ : Type*} {m m' :  σ →₀ ℕ} (h : m' ≤ m) : 
+  monomial_degree (m-m') = monomial_degree m - monomial_degree m' := 
+begin
+  sorry
+end
+
+lemma total_degree_monomial_eq_monomial_degree  {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {a : R} (h : a ≠ 0):
+total_degree (monomial m a) = monomial_degree m :=
+begin
+  sorry
+end
+
+lemma monomial_degree_single {σ : Type*} {j : σ} {d : ℕ}:
+monomial_degree (single j d) = d :=
+begin
+  sorry
+end
+
+lemma monomial_degree_le_total_degree {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {f  : mv_polynomial σ R} 
+  (h : m ∈ f.support) : monomial_degree m ≤ total_degree f :=
+begin
+  sorry
+end
+
 -- ¿ que pasa con el grado del polinomio 0 ?
 #eval total_degree (0 : mv_polynomial (fin 3) ℚ) 
 -- #eval total_degree ( single (λ i:(fin 3), 1)  0 : mv_polynomial (fin 3) ℚ) 
@@ -163,11 +192,13 @@ begin
   sorry,
 end
 
+
+
 /-
   Ver si se puede generalizar más esta parte
 -/
 
-lemma lemita1 { n : ℕ } {F : Type u} [field F] (S : finset F) (t : fin n →₀ ℕ ) (i : fin n) :
+lemma lemita1 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
   dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
 begin
   sorry,

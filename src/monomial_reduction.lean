@@ -137,6 +137,23 @@ begin
 end
 #check @prop_ms n F _ S j p h
 
+lemma prop_ms'' (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  m ∈ (@f n F _ S j p h).support :=
+begin
+  intro h,
+  rw finset.mem_filter at h,
+  exact h.1,
+end
+
+
+lemma prop_ms' (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  coeff m (@f n F _ S j p h) ≠ 0 :=
+begin
+  intro h,
+  rw ← mem_support_iff,
+  apply prop_ms'',
+  exact h,
+end
+
+
 lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
   ∃ m1 : (fin n →₀ ℕ),
    m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := 
@@ -324,6 +341,7 @@ end
 #check @h_total_degree_f n F _ S j p h h_h
 omit h_h
 
+include h_h
 lemma h_total_degree_q : total_degree (@q n F _ S j p h) + (S j).card ≤  total_degree p + 1 :=
 begin
   rw q,
@@ -332,12 +350,37 @@ begin
   clear t,
   apply t'.trans ,
   clear t',
-  --have ∀ m, 
-  --rw total_degree_sum,
-  -- use total_degree_sum, h_total_degree_f and the fact that
-  -- each monomial m in the definition of q is in the support of f.
-  sorry
+  simp only,
+  let f := λ (m : fin n →₀ ℕ), ((monomial (m - single j (S j).card)) (coeff m f)).total_degree,
+  cases finset.sup_eq_some ms f with m hm,
+  cases hm with h_m_in_ms h_sup_f_eq_f_m,
+  rw h_sup_f_eq_f_m,
+  simp only [f],
+  clear h_sup_f_eq_f_m f,
+  rw total_degree_monomial_eq_monomial_degree (prop_ms' m h_m_in_ms),
+  rw monomial_degree_sub,
+  rw monomial_degree_single,
+  have x : monomial_degree m - (S j).card + (S j).card = monomial_degree m,
+  { rw nat.sub_add_cancel,
+    rw ←prop_ms m h_m_in_ms,
+    exact le_monomial_degree m j },
+  rw x,
+  have y : monomial_degree m ≤ total_degree f,
+  { apply monomial_degree_le_total_degree,
+    apply prop_ms'',
+    exact h_m_in_ms },
+  exact le_trans y (@h_total_degree_f n F _ S j p h h_h),
+  rw finsupp.le_def,
+  intro i,
+  by_cases c : i = j,
+  { rw c,
+    rw prop_ms m h_m_in_ms,
+    simp },
+  rw single_eq_of_ne,
+  simp,
+  cc,
 end
+omit h_h
 #check @h_total_degree_q n F _ S j p h
 
 include h_h
@@ -470,7 +513,7 @@ lemma h_X_1 :
       ≤ p.total_degree + 1,
     { by_cases c_comp : (h j * X j).total_degree ≤ q.total_degree,
       { rw [max_eq_right c_comp],
-        exact (@h_total_degree_q n F _ S j p h) },
+        apply @h_total_degree_q n F _ S j p h h_h },
       simp only [not_le] at c_comp,
       rw max_eq_left c_comp.le,
       rw c_i_eq_j at useful,

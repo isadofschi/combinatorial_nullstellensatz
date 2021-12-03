@@ -118,6 +118,16 @@ Lemmas for mv_polynomial
 
 -/
 
+namespace finset
+variable {α : Type*}
+
+lemma sup_eq_some (s : finset α) (f : α → ℕ) : ∃ x ∈ s , s.sup f = f x :=
+begin
+  sorry
+end
+
+end finset
+
 namespace mv_polynomial
 open set function finsupp add_monoid_algebra
 open_locale big_operators
@@ -126,6 +136,7 @@ variable {R : Type*}
 variables {σ : Type*} 
 
 universe u
+
 
 lemma eee { n : ℕ } {F : Type u} [field F] 
 (j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
@@ -183,6 +194,15 @@ lemma coeff_monomial_mul' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' �
 begin
   sorry
 end
+
+/-
+lemma total_degree_sub_monomial [comm_semiring R] {m m' :  σ →₀ ℕ} (h : m' ≤ m) (a : R): 
+  total_degree (monomial  (m-m') a) = total_degree (monomial  m a) - total_degree (monomial m' a) := 
+begin
+  sorry
+end
+-/
+
 
 
 lemma induction_on_monomial 

@@ -585,10 +585,8 @@ end
 /- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/
 lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
   (f : mv_polynomial (fin n) F)
-  (t : fin n →₀ ℕ)
-  (ht : ∀ i : fin n, degree_of i f ≤ t i)
   (S : fin n → finset F)
-  (hS : ∀ i : fin n, t i < (S i).card) 
+  (hS : ∀ i : fin n, degree_of i f < (S i).card) 
   (hz : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
   f = 0 :=
 begin
@@ -600,13 +598,8 @@ begin
   apply (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv F n)).1,
   apply (eq_zero_iff_every_coeff_zero ((fin_succ_equiv F n) f)).1,
   intro i,
-  apply hn (polynomial.coeff ((fin_succ_equiv F n) f) i) (fin.finsupp.tail t),
-  intro j,
-  rw ← fin.finsupp.tail_eq t j,
-  exact (degree_of_coeff_fin_suc_equiv f j i).trans (ht j.succ),
-  intro j,
-  rw ← fin.finsupp.tail_eq t j,
-  exact hS j.succ,
+  apply hn (polynomial.coeff ((fin_succ_equiv F n) f) i),
+  exact λ j, lt_of_le_of_lt (degree_of_coeff_fin_suc_equiv f j i) (hS j.succ),
   intros s hs,
   rw ← coeff_eval_eq_eval_coeff,
   rw (eq_zero_iff_every_coeff_zero (polynomial.map (eval s) ((fin_succ_equiv F n) f))).2,
@@ -624,9 +617,8 @@ begin
     simp only [not_not] at c,
     rwa [c, fin.cons_zero] },
   simpa using lt_of_le_of_lt ((number_zeroes_field c1 (S 0) (h0 _ hs)).trans _) (hS 0),
-  have x := nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
-  rw nat_degree_fin_suc_equiv f at x,
-  exact x.trans (ht 0),
+  rw ← nat_degree_fin_suc_equiv f,
+  exact nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
 end
 
 end mv_polynomial
