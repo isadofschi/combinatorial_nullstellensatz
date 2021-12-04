@@ -1,4 +1,4 @@
-# Lean formalization of the Combinatorial Nullstellensatz
+# A Lean formal proof of the Combinatorial Nullstellensatz
 
 ```
 theorem combinatorial_nullstellensatz { n : ℕ } {F : Type u} [field F]
