@@ -363,16 +363,12 @@ end
 omit h_h
 
 include h_h
-lemma h_total_degree_q : total_degree (@q n F _ S j p h) + (S j).card ≤  total_degree p + 1 :=
+lemma h_total_degree_q : (¬ (@ms  n F _ S j p h) = ∅ ) →  total_degree (@q n F _ S j p h) + (S j).card ≤  total_degree p + 1 :=
 begin
-  by_cases c_ms_empty : ms = ∅,
-  { -- it seems that we should solve this case earlier in the proof :-/
-    --rw @q_eq_zero_of_ms_empty n F _ S j p,
-    sorry },
+  intro h_ms,
   have c_ms_nonempty : ms.nonempty,
   { apply finset.nonempty_of_ne_empty,
-    simpa using c_ms_empty },
-  clear c_ms_empty,
+    simpa using h_ms },
   rw q,
   have t:= total_degree_sum ms (λm , (monomial (m - single j (S j).card)) (coeff m f) ),
   have t' := add_le_add_right t (S j).card,
@@ -540,9 +536,26 @@ lemma h_X_1 :
     have x := add_le_add_right (total_degree_add (h j * X j) q) (S j).card,
     have y : linear_order.max (h j * X j).total_degree q.total_degree + (S j).card 
       ≤ p.total_degree + 1,
-    { by_cases c_comp : (h j * X j).total_degree ≤ q.total_degree,
+    { by_cases h_ms : ms = ∅,
+      { rw @q_eq_zero_of_ms_empty n F _ S j p h h_ms,
+        rw  total_degree_zero,
+        rw c_i_eq_j at useful,
+        apply useful.trans,
+        rw [add_comm, ←add_assoc],
+        apply add_le_add_right _ 1,
+        rw add_comm,
+        --rw ←c_i_eq_j,
+        simp only [h1, hX.h1, c_i_eq_j] at c_h1_i_eq_0,
+        rw @q_eq_zero_of_ms_empty n F _ S j p h h_ms at c_h1_i_eq_0,
+        simp only [add_zero, coe_zero, single_zero] at c_h1_i_eq_0,
+        have h_j_ne_zero : h j ≠ 0,
+        { by_contra c,
+          rw c at c_h1_i_eq_0,
+          simpa using c_h1_i_eq_0 },
+        exact right_of_not_of_or h_j_ne_zero (h_h.1 j) },
+      by_cases c_comp : (h j * X j).total_degree ≤ q.total_degree,
       { rw [max_eq_right c_comp],
-        apply @h_total_degree_q n F _ S j p h h_h },
+        apply @h_total_degree_q n F _ S j p h h_h h_ms},
       simp only [not_le] at c_comp,
       rw max_eq_left c_comp.le,
       rw c_i_eq_j at useful,

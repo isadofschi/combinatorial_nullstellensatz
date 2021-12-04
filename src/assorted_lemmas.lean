@@ -40,7 +40,7 @@ begin
   },
   rw not_le at h,
   rw max_eq_left h.le,
-  have h' : b + c≤ a + c := by linarith,
+  have h' : b + c ≤ a + c := by linarith,
   rw max_eq_left h',
 end
 
@@ -53,7 +53,7 @@ open set function finsupp add_monoid_algebra
 open_locale big_operators
 
 
-lemma sum_single'' {M : Type*} [has_zero M] [add_comm_monoid M] {α : Type*}{ s : finset α}
+lemma sum_single'' {M : Type*} [has_zero M] [add_comm_monoid M] {α : Type*} {s : finset α}
 {j : α} (h : j ∈ s) (a : M) : 
   ∑ x in s , (single j a) x  = a := 
 begin
@@ -88,10 +88,11 @@ begin
   { by_contra c,
     rw c at j_in_s,
     cc, },
-  simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff],
+  simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff, zero_add],
   sorry, -- ??
 end
 
+-- what should we put here instead of ℕ?
 lemma sum_single' {M : Type*} [has_zero M] [add_comm_monoid M] {n : ℕ}
 (j : fin n) (a : M) : 
   ∑ ( x : fin n) , (single j a) x  = a := 
@@ -100,31 +101,9 @@ begin
   simp,
 end
 
-end finsupp
-
-
-/-
-
-Lemmas for finset
-
--/
-
-namespace finset
-
-variables {α : Type*} 
-
-lemma mem_of_mem_of_subset {x : α} {s t : finset α} 
-(h : x ∈ s) (h' : s ⊆ t) : x ∈ t := sorry
-
--- how to use α instead of fin n →₀ ℕ here?
-theorem mem_or_mem_of_mem_union {n : ℕ} {x : (fin n →₀ ℕ)} {a b : finset (fin n →₀ ℕ)}
- (H : x ∈ a ∪ b) : x ∈ a ∨ x ∈ b := sorry
-
-end finset
-
-namespace finsupp
 variables {σ : Type*} 
 
+-- what should we put here instead of ℕ?
 lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h1 : m ≤ n) : m ≠ n → m < n :=
 begin
   intro h,
@@ -134,9 +113,10 @@ begin
 end
 
 end finsupp
+
 /-
 
-Lemmas for mv_polynomial
+Lemmas for mv_polynomial: support, coeff, induction
 
 -/
 
@@ -148,25 +128,20 @@ variables {R : Type*} {σ : Type*}
 
 universe u
 
-
-
-
 lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
   {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
   ∃ x ∈ s, m ∈ (f x).support
 := sorry
 
--- check https://github.com/leanprover-community/flt-regular/blob/master/src/ring_theory/polynomial/homogenization.lean
--- for these lemmas!
-
-lemma mem_support_iff_nonzero_coeff [comm_semiring R]
+lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this? Do we already have this?
 (p : mv_polynomial σ R) (m : σ →₀ ℕ): 
-m ∈ p.support ↔ coeff m p ≠ 0 := sorry
+m ∈ p.support ↔ coeff m p ≠ 0 := by simp
 
 lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p q : mv_polynomial (fin n) R): 
 (p - q).support ⊆ p.support ∪ q.support := sorry
 
+-- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
 lemma support_mul' {R : Type*}[comm_ring R]
  {f g : mv_polynomial σ R}{m : σ →₀ ℕ}(m ∈ (f * g).support):
  ∃ m' m'', m' ∈ f.support ∧ m'' ∈ g.support ∧ m = m' + m'' :=
@@ -174,7 +149,7 @@ begin
   sorry -- use support_mul
 end 
 
-
+-- compare the following with https://github.com/leanprover-community/mathlib/pull/10429/fileshttps://github.com/leanprover-community/mathlib/pull/10429/files
 lemma coeff_monomial_mul [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
   coeff m ((monomial m' a) * f) = a * coeff (m-m') f := 
 begin
