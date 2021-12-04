@@ -64,7 +64,7 @@ begin
 end
 
 theorem number_zeroes_field {F : Type u} [field F]{p : polynomial F}(h : p ≠ 0)
-(Z : finset F ) (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
+{Z : finset F } (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
 begin
   apply trans _ (polynomial.card_roots' h),
   rw finset.card,

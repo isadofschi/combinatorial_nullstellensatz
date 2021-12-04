@@ -7,6 +7,7 @@ import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
 import algebra.algebra.basic
 import degree
+import lemmas_g_S
 import assorted_lemmas
 
 

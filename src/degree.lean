@@ -18,6 +18,9 @@ open set function finsupp add_monoid_algebra
 
 open_locale big_operators 
 
+-- check https://github.com/leanprover-community/flt-regular/blob/master/src/ring_theory/polynomial/homogenization.lean
+-- for these lemmas before proving!
+
 namespace mv_polynomial 
 
 lemma degree_of_C {σ : Type*} {R : Type*} [comm_semiring R] (a : R) (x : σ): 
@@ -100,10 +103,6 @@ begin
   sorry
 end
 
--- ¿ que pasa con el grado del polinomio 0 ?
-#eval total_degree (0 : mv_polynomial (fin 3) ℚ) 
--- #eval total_degree ( single (λ i:(fin 3), 1)  0 : mv_polynomial (fin 3) ℚ) 
-
 -- hay que pedir f neq 0 y g neq 0 o f*g neq 0!!
 lemma total_degree_mul' { n : ℕ } {F : Type u} [field F] (f g : mv_polynomial (fin n) F) :
 total_degree (f*g) = total_degree f + total_degree g :=
@@ -124,7 +123,6 @@ total_degree (f * X j) ≤ total_degree f + 1 :=
 begin
   sorry
 end
-
 
 lemma total_degree_mul_X  { n : ℕ } {F : Type u} [field F] 
 {f : mv_polynomial (fin n) F} (h : f ≠ 0) (j : fin n) :
@@ -189,66 +187,6 @@ lemma dominant_monomial_of_factor_is_factor_of_max_degree_monomial
   (f g : mv_polynomial (fin n) F) (hfg : max_degree_monomial t (f*g))
   (hf : f≠ 0) (hg : dominant_monomial t' g) : ∀ i : fin n, t' i ≤ t i :=
 begin
-  sorry,
-end
-
-
-
-/-
-  Ver si se puede generalizar más esta parte
--/
-
-lemma lemita1 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
-  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
-begin
-  sorry,
-end
-
-lemma lemita4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
-  total_degree (∏ s in S, (X i - C s)) = S.card :=
-begin
-  sorry
-end
-
-lemma lemita5 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n}
-  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support)
-  (h_m_i : m i = S.card) : m = single i S.card :=
-begin
-  sorry
-end
-
-lemma lemita6 { n : ℕ } {F : Type u} [field F] {S : finset F} {i j: fin n}
-  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) 
-  (h : i ≠ j) : m j = 0 :=
-begin
-  sorry
-end
-
-lemma lemita6' { n : ℕ } {F : Type u} [field F] {S : finset F} {i j: fin n}
-  {m: fin n →₀ ℕ} (h : j ≠ i) (h' : m j ≠ 0) :  coeff m  (∏ s in S, (X i - C s)) = 0 :=
-begin
-  sorry
-end
-
-
-lemma lemita7 { n : ℕ } {F : Type u} [field F] {S : finset F} {i: fin n}
-  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) : m i ≤ S.card
-:= sorry
-
-lemma lemita8  { n : ℕ } {F : Type u} [field F] {S : finset F} {i: fin n}
-  : coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
-begin
-  sorry,
-end
-
-lemma eval_is_zero { n : ℕ } {F : Type u} [field F]
-  (S : finset F)
-  (hS : 0 < S.card) 
-  (s : fin n → F)
-  (i : fin n)
-  (h_s : s i ∈ S) :
-  eval s (∏ s in S, (X i - C s)) = 0
-:= begin
   sorry,
 end
 

@@ -106,5 +106,17 @@ begin
   sorry
 end
 
+lemma mod_succ_self_eq_self (n : ℕ) : n % n.succ = n :=
+begin
+  apply nat.mod_eq_of_lt,
+  apply nat.lt_succ_self,
+end
+
+lemma coe_eq_mk {n : ℕ }(h : n < n+1): ↑n = fin.mk n h :=
+begin
+  apply fin.eq_of_veq,
+  simp only [fin.val_eq_coe, fin.coe_of_nat_eq_mod, fin.mk_eq_subtype_mk],
+  exact mod_succ_self_eq_self n,
+end
 
 end mv_polynomial

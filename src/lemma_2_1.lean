@@ -69,7 +69,7 @@ begin
       exact hs' i' },
     simp only [not_not] at c,
     rwa [c, fin.cons_zero] },
-  simpa using lt_of_le_of_lt ((polynomial.number_zeroes_field c1 (S 0) (h0 _ hs)).trans _) (hS 0),
+  simpa using lt_of_le_of_lt ((polynomial.number_zeroes_field c1 (h0 _ hs)).trans _) (hS 0),
   rw ← nat_degree_fin_suc_equiv f,
   exact nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
 end

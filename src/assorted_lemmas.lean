@@ -166,6 +166,8 @@ lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
   ∃ x ∈ s, m ∈ (f x).support
 := sorry
 
+-- check https://github.com/leanprover-community/flt-regular/blob/master/src/ring_theory/polynomial/homogenization.lean
+-- for these lemmas!
 
 lemma mem_support_iff_nonzero_coeff [comm_semiring R]
 (p : mv_polynomial σ R) (m : σ →₀ ℕ): 

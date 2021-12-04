@@ -7,8 +7,10 @@ import data.mv_polynomial.basic
 import algebra.algebra.basic
 import degree
 import monomial_reduction
-import add_one_variable
+import lemma_2_1
 import data.mv_polynomial.comm_ring
+import lemmas_g_S
+import truncate
 
 /-!
 # Combinatorial Nullstellensatz
@@ -135,9 +137,9 @@ theorem combinatorial_nullstellensatz
 (h_card_S : ∀ i : fin n, t i < (S i).card) :
 ∃ s : fin n → F, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
 begin
-  have S' : fin n → finset F, sorry,
-  have h_S_S' : ∀ i : fin n, S' i ⊆ S i, sorry,
-  have h_card_S' : ∀ i : fin n, t i + 1 = (S' i).card, sorry,
+  let S' : fin n → finset F := λ i, finset.truncate (nat.succ_le_of_lt (h_card_S i)),
+  have h_S_S' : ∀ i : fin n, S' i ⊆ S i := λ i, finset.truncate_sub (h_card_S i),
+  have h_card_S' : ∀ i : fin n, t i + 1 = (S' i).card := λ i , (finset.card_truncate (h_card_S i)).symm,
   have exists_s := combinatorial_nullstellensatz'' f t h_max S' h_card_S',
   cases exists_s with s h_s',
   use s,
