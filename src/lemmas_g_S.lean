@@ -11,9 +11,7 @@ import data.nat.basic
 
 import degree
 
-universes u v
-
-variables {α : Type v}
+universes u
 
 open set function finsupp add_monoid_algebra
 
@@ -23,8 +21,10 @@ open_locale big_operators
 namespace mv_polynomial
 
 /-
-  Do this with more generality
+  Do this with more generality.
 -/
+
+-- Rename these results
 
 lemma lemita1 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
   dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
@@ -58,7 +58,6 @@ begin
   sorry
 end
 
-
 lemma lemita7 { n : ℕ } {F : Type u} [field F] {S : finset F} {i: fin n}
   {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) : m i ≤ S.card
 := sorry
@@ -76,8 +75,6 @@ lemma eval_is_zero { n : ℕ } {F : Type u} [field F]
   (i : fin n)
   (h_s : s i ∈ S) :
   eval s (∏ s in S, (X i - C s)) = 0
-:= begin
-  sorry,
-end
+:= by simp  [eval_prod, finset.prod_eq_zero h_s]
 
 end mv_polynomial

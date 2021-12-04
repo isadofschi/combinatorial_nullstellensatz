@@ -5,11 +5,8 @@ import algebra.algebra.basic
 
 section ne_symm
 universe u
-
 variables {α : Type u} 
-
-lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := sorry
-
+lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := by cc
 end ne_symm
 
 /-
@@ -33,18 +30,6 @@ section open decidable tactic
 universe u
 
 variables {α : Type u} [linear_order α]
-
-/-
-lemma max_le_le {a b c d: ℕ} (h₁ : a ≤ b) (h₂ : c ≤ d) : max a c ≤ max b d := begin
-  by_cases h : a ≤ c,
-  { rw max_eq_right h,
-    exact h₂.trans (le_max_right b d),
-  },
-  rw not_le at h,
-  rw max_eq_left h.le,
-  exact h₁.trans (le_max_left b d),
-end
--/
 
 lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
 begin
@@ -72,7 +57,39 @@ lemma sum_single'' {M : Type*} [has_zero M] [add_comm_monoid M] {α : Type*}{ s 
 {j : α} (h : j ∈ s) (a : M) : 
   ∑ x in s , (single j a) x  = a := 
 begin
-  sorry
+  revert h,
+  apply finset.cons_induction_on s,
+  intro h,
+  exfalso,
+  simpa using h,
+  clear s,
+  intros j' s h' h h'',
+  rw finset.sum_cons,
+  rw finset.mem_cons at h'',
+  cases h'' with j_eq_j' j_in_s,
+  { rw j_eq_j',
+    simp only [single_eq_same],
+    rw add_comm,
+    have h: s.sum ⇑(single j' a) = 0,
+    { have h0 : ∀ x ∈ s, single j' a x = 0,
+      { intros x hx,
+        have j'_ne_x : j' ≠ x,
+        { by_contra c,
+          rw c at h',
+          cc, },
+        simp [j'_ne_x],
+      },
+      -- use h0
+      sorry },
+    rw h,
+    sorry }, -- ?? 
+  rw h j_in_s,
+  have j_ne_j' : j ≠ j',
+  { by_contra c,
+    rw c at j_in_s,
+    cc, },
+  simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff],
+  sorry, -- ??
 end
 
 lemma sum_single' {M : Type*} [has_zero M] [add_comm_monoid M] {n : ℕ}
@@ -82,7 +99,6 @@ begin
   rw sum_single'',
   simp,
 end
-
 
 end finsupp
 
@@ -109,7 +125,13 @@ end finset
 namespace finsupp
 variables {σ : Type*} 
 
-lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h1 : m ≤ n) : m ≠ n → m < n := sorry
+lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h1 : m ≤ n) : m ≠ n → m < n :=
+begin
+  intro h,
+  -- rw using definition of lt
+  -- use nat.lt_of_le_and_ne,
+  sorry,
+end
 
 end finsupp
 /-
@@ -118,48 +140,16 @@ Lemmas for mv_polynomial
 
 -/
 
-namespace finset
-variable {α : Type*}
-
-lemma sup_eq_some (s : finset α) (f : α → ℕ) : ∃ x ∈ s , s.sup f = f x :=
-begin
-  sorry
-end
-
-end finset
-
 namespace mv_polynomial
 open set function finsupp add_monoid_algebra
 open_locale big_operators
 
-variable {R : Type*}
-variables {σ : Type*} 
+variables {R : Type*} {σ : Type*} 
 
 universe u
 
 
-lemma eee { n : ℕ } {F : Type u} [field F] 
-(j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
-f.support.sup (λ m , m j) = degree_of j f :=
-begin
-  sorry
-end
 
-/- casi como finset.sup_le_iff pero es con < en vez de ≤ -/
-lemma aux { a : Type u } (s : finset a) (f : a → ℕ) (d : ℕ) :
-(∀ x, x ∈ s → f x < d ) ↔ s.sup f < d :=
-begin
-  sorry
-end
-
-lemma eee' { n : ℕ } {F : Type u} [field F] 
-{j : fin n} {f : mv_polynomial (fin n) F} {d : ℕ}:
-(∀ m : fin n →₀ ℕ, m ∈ f.support → m j < d)
-↔ degree_of j f < d :=
-begin
-  rw ← eee j f d,
-  rw aux,
-end
 
 lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
   {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
@@ -197,16 +187,7 @@ begin
   sorry
 end
 
-/-
-lemma total_degree_sub_monomial [comm_semiring R] {m m' :  σ →₀ ℕ} (h : m' ≤ m) (a : R): 
-  total_degree (monomial  (m-m') a) = total_degree (monomial  m a) - total_degree (monomial m' a) := 
-begin
-  sorry
-end
--/
-
-
-
+-- PR to  data/mv_polynomial/basic.lean
 lemma induction_on_monomial 
   {σ : Type} {R : Type*} [comm_semiring R]
   {M : mv_polynomial σ R → Prop}

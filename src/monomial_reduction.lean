@@ -10,7 +10,6 @@ import degree
 import lemmas_g_S
 import assorted_lemmas
 
-
 /-
 # Reduce degree
 
@@ -145,7 +144,6 @@ begin
   exact h.1,
 end
 
-
 lemma prop_ms' (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ S j p h) →  coeff m (@f n F _ S j p h) ≠ 0 :=
 begin
   intro h,
@@ -153,7 +151,6 @@ begin
   apply prop_ms'',
   exact h,
 end
-
 
 lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
   ∃ m1 : (fin n →₀ ℕ),
@@ -273,7 +270,7 @@ lemma comp_2 : ∀ m, m ∈ (@ms  n F _ S j p h) → coeff m (@f n F _ S j p h) 
     by_cases c_m_m' : m' ≤ m,
     { rw coeff_monomial_mul,
       rw mul_eq_zero_of_right,
-      have x := finsupp.lt_of_le_and_ne c_m_m' h_m_ne_m'.symm,
+      have x : m' < m := finsupp.lt_of_le_and_ne c_m_m' h_m_ne_m'.symm,
       have x' := x.2,
       simp only [not_le, not_forall] at x',
       cases x' with x hx,
@@ -406,7 +403,7 @@ lemma H_f : ∀ i (m : (fin n) →₀ ℕ),
    intros i m h_m_in_supp_f h_S,
     let ms := @ms n F _ S j p h,
     have x : degree_of i p1 < (S i).card := h_h.2 i,
-    have z := should_be_in_mathlib i h_m_in_supp_f,
+    have z := monomial_le_degree_of i h_m_in_supp_f,
     by_cases c_i_eq_j : i = j,
     { have h_m_in_ms : m ∈ ms,
       { have y := degree_of_mul_X_eq j p1,
@@ -426,7 +423,7 @@ end
 omit h_h
 #check @H_f n F _ S j p h h_h
 
-include h_h
+include h_h hS
 lemma H_g : ∀ i (m : (fin n) →₀ ℕ),
     m ∈ ((@q n F _ S j p h) * (@g n F _ S) j).support → ((S i).card ≤ m i) → coeff m (@f n F _ S j p h) = coeff m ((@q n F _ S j p h) * (@g n F _ S) j) := 
 begin
@@ -495,7 +492,7 @@ begin
     have x := h_h.2 i,
     have x' := degree_of_mul_X_ne (p - ∑ (i : fin n), h i * g i) c_i_eq_j',
     rw ← x' at x, clear x',
-    apply mv_polynomial.eee'.2 x m1,
+    apply (mv_polynomial.degree_of_lt_iff (hS i)).1 x m1,
     simp only [exists_prop, add_right_embedding_apply, finset.mem_map, support_mul_X, mem_support_iff, ne.def, coeff_sub],
     simp only [exists_prop, add_right_embedding_apply, finset.mem_map, support_mul_X, mem_support_iff, ne.def, finset.mem_filter,
   coeff_sub] at h_m1,
@@ -504,7 +501,7 @@ begin
   linarith,
   exact m,
 end
-omit h_h
+omit h_h hS
 
 include c_p_eq_0 h_h 
 lemma h_X_1 :
@@ -565,7 +562,7 @@ end
 omit c_p_eq_0 h_h
 #check @h_X_1 n F _ S j p h h_h c_p_eq_0
 
-include h_h
+include h_h hS
 lemma h_X_2 :
 ∀ (j_1 : fin n),
 degree_of j_1 (p * X j - ∑ (i : fin n), (@h1 n F _ S j p h) i * ∏ (s : F) in S i, (X i - C s)) < (S j_1).card
@@ -577,12 +574,12 @@ begin
     := @H_f n F _ S j p h h_h,
   have H_g : ∀ i (m : (fin n) →₀ ℕ),
     m ∈ (q * g j).support → ((S i).card ≤ m i) → coeff m f = coeff m (q * g j)
-    := @H_g n F _ S j p h h_h,
+    := @H_g n F _ S hS j p h h_h,
   rw @comp_1 n F _ S j p h h_h,
   exact degree_of_sub_aux i f (q * g j) (S i).card (H_f i) (H_g i),
 end
-omit h_h
-#check @h_X_2 n F _ S j p h h_h
+omit h_h hS
+#check @h_X_2 n F _ S hS j p h h_h 
 
 lemma h_X :
  ∀ (p : mv_polynomial (fin n) F) (j : fin n), M' n F S hS p → M' n F S hS (p * X j) :=
@@ -599,7 +596,7 @@ begin
   use @h1 n F _ S j p h,
   apply and.intro,
   exact @h_X_1 n F _ S j p h h_h c_p_eq_0,
-  exact @h_X_2 n F _ S j p h h_h,
+  exact @h_X_2 n F _ S hS j p h h_h,
 end
 
 end h_X
