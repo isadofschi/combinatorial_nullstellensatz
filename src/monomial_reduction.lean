@@ -152,6 +152,14 @@ begin
   exact h,
 end
 
+lemma q_eq_zero_of_ms_empty (h' : (@ms n F _ S j p h) = ∅) : (@q n F _ S j p h) = 0 :=
+begin
+  simp only [q],
+  rw h',
+  simp,
+end
+#check @q_eq_zero_of_ms_empty n F _ S j p 
+
 lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ S j p h).support):
   ∃ m1 : (fin n →₀ ℕ),
    m1 ∈ (@ms n F _ S j p h)  ∧ m = m1 - (single j (S j).card) := 
@@ -357,6 +365,14 @@ omit h_h
 include h_h
 lemma h_total_degree_q : total_degree (@q n F _ S j p h) + (S j).card ≤  total_degree p + 1 :=
 begin
+  by_cases c_ms_empty : ms = ∅,
+  { -- it seems that we should solve this case earlier in the proof :-/
+    --rw @q_eq_zero_of_ms_empty n F _ S j p,
+    sorry },
+  have c_ms_nonempty : ms.nonempty,
+  { apply finset.nonempty_of_ne_empty,
+    simpa using c_ms_empty },
+  clear c_ms_empty,
   rw q,
   have t:= total_degree_sum ms (λm , (monomial (m - single j (S j).card)) (coeff m f) ),
   have t' := add_le_add_right t (S j).card,
@@ -365,7 +381,7 @@ begin
   clear t',
   simp only,
   let f := λ (m : fin n →₀ ℕ), ((monomial (m - single j (S j).card)) (coeff m f)).total_degree,
-  cases finset.sup_eq_some ms f with m hm,
+  cases finset.exists_mem_eq_sup ms c_ms_nonempty f with m hm,
   cases hm with h_m_in_ms h_sup_f_eq_f_m,
   rw h_sup_f_eq_f_m,
   simp only [f],

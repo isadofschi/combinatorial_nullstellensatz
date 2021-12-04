@@ -26,6 +26,9 @@ namespace mv_polynomial
 
 -- Rename these results
 
+lemma lemita0 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
+(∏ s in S, (X i - C s)) ≠ 0 := sorry
+ 
 lemma lemita1 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
   dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
 begin
@@ -38,6 +41,9 @@ begin
   sorry
 end
 
+-- Maybe the following is useful here:
+-- https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1151
+
 lemma lemita5 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n}
   {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support)
   (h_m_i : m i = S.card) : m = single i S.card :=
@@ -49,6 +55,7 @@ lemma lemita6 { n : ℕ } {F : Type u} [field F] {S : finset F} {i j: fin n}
   {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) 
   (h : i ≠ j) : m j = 0 :=
 begin
+  -- use https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1164
   sorry
 end
 

@@ -19,15 +19,7 @@ open set function finsupp add_monoid_algebra
 open_locale big_operators 
 
 -- check https://github.com/leanprover-community/flt-regular/blob/master/src/ring_theory/polynomial/homogenization.lean
--- for these lemmas before proving!
-
-namespace finset
-
-lemma sup_eq_some (s : finset α) (f : α → ℕ) : ∃ x ∈ s , s.sup f = f x :=
-begin
-  sorry
-end
-end finset
+-- and https://github.com/leanprover-community/mathlib/pull/10429/files for useful lemmas
 
 
 namespace mv_polynomial 
@@ -39,8 +31,6 @@ begin
   sorry
 end
 
-
-
 lemma degree_of_lt_iff { n : ℕ } {F : Type u} [field F]  {j : fin n} {f : mv_polynomial (fin n) F}
  {d : ℕ} (h : 0 < d):  degree_of j f < d ↔ ∀ m : fin n →₀ ℕ, m ∈ f.support → m j < d :=
 begin
@@ -50,7 +40,6 @@ end
 
 lemma degree_of_C {σ : Type*} {R : Type*} [comm_semiring R] (a : R) (x : σ): 
   degree_of x (C a : mv_polynomial σ R) = 0 := by simp [degree_of, degrees_C]
-
 
 lemma degree_of_add_le {σ : Type*} {R : Type*} [comm_semiring R]
  (x : σ) (f g : mv_polynomial σ R): 
@@ -131,9 +120,9 @@ begin
   sorry
 end
 
--- hay que pedir f neq 0 y g neq 0 o f*g neq 0!!
-lemma total_degree_mul' { n : ℕ } {F : Type u} [field F] (f g : mv_polynomial (fin n) F) :
-total_degree (f*g) = total_degree f + total_degree g :=
+-- This is https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L774
+lemma total_degree_mul' { n : ℕ } {F : Type u} [field F] {f g : mv_polynomial (fin n) F} (hf : f ≠ 0) (hg : g ≠ 0):
+total_degree (f * g) = total_degree f + total_degree g :=
 begin
   sorry
 end
@@ -213,7 +202,7 @@ end
 lemma dominant_monomial_of_factor_is_factor_of_max_degree_monomial
   { n : ℕ } {F : Type u} [field F] (S : finset F) (t t' : fin n →₀ ℕ ) 
   (f g : mv_polynomial (fin n) F) (hfg : max_degree_monomial t (f*g))
-  (hf : f≠ 0) (hg : dominant_monomial t' g) : ∀ i : fin n, t' i ≤ t i :=
+  (hf : f ≠ 0) (hg : dominant_monomial t' g) : ∀ i : fin n, t' i ≤ t i :=
 begin
   sorry,
 end

@@ -101,7 +101,10 @@ begin
     by_cases c1 : coeff t (h i * ∏ (s : F) in S i, (X i - C s)) = 0,
     exact c1,
     have h1 : total_degree (h i * ∏ s in (S i), (X i - C s)) ≤ monomial_degree t,
-    { rw [total_degree_mul', lemita4,
+    { by_cases c' : h i = 0,
+      { simp [c', zero_mul] },
+      have g_i_ne_0 := lemita0 (S i) i,
+      rw [total_degree_mul' c' g_i_ne_0, lemita4,
           ←((max_degree_monomial_iff_nonzero_coeff_and_realizes_total_degree t f).1 h_max).2 ],
       by_cases hi0 : h i = 0,
       { exfalso,
@@ -147,7 +150,7 @@ begin
   intro i,
   have h' := h_s'.1 i,
   have h'' := h_S_S' i,
-  exact finset.mem_of_mem_of_subset h' h'',
+  exact finset.mem_of_subset h'' h',
   exact h_s'.2,
 end
 
