@@ -34,7 +34,7 @@ variables {R : Type*} {σ : Type*}
 
 local attribute [instance] classical.prop_decidable
 
-lemma support_sum [comm_ring R]{ α : Type}{s : finset α}
+lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
   {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
   ∃ x ∈ s, m ∈ (f x).support :=
 begin
@@ -74,10 +74,12 @@ lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this?
 m ∈ p.support ↔ coeff m p ≠ 0 := by simp
 
 lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
-(p q : mv_polynomial (fin n) R): 
+(p q : mv_polynomial σ R): 
 (p - q).support ⊆ p.support ∪ q.support := 
 begin
-  sorry
+  rw [sub_eq_add_neg, ← @support_neg R σ _ q],
+  --exact @support_add R σ _ p (-q),
+  sorry 
 end
 
 -- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
@@ -89,13 +91,16 @@ begin
 end 
 
 -- compare the following with https://github.com/leanprover-community/mathlib/pull/10429/fileshttps://github.com/leanprover-community/mathlib/pull/10429/files
-lemma coeff_monomial_mul [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
+
+-- use mathlib's coeff_monomial_mul' instead of the following two
+
+lemma coeff_monomial_mul'' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
   coeff m ((monomial m' a) * f) = a * coeff (m-m') f := 
 begin
   sorry
 end
 
-lemma coeff_monomial_mul' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' ≤ m) (f : mv_polynomial σ R) (a : R): 
+lemma coeff_monomial_mul''' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' ≤ m) (f : mv_polynomial σ R) (a : R): 
   coeff m ((monomial m' a) * f) = 0 := 
 begin
   sorry

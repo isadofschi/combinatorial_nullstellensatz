@@ -20,7 +20,7 @@ open_locale big_operators
 
 namespace mv_polynomial
 
-lemma eval_is_zero { n : ℕ } {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS : 0 < S.card) 
+lemma eval_is_zero {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS : 0 < S.card) 
   (s : σ → R) (i : σ) (h_s : s i ∈ S) : eval s (∏ s in S, (X i - C s)) = 0 :=
 by simp  [eval_prod, finset.prod_eq_zero h_s]
 

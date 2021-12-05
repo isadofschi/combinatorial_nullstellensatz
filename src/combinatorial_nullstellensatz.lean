@@ -63,7 +63,7 @@ begin
     = ∑ (x : fin n), (eval s) (h x) * (0:F),
   { congr,
     ext i,
-    rw eval_is_zero (S i) (hS i) s i (h_s i) },
+    rw eval_is_zero (S i) (hS i) s i (h_s i), },
   simp [hz'],
 end
 
