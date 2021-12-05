@@ -6,8 +6,12 @@ import algebra.algebra.basic
 section ne_symm
 universe u
 variables {α : Type u} 
-
-lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := by cc
+lemma not_eq_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := -- or "by cc",
+begin
+ rw ← ne,
+ symmetry,
+ rwa ne,
+end
 end ne_symm
 
 /-
@@ -22,6 +26,7 @@ universe u
 
 variables {α : Type u} [linear_order α]
 
+-- what should we put here instead of ℕ?
 lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
 begin
   by_cases h : a ≤ b,
@@ -94,18 +99,15 @@ end
 variables {σ : Type*} 
 
 -- what should we put here instead of ℕ?
-lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h1 : m ≤ n) : m ≠ n → m < n :=
+lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h : m ≤ n) : m ≠ n → m < n :=
 begin
-  intro h,
-  unfold has_lt.lt,
-  unfold preorder.lt,
+  intro h1,
+  unfold has_lt.lt preorder.lt,
   apply and.intro,
-  unfold has_le.le at h1,
-  unfold preorder.le at h1,
-  exact h1,
+  unfold has_le.le preorder.le at h,
+  exact h,
   by_contra c,
-  have h' : n ≤ m := by simpa using c,
-  let x := le_antisymm h1 h',
+  let h2 : m = n := le_antisymm h (by simpa using c),
   cc,
 end
 
