@@ -32,10 +32,42 @@ variables {R : Type*} {σ : Type*}
 
 -/
 
-lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
+local attribute [instance] classical.prop_decidable
+
+lemma support_sum [comm_ring R]{ α : Type}{s : finset α}
   {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
-  ∃ x ∈ s, m ∈ (f x).support
-:= sorry
+  ∃ x ∈ s, m ∈ (f x).support :=
+begin
+  revert h,
+  apply finset.cons_induction_on s,
+  intro h,
+  exfalso,
+  simpa using h,
+  intros a s a_notin_s h h',
+  rw finset.sum_cons at h',
+  cases (@finset.mem_union _ _ m (f a).support  (s.sum f).support).1 (finset.mem_of_subset _ h')
+  with h1 h2,
+  use a,
+  apply and.intro,
+  simp only [finset.mem_insert, finset.cons_eq_insert],
+  left,
+  refl,
+  exact h1,
+  have t := h h2,
+  cases t with x hx,
+  cases hx with hx1 hx2,
+  use x,
+  apply and.intro,
+  simp only [finset.mem_insert, finset.cons_eq_insert],
+  right,
+  exact hx1,
+  exact hx2,
+  have t0 : (f a + s.sum f).support ⊆ (f a).support ∪ (s.sum f).support,
+  { have x := @support_add R σ _ (f a) (s.sum f),
+    sorry, -- use x
+  },
+  exact t0,
+end
 
 lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this? Do we already have this?
 (p : mv_polynomial σ R) (m : σ →₀ ℕ): 
@@ -43,7 +75,10 @@ m ∈ p.support ↔ coeff m p ≠ 0 := by simp
 
 lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p q : mv_polynomial (fin n) R): 
-(p - q).support ⊆ p.support ∪ q.support := sorry
+(p - q).support ⊆ p.support ∪ q.support := 
+begin
+  sorry
+end
 
 -- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
 lemma support_mul' {R : Type*}[comm_ring R]
@@ -65,7 +100,6 @@ lemma coeff_monomial_mul' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' �
 begin
   sorry
 end
-
 
 -- requiring field here seems too strong, we only need 1 ≠ 0 in R
 lemma X_ne_zero {R σ : Type*} [field R] (j : σ) : (X j : mv_polynomial σ R) ≠ 0
@@ -232,7 +266,6 @@ def max_degree_monomial  { n : ℕ } {F : Type u} [field F]
 (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
 t ∈ f.support ∧ monomial_degree t = total_degree f
 -/
-
 
 def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
 (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
