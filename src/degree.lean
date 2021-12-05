@@ -21,6 +21,13 @@ open_locale big_operators
 -- check https://github.com/leanprover-community/flt-regular/blob/master/src/ring_theory/polynomial/homogenization.lean
 -- and https://github.com/leanprover-community/mathlib/pull/10429/files for useful lemmas
 
+namespace multiset
+
+lemma count_sup' {α : Type*} [decidable_eq α] (x : α) (s t : multiset α) :
+count x (s ⊔ t) = max (count x s) (count x t) := by simp
+
+end multiset
+
 
 namespace mv_polynomial 
 
@@ -66,8 +73,7 @@ begin
 end
 
 lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this? Do we already have this?
-(p : mv_polynomial σ R) (m : σ →₀ ℕ): 
-m ∈ p.support ↔ coeff m p ≠ 0 := by simp
+(p : mv_polynomial σ R) (m : σ →₀ ℕ): m ∈ p.support ↔ coeff m p ≠ 0 := by simp
 
 lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p q : mv_polynomial σ R): 
@@ -84,22 +90,6 @@ lemma support_mul' {R : Type*}[comm_ring R]
 begin
   sorry -- use support_mul
 end 
-
--- compare the following with https://github.com/leanprover-community/mathlib/pull/10429/fileshttps://github.com/leanprover-community/mathlib/pull/10429/files
-
--- use mathlib's coeff_monomial_mul' instead of the following two
-
-lemma coeff_monomial_mul'' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
-  coeff m ((monomial m' a) * f) = a * coeff (m-m') f := 
-begin
-  sorry
-end
-
-lemma coeff_monomial_mul''' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' ≤ m) (f : mv_polynomial σ R) (a : R): 
-  coeff m ((monomial m' a) * f) = 0 := 
-begin
-  sorry
-end
 
 -- requiring field here seems too strong, we only need 1 ≠ 0 in R
 lemma X_ne_zero {R σ : Type*} [field R] (j : σ) : (X j : mv_polynomial σ R) ≠ 0
@@ -136,12 +126,9 @@ lemma degree_of_add_le {σ : Type*} {R : Type*} [comm_semiring R]
  (x : σ) (f g : mv_polynomial σ R): 
  degree_of x (f + g) ≤ max (degree_of x f) (degree_of x g) := 
 begin
-  rw degree_of,
-  -- rw degrees,
-  -- have h : multiset.count x (f + g).degrees ≤ multiset.count x (f.degrees ⊔ g.degrees),
-  -- rw degrees_add,
-  -- congr,
-  sorry
+  repeat {rw degree_of},
+  apply (multiset.count_le_of_le x (degrees_add f g)).trans,
+  rw multiset.count_sup',
 end
 
 lemma degree_of_sub_aux {σ : Type*} {R : Type*} [comm_ring R]
