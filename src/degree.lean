@@ -62,11 +62,7 @@ begin
   right,
   exact hx1,
   exact hx2,
-  have t0 : (f a + s.sum f).support ⊆ (f a).support ∪ (s.sum f).support,
-  { have x := @support_add R σ _ (f a) (s.sum f),
-    sorry, -- use x
-  },
-  exact t0,
+  convert @support_add R σ _ (f a) (s.sum f),
 end
 
 lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this? Do we already have this?
@@ -78,8 +74,7 @@ lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
 (p - q).support ⊆ p.support ∪ q.support := 
 begin
   rw [sub_eq_add_neg, ← @support_neg R σ _ q],
-  --exact @support_add R σ _ p (-q),
-  sorry 
+  convert @support_add R σ _ p (-q),
 end
 
 -- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
