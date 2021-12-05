@@ -24,6 +24,63 @@ open_locale big_operators
 
 namespace mv_polynomial 
 
+variables {R : Type*} {σ : Type*} 
+
+/-
+
+  Basic: support, coeff, etc
+
+-/
+
+lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
+  {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
+  ∃ x ∈ s, m ∈ (f x).support
+:= sorry
+
+lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this? Do we already have this?
+(p : mv_polynomial σ R) (m : σ →₀ ℕ): 
+m ∈ p.support ↔ coeff m p ≠ 0 := by simp
+
+lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
+(p q : mv_polynomial (fin n) R): 
+(p - q).support ⊆ p.support ∪ q.support := sorry
+
+-- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
+lemma support_mul' {R : Type*}[comm_ring R]
+ {f g : mv_polynomial σ R}{m : σ →₀ ℕ}(m ∈ (f * g).support):
+ ∃ m' m'', m' ∈ f.support ∧ m'' ∈ g.support ∧ m = m' + m'' :=
+begin
+  sorry -- use support_mul
+end 
+
+-- compare the following with https://github.com/leanprover-community/mathlib/pull/10429/fileshttps://github.com/leanprover-community/mathlib/pull/10429/files
+lemma coeff_monomial_mul [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
+  coeff m ((monomial m' a) * f) = a * coeff (m-m') f := 
+begin
+  sorry
+end
+
+lemma coeff_monomial_mul' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' ≤ m) (f : mv_polynomial σ R) (a : R): 
+  coeff m ((monomial m' a) * f) = 0 := 
+begin
+  sorry
+end
+
+
+-- requiring field here seems too strong, we only need 1 ≠ 0 in R
+lemma X_ne_zero {R σ : Type*} [field R] (j : σ) : (X j : mv_polynomial σ R) ≠ 0
+:= begin
+  rw ne_zero_iff,
+  use single j 1,
+  simp,
+end
+
+/-
+
+  Degree: degree_of, total_degree
+  
+-/
+
 lemma degree_of_eq_sup { n : ℕ } {F : Type u} [field F] 
 (j : fin n) (f : mv_polynomial (fin n) F) (d : ℕ):
 degree_of j f = f.support.sup (λ m , m j) :=
@@ -77,47 +134,9 @@ lemma degree_of_mul_X_ne  {σ : Type*} {R : Type*} [comm_ring R]
 /- in the following we have equality iff f ≠ 0 -/
 lemma degree_of_mul_X_eq  {σ : Type*} {R : Type*} [comm_ring R]
   (j : σ) (f : mv_polynomial σ R) :
-  degree_of j (f * X j)  ≤ degree_of j f + 1 := sorry
-
-
-/- Todo esto se puede hacer con mas generalidad! -/
-
-def max : multiset ℕ  → ℕ :=
-multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0
-
-def monomial_degree {s : Type} (t : s →₀ ℕ) : ℕ := t.sum (λ _ e, e) --∑ i in t.support, t i
-
-lemma le_monomial_degree  {s : Type} (t : s →₀ ℕ) (j : s) : t j ≤ monomial_degree t :=
+  degree_of j (f * X j)  ≤ degree_of j f + 1 := 
 begin
-  sorry
-end
-
-lemma monomial_degree_sub  {σ : Type*} {m m' :  σ →₀ ℕ} (h : m' ≤ m) : 
-  monomial_degree (m-m') = monomial_degree m - monomial_degree m' := 
-begin
-  sorry
-end
-
-lemma total_degree_monomial_eq_monomial_degree  {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {a : R} (h : a ≠ 0):
-total_degree (monomial m a) = monomial_degree m :=
-begin
-  -- TODO: proof taken from https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L200
-  -- Use total_degree_monomial once its merged into mathlib
-  rw monomial_degree,
-  classical,
-  simp [total_degree, support_monomial, if_neg, h],
-end
-
-lemma monomial_degree_single {σ : Type*} {j : σ} {d : ℕ}:
-monomial_degree (single j d) = d :=
-begin
-  sorry
-end
-
-lemma monomial_degree_le_total_degree {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {f  : mv_polynomial σ R} 
-  (h : m ∈ f.support) : monomial_degree m ≤ total_degree f :=
-begin
-  sorry
+  sorry,
 end
 
 -- This is https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L774
@@ -138,12 +157,64 @@ lemma total_degree_mul_X_le  { n : ℕ } {F : Type u} [field F]
 (f : mv_polynomial (fin n) F)(j : fin n) :
 total_degree (f * X j) ≤ total_degree f + 1 := 
 begin
+  apply (total_degree_mul f (X j)).trans,
+  simp,
+end
+
+lemma total_degree_mul_X { n : ℕ } {F : Type u} [field F] {f : mv_polynomial (fin n) F} (h : f ≠ 0)
+  (j : fin n) : total_degree (f * X j) = total_degree f + 1 :=
+  by simp [total_degree_mul' h (X_ne_zero j)]
+
+lemma total_degree_sum {σ : Type*} {R : Type*} [comm_semiring R]
+(s : finset α) (p : α → mv_polynomial σ R) :
+total_degree (∑ i : α in s, p i) ≤ s.sup (λ i , total_degree(p i))
+:= sorry
+
+/- 
+  
+  New definitions: monomial_degree, max_degree_monomial, dominant_monomial
+
+-/
+
+-- Generalize more!
+
+/-
+def max : multiset ℕ  → ℕ :=
+multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0
+-/
+
+def monomial_degree {s : Type} (t : s →₀ ℕ) : ℕ := t.sum (λ _ e, e) --∑ i in t.support, t i
+
+lemma le_monomial_degree  {s : Type} (t : s →₀ ℕ) (j : s) : t j ≤ monomial_degree t :=
+begin
   sorry
 end
 
-lemma total_degree_mul_X  { n : ℕ } {F : Type u} [field F] 
-{f : mv_polynomial (fin n) F} (h : f ≠ 0) (j : fin n) :
-total_degree (f * X j) = total_degree f + 1 := 
+lemma monomial_degree_sub  {σ : Type*} {m m' :  σ →₀ ℕ} (h : m' ≤ m) : 
+  monomial_degree (m-m') = monomial_degree m - monomial_degree m' := 
+begin
+  sorry
+end
+
+lemma total_degree_monomial_eq_monomial_degree  {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {a : R} (h : a ≠ 0):
+total_degree (monomial m a) = monomial_degree m :=
+begin
+  -- TODO: this proof was taken from flt-regular:
+  -- https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L200
+  -- Use total_degree_monomial once its merged into mathlib
+  rw monomial_degree,
+  classical,
+  simp [total_degree, support_monomial, if_neg, h],
+end
+
+lemma monomial_degree_single {σ : Type*} {j : σ} {d : ℕ}:
+monomial_degree (single j d) = d :=
+begin
+  sorry
+end
+
+lemma monomial_degree_le_total_degree {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {f  : mv_polynomial σ R} 
+  (h : m ∈ f.support) : monomial_degree m ≤ total_degree f :=
 begin
   sorry
 end
@@ -154,12 +225,6 @@ monomial_degree t > total_degree f → coeff t f = 0 :=
 begin
   sorry
 end
-
-lemma total_degree_sum {σ : Type*} {R : Type*} [comm_semiring R]
-(s : finset α) (p : α → mv_polynomial σ R) :
-total_degree (∑ i : α in s, p i) ≤ s.sup (λ i , total_degree(p i))
-:= sorry
-
 
 /-
 -- Would it be better to use this alternative definition?:

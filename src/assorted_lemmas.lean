@@ -6,18 +6,9 @@ import algebra.algebra.basic
 section ne_symm
 universe u
 variables {α : Type u} 
+
 lemma ne_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := by cc
 end ne_symm
-
-/-
-
-Lemmas for logic
-
--/
-
-/- ¿ is this already in logic.basic or somewhere else in mathlib ? -/
-lemma right_of_not_of_or {p q : Prop}(h1 : ¬ p) (h2 : p ∨ q) : q := 
-(or_iff_not_imp_left.1 h2) h1
 
 /-
 
@@ -52,10 +43,8 @@ namespace finsupp
 open set function finsupp add_monoid_algebra
 open_locale big_operators
 
-
-lemma sum_single'' {M : Type*} [has_zero M] [add_comm_monoid M] {α : Type*} {s : finset α}
-{j : α} (h : j ∈ s) (a : M) : 
-  ∑ x in s , (single j a) x  = a := 
+lemma sum_single'' {M : Type*} [semiring M] {α : Type*} {s : finset α} {j : α} (h : j ∈ s)
+ (a : M) : ∑ x in s , (single j a) x  = a := 
 begin
   revert h,
   apply finset.cons_induction_on s,
@@ -71,29 +60,30 @@ begin
     simp only [single_eq_same],
     rw add_comm,
     have h: s.sum ⇑(single j' a) = 0,
-    { have h0 : ∀ x ∈ s, single j' a x = 0,
+    { let f1 : α → M := (λ x, single j' a x),
+      let g1 : α → M := (λ x, 0),
+      have h0 : ∀ x ∈ s, f1 x = g1 x,
       { intros x hx,
+        simp only [f1, g1],
         have j'_ne_x : j' ≠ x,
         { by_contra c,
           rw c at h',
           cc, },
-        simp [j'_ne_x],
-      },
-      -- use h0
-      sorry },
+        simp [j'_ne_x] },
+      have t0 := @finset.sum_congr _ _ s s f1 g1 _ (by refl) h0,
+      rw t0,
+      simp, },
     rw h,
-    sorry }, -- ?? 
+    simp },
   rw h j_in_s,
   have j_ne_j' : j ≠ j',
   { by_contra c,
     rw c at j_in_s,
     cc, },
   simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff, zero_add],
-  sorry, -- ??
 end
 
--- what should we put here instead of ℕ?
-lemma sum_single' {M : Type*} [has_zero M] [add_comm_monoid M] {n : ℕ}
+lemma sum_single' {M : Type*} [semiring M] {n : ℕ}
 (j : fin n) (a : M) : 
   ∑ ( x : fin n) , (single j a) x  = a := 
 begin
@@ -107,9 +97,16 @@ variables {σ : Type*}
 lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h1 : m ≤ n) : m ≠ n → m < n :=
 begin
   intro h,
-  -- rw using definition of lt
-  -- use nat.lt_of_le_and_ne,
-  sorry,
+  unfold has_lt.lt,
+  unfold preorder.lt,
+  apply and.intro,
+  unfold has_le.le at h1,
+  unfold preorder.le at h1,
+  exact h1,
+  by_contra c,
+  have h' : n ≤ m := by simpa using c,
+  let x := le_antisymm h1 h',
+  cc,
 end
 
 end finsupp
@@ -124,45 +121,11 @@ namespace mv_polynomial
 open set function finsupp add_monoid_algebra
 open_locale big_operators
 
-variables {R : Type*} {σ : Type*} 
 
-universe u
 
-lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
-  {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
-  ∃ x ∈ s, m ∈ (f x).support
-:= sorry
+-- This is #10621
+-- https://github.com/leanprover-community/mathlib/pull/10621
 
-lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- do we really need this? Do we already have this?
-(p : mv_polynomial σ R) (m : σ →₀ ℕ): 
-m ∈ p.support ↔ coeff m p ≠ 0 := by simp
-
-lemma support_sub {R : Type*}{n : ℕ}[comm_ring R]
-(p q : mv_polynomial (fin n) R): 
-(p - q).support ⊆ p.support ∪ q.support := sorry
-
--- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
-lemma support_mul' {R : Type*}[comm_ring R]
- {f g : mv_polynomial σ R}{m : σ →₀ ℕ}(m ∈ (f * g).support):
- ∃ m' m'', m' ∈ f.support ∧ m'' ∈ g.support ∧ m = m' + m'' :=
-begin
-  sorry -- use support_mul
-end 
-
--- compare the following with https://github.com/leanprover-community/mathlib/pull/10429/fileshttps://github.com/leanprover-community/mathlib/pull/10429/files
-lemma coeff_monomial_mul [comm_semiring R] (m m' :  σ →₀ ℕ) (h : m' ≤ m) (f : mv_polynomial σ R) (a : R): 
-  coeff m ((monomial m' a) * f) = a * coeff (m-m') f := 
-begin
-  sorry
-end
-
-lemma coeff_monomial_mul' [comm_semiring R] (m m' :  σ →₀ ℕ) (h : ¬ m' ≤ m) (f : mv_polynomial σ R) (a : R): 
-  coeff m ((monomial m' a) * f) = 0 := 
-begin
-  sorry
-end
-
--- PR to  data/mv_polynomial/basic.lean
 lemma induction_on_monomial 
   {σ : Type} {R : Type*} [comm_semiring R]
   {M : mv_polynomial σ R → Prop}

@@ -20,6 +20,10 @@ open_locale big_operators
 
 namespace mv_polynomial
 
+lemma eval_is_zero { n : ℕ } {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS : 0 < S.card) 
+  (s : σ → R) (i : σ) (h_s : s i ∈ S) : eval s (∏ s in S, (X i - C s)) = 0 :=
+by simp  [eval_prod, finset.prod_eq_zero h_s]
+
 /-
   Do this with more generality.
 -/
@@ -28,28 +32,6 @@ namespace mv_polynomial
 
 lemma g_S_lem_0 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
 (∏ s in S, (X i - C s)) ≠ 0 := sorry
- 
-lemma g_S_lem_1 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
-  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
-begin
-  sorry,
-end
-
-lemma g_S_lem_4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
-  total_degree (∏ s in S, (X i - C s)) = S.card :=
-begin
-  sorry
-end
-
--- Maybe the following is useful here:
--- https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1151
-
-lemma g_S_lem_5 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n}
-  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support)
-  (h_m_i : m i = S.card) : m = single i S.card :=
-begin
-  sorry
-end
 
 lemma g_S_lem_6 { n : ℕ } {F : Type u} [field F] {S : finset F} {i j: fin n}
   {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support) 
@@ -75,13 +57,28 @@ begin
   sorry,
 end
 
-lemma eval_is_zero { n : ℕ } {F : Type u} [field F]
-  (S : finset F)
-  (hS : 0 < S.card) 
-  (s : fin n → F)
-  (i : fin n)
-  (h_s : s i ∈ S) :
-  eval s (∏ s in S, (X i - C s)) = 0
-:= by simp  [eval_prod, finset.prod_eq_zero h_s]
+lemma g_S_lem_4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
+  total_degree (∏ s in S, (X i - C s)) = S.card :=
+begin
+  sorry
+end
+
+-- Maybe the following is useful here:
+-- https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1151
+
+lemma g_S_lem_5 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n}
+  {m: fin n →₀ ℕ} (h_m : m ∈ (∏ s in S, (X i - C s)).support)
+  (h_m_i : m i = S.card) : m = single i S.card :=
+begin
+  sorry
+end
+ 
+lemma g_S_lem_1 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
+  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
+begin
+  sorry,
+end
+
+
 
 end mv_polynomial

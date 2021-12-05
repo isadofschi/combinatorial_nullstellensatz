@@ -551,7 +551,7 @@ lemma h_X_1 :
         { by_contra c,
           rw c at c_h1_i_eq_0,
           simpa using c_h1_i_eq_0 },
-        exact right_of_not_of_or h_j_ne_zero (h_h.1 j) },
+        exact or.resolve_left (h_h.1 j) h_j_ne_zero },
       by_cases c_comp : (h j * X j).total_degree ≤ q.total_degree,
       { rw [max_eq_right c_comp],
         apply @h_total_degree_q n F _ S j p h h_h h_ms},
@@ -563,7 +563,7 @@ lemma h_X_1 :
         simp only [nat.not_lt_zero, total_degree_zero] at c_comp,
         exfalso,
         exact c_comp },
-      have y := add_le_add_right (right_of_not_of_or c_h_j_eq_0 (h_h.1 j)) 1,
+      have y := add_le_add_right (or.resolve_left (h_h.1 j) c_h_j_eq_0) 1,
       rw [add_assoc, add_comm (S j).card 1, ← add_assoc ] at y,
       exact useful.trans y },
     exact x.trans y },
@@ -579,7 +579,7 @@ lemma h_X_1 :
     symmetry,
     simp only [ne.def],
     exact c_i_eq_j },
-  have y := add_le_add_right (right_of_not_of_or h_i_neq_0 (h_h.1 i)) 1,
+  have y := add_le_add_right (or.resolve_left (h_h.1 i) h_i_neq_0) 1,
   rw [add_assoc, add_comm (S i).card 1, ← add_assoc ] at y,
   rw [single_eq_of_ne, add_zero],
   exact useful.trans y,
@@ -635,7 +635,6 @@ private lemma h_X { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
  (hS : ∀ i : fin n, 0 < (S i).card) :  ∀ (p : mv_polynomial (fin n) F) (j : fin n), 
     M' n F S hS p → M' n F S hS (p * X j) := hX.h_X
 
-
 private lemma h_add_weak_aux_comp { n : ℕ } {F : Type u} [field F]
 (S : fin n → finset F) (p q : mv_polynomial (fin n) F) 
 (h1 h2 : fin n → mv_polynomial (fin n) F) : 
@@ -657,7 +656,6 @@ by simp only [sub_right_inj,finset.sum_add_distrib]
 ...  = (p - (∑ (i : fin n), h1 i * (∏ (s : F) in S i, (X i - C s))))
        + (q - (∑ (i : fin n), h2 i * (∏ (s : F) in S i, (X i - C s)))) : 
 by rw [← add_sub_assoc, ← sub_sub (p+q), sub_left_inj,sub_add_eq_add_sub]
-
 
 private lemma h_add_weak { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
   (hS : ∀ i : fin n, 0 < (S i).card) : 
@@ -707,9 +705,9 @@ begin
   right,
   have x := total_degree_add (h_Ca i) (h_f i),
   have y : (h_Ca i).total_degree + (S i).card ≤ total_degree (single a b) :=
-    right_of_not_of_or h_Ca0 (hhC_a.1 i),
+    or.resolve_left (hhC_a.1 i) h_Ca0 ,
   have z : (h_f i).total_degree + (S i).card ≤ total_degree f :=
-    right_of_not_of_or h_f0 (hh_f.1 i),
+    or.resolve_left (hh_f.1 i) h_f0,
   have x' := add_le_add_right x (S i).card,
   rw max_add at x',
   exact x'.trans (max_le_max y z),
