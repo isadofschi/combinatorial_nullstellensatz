@@ -152,7 +152,7 @@ lemma induction_on'' {σ : Type} {R : Type*} [comm_semiring R]
   {M : mv_polynomial σ R → Prop} (p : mv_polynomial σ R)
   (h_C : ∀a, M (C a)) 
   (h_add_weak : ∀ (a : σ →₀ ℕ) (b : R) (f : (σ →₀ ℕ) →₀ R), 
-    a ∉ f.support → b ≠ 0 → M f → M (single a b + f))
+    a ∉ f.support → b ≠ 0 → M f → M (monomial a b + f))
   (h_X : ∀p n, M p → M (p * X n)) :
   M p :=
 have ∀s a, M (monomial s a) := induction_on_monomial h_C h_X,

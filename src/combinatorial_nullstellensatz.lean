@@ -6,6 +6,7 @@ Author: Ivan Sadofschi Costa.
 import data.mv_polynomial.basic
 import algebra.algebra.basic
 import degree
+import degree_new
 import reduce_degree
 import lemma_2_1
 import data.mv_polynomial.comm_ring

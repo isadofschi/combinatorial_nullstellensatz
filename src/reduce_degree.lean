@@ -7,6 +7,7 @@ import data.mv_polynomial.basic
 import data.mv_polynomial.comm_ring
 import algebra.algebra.basic
 import degree
+import degree_new
 import lemmas_g_S
 import assorted_lemmas
 
@@ -579,7 +580,7 @@ begin
     m ∈ (q * g j).support → ((S i).card ≤ m i) → coeff m f = coeff m (q * g j)
     := @H_g n F _ S hS j p h h_h,
   rw @comp_1 n F _ S j p h h_h,
-  exact degree_of_sub_aux i f (q * g j) (S i).card (H_f i) (H_g i),
+  exact degree_of_sub_lt (hS i) (H_f i) (H_g i),
 end
 omit h_h hS
 #check @h_X_2 n F _ S hS j p h h_h 
@@ -635,7 +636,7 @@ by rw [← add_sub_assoc, ← sub_sub (p+q), sub_left_inj,sub_add_eq_add_sub]
 private lemma h_add_weak { n : ℕ } {F : Type u} [field F] (S : fin n → finset F)
   (hS : ∀ i : fin n, 0 < (S i).card) : 
 ∀ (a : fin n →₀ ℕ) (b : F) (f : mv_polynomial (fin n) F), 
-    a ∉ f.support → b ≠ 0 → M' n F S hS f → M' n F S hS (single a b + f) :=
+    a ∉ f.support → b ≠ 0 → M' n F S hS f → M' n F S hS (monomial a b + f) :=
 begin
   intros a b f h_a h_b h_Mf,
   cases h_Mf with h_f hh_f,
@@ -687,7 +688,7 @@ begin
   rw max_add at x',
   exact x'.trans (max_le_max y z),
   intro j,
-  rw [ h_add_weak_aux_comp S (single a b) f h_Ca h_f],
+  rw [ h_add_weak_aux_comp S (monomial a b) f h_Ca h_f],
   exact lt_of_le_of_lt (degree_of_add_le j _ _) (max_lt (hhC_a.2 j) (hh_f.2 j)),
 end
 
