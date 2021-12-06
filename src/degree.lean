@@ -251,11 +251,51 @@ begin
   sorry -- by flt-regular
 end
 
+lemma support_add_disjoint [comm_semiring R] {f g : mv_polynomial σ R} 
+  (h : f.support ∩ g.support = ∅ ) : (f + g).support = f.support ∪ g.support :=
+begin
+  apply le_antisymm,
+  convert support_add,
+  unfold has_le.le,
+  unfold preorder.le,
+  unfold partial_order.le,
+  apply finset.union_subset,
+  unfold has_subset.subset,
+  intros m hm,
+  have hm' : m ∉ g.support,
+  { by_contradiction c,
+    have hm'' : m ∈ f.support ∩ g.support := by simp [hm, c],
+    rw h at hm'',
+    simpa using hm'' },
+  simp only [mem_support_iff, coeff_add, ne.def],
+  simp only [not_not, mem_support_iff] at hm',
+  simpa [hm'] using hm,
+  unfold has_subset.subset,
+  intros m hm,
+  have hm' : m ∉ f.support,
+  { by_contradiction c,
+    have hm'' : m ∈ f.support ∩ g.support := by simp [hm, c],
+    rw h at hm'',
+    simpa using hm'' },
+  simp only [mem_support_iff, coeff_add, ne.def],
+  simp only [not_not, mem_support_iff] at hm',
+  simpa [hm'] using hm,
+end
+
+lemma total_degree_add_eq_of_disjoint_support [comm_semiring R] {f g : mv_polynomial σ R} 
+  (h : f.support ∩ g.support = ∅ ) : total_degree (f + g) = max f.total_degree g.total_degree :=
+begin
+  repeat {rw total_degree},
+  rw support_add_disjoint h,
+  convert finset.sup_union,
+end
+
 lemma total_degree_add_monomial  { n : ℕ } [comm_semiring R] (f : mv_polynomial (fin n) R) 
   (a : fin n →₀ ℕ) (b : R) (h : a ∉ f.support) (h_b: b ≠ 0) :
   total_degree (monomial a b + f) = linear_order.max (total_degree (monomial a b)) (total_degree f) :=
 begin
-  sorry
+  apply total_degree_add_eq_of_disjoint_support,
+  simp [support_monomial, h_b, h],
 end
 
 lemma total_degree_mul_X [field R] {f : mv_polynomial σ R} (h : f ≠ 0)
