@@ -106,11 +106,8 @@ begin
 end
 
 lemma degree_of_lt_iff {R : Type u} [comm_semiring R]  {j : σ} {f : mv_polynomial σ R}
-  {d : ℕ} (h : 0 < d):  degree_of j f < d ↔ ∀ m : σ →₀ ℕ, m ∈ f.support → m j < d :=
-begin
-  rw degree_of_eq_sup j f,
-  rwa finset.sup_lt_iff,
-end
+  {d : ℕ} (h : 0 < d):  degree_of j f < d ↔ ∀ m : σ →₀ ℕ, m ∈ f.support → m j < d := 
+by rwa [degree_of_eq_sup j f, finset.sup_lt_iff]
 
 lemma degree_of_C {σ : Type*} {R : Type*} [comm_semiring R] (a : R) (x : σ): 
   degree_of x (C a : mv_polynomial σ R) = 0 := by simp [degree_of, degrees_C]
@@ -165,13 +162,8 @@ lemma degree_of_X (i j : σ ) [comm_semiring R] [nontrivial R] :
   degree_of i (X j : mv_polynomial σ R) = if i = j then 1 else 0 :=
 begin
   by_cases c : i = j,
-  { simp only [c, if_true, eq_self_iff_true, degree_of],
-    rw degrees_X,
-    rw multiset.count_singleton,
-    simp },
-  simp only [c, if_false, degree_of],
-  rw degrees_X,
-  simpa using c,
+  { simp only [c, if_true, eq_self_iff_true, degree_of, degrees_X, multiset.count_singleton] },
+  simp [c, if_false, degree_of, degrees_X],
 end
 
 lemma degree_of_mul_X_ne  [comm_ring R] {i j : σ} (f : mv_polynomial σ R) (h : i ≠ j) :
