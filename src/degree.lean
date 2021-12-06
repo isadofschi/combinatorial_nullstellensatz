@@ -75,14 +75,14 @@ end
 lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- Do we already have this?
   (p : mv_polynomial σ R) (m : σ →₀ ℕ): m ∈ p.support ↔ coeff m p ≠ 0 := by simp
 
-lemma support_sub {R : Type*}[comm_ring R] (p q : mv_polynomial σ R): 
+lemma support_sub [comm_ring R] (p q : mv_polynomial σ R) :
   (p - q).support ⊆ p.support ∪ q.support := 
 begin
   rw [sub_eq_add_neg, ← @support_neg R σ _ q],
   convert support_add,
 end
 
-lemma X_ne_zero {R σ : Type*} [comm_semiring R] [nontrivial R] (j : σ) : 
+lemma X_ne_zero [comm_semiring R] [nontrivial R] (j : σ) : 
   (X j : mv_polynomial σ R) ≠ 0
 := begin
   rw ne_zero_iff,
@@ -161,7 +161,7 @@ begin
   rw multiset.count_add,
 end
 
-lemma degree_of_X (i j : σ ) [comm_semiring R] [nontrivial R]:
+lemma degree_of_X (i j : σ ) [comm_semiring R] [nontrivial R] :
   degree_of i (X j : mv_polynomial σ R) = if i = j then 1 else 0 :=
 begin
   by_cases c : i = j,
@@ -219,18 +219,31 @@ begin
   exact h_ind,
 end
 
--- Compare with https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
-lemma support_mul' [comm_ring R] {f g : mv_polynomial σ R}{m : σ →₀ ℕ}(m ∈ (f * g).support) :
-  ∃ m' m'', m' ∈ f.support ∧ m'' ∈ g.support ∧ m = m' + m'' :=
+lemma total_degree_mul_X_le  [field R]
+(f : mv_polynomial σ R)(j : σ) :
+total_degree (f * X j) ≤ total_degree f + 1 := 
 begin
-  sorry -- use support_mul
-end 
+  apply (total_degree_mul f (X j)).trans,
+  simp,
+end
+
+open_locale pointwise
+
+-- This is https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
+lemma support_mul' [comm_semiring R] [decidable_eq σ] (p q : mv_polynomial σ R) :
+  (p * q).support ⊆ p.support + q.support :=
+begin
+  sorry -- by flt-regular
+end
+
+lemma support_mul'' [comm_ring R] {f g : mv_polynomial σ R}{m : σ →₀ ℕ}( h : m ∈ (f * g).support) :
+  ∃ mf mg, mf ∈ f.support ∧ mg ∈ g.support ∧ mf + mg = m :=  finset.mem_add.1 $ support_mul' f g h
 
 -- This is https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L774
-lemma total_degree_mul' { n : ℕ } {F : Type u} [field F] {f g : mv_polynomial (fin n) F} 
+lemma total_degree_mul' [comm_ring R] [is_domain R] {f g : mv_polynomial σ R} 
   (hf : f ≠ 0) (hg : g ≠ 0) : total_degree (f * g) = total_degree f + total_degree g :=
 begin
-  sorry
+  sorry -- by flt-regular
 end
 
 lemma total_degree_add_monomial  { n : ℕ } [comm_semiring R] (f : mv_polynomial (fin n) R) 
@@ -240,16 +253,8 @@ begin
   sorry
 end
 
-lemma total_degree_mul_X_le  { n : ℕ } [field R]
-(f : mv_polynomial (fin n) R)(j : fin n) :
-total_degree (f * X j) ≤ total_degree f + 1 := 
-begin
-  apply (total_degree_mul f (X j)).trans,
-  simp,
-end
-
-lemma total_degree_mul_X { n : ℕ } {F : Type u} [field F] {f : mv_polynomial (fin n) F} (h : f ≠ 0)
-  (j : fin n) : total_degree (f * X j) = total_degree f + 1 :=
-  by simp [total_degree_mul' h (X_ne_zero j)]
+lemma total_degree_mul_X [field R] {f : mv_polynomial σ R} (h : f ≠ 0)
+  (j : σ) : total_degree (f * X j) = total_degree f + 1 :=
+by simp [total_degree_mul' h (X_ne_zero j)]
 
 end mv_polynomial

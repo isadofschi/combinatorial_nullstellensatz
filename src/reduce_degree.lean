@@ -441,11 +441,11 @@ lemma H_g : ∀ i (m : (fin n) →₀ ℕ),
 begin
   intros i m m_in_support_q_g_j h_S,
   let ms := @ms n F _ S j p h,
-  cases support_mul' m m_in_support_q_g_j with m' h_m',
+  cases support_mul'' m_in_support_q_g_j with m' h_m',
   cases h_m' with m'' h_m_m'_m'',
   have h_m'_in_supp_q := h_m_m'_m''.1,
   have h_m''_in_supp_gj := h_m_m'_m''.2.1,
-  have h_m_eq_m'_add_m'' := h_m_m'_m''.2.2,
+  have h_m_eq_m'_add_m'' := h_m_m'_m''.2.2.symm,
   clear h_m_m'_m'',
   have h_mi_eq_mi'_add_mi'' : m i = m' i + m'' i,
   { rw h_m_eq_m'_add_m'',
@@ -486,7 +486,6 @@ begin
                mem_support_iff, ne.def, coeff_sub] using h_m1.1 },
   exfalso,
   linarith,
-  exact m,
 end
 omit h_h hS
 
