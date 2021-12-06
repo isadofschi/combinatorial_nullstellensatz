@@ -18,15 +18,6 @@ open set function finsupp add_monoid_algebra
 
 open_locale big_operators 
 
--- check https://github.com/leanprover-community/flt-regular/blob/master/src/ring_theory/polynomial/homogenization.lean
--- and https://github.com/leanprover-community/mathlib/pull/10429/files for useful lemmas
-
-namespace multiset
-
-lemma count_sup' {α : Type*} [decidable_eq α] (x : α) (s t : multiset α) :
-count x (s ⊔ t) = max (count x s) (count x t) := by simp
-
-end multiset
 
 
 namespace mv_polynomial 
@@ -75,26 +66,34 @@ end
 lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- Do we already have this?
   (p : mv_polynomial σ R) (m : σ →₀ ℕ): m ∈ p.support ↔ coeff m p ≠ 0 := by simp
 
-lemma support_sub [comm_ring R] (p q : mv_polynomial σ R) :
-  (p - q).support ⊆ p.support ∪ q.support := 
-begin
-  rw [sub_eq_add_neg, ← @support_neg R σ _ q],
-  convert support_add,
-end
-
-lemma X_ne_zero [comm_semiring R] [nontrivial R] (j : σ) : 
-  (X j : mv_polynomial σ R) ≠ 0
-:= begin
-  rw ne_zero_iff,
-  use single j 1,
-  simp,
-end
+end mv_polynomial
 
 /-
 
   Degree: degree_of
   
 -/
+section PR10646
+-- https://github.com/leanprover-community/mathlib/pull/10646
+
+local attribute [instance] classical.prop_decidable
+
+namespace multiset
+
+lemma count_sup' {α : Type*} [decidable_eq α] (x : α) (s t : multiset α) :
+count x (s ⊔ t) = max (count x s) (count x t) := by simp
+
+end multiset
+
+namespace mv_polynomial
+variables {R : Type*} {σ : Type*} 
+
+lemma support_sub [comm_ring R] (p q : mv_polynomial σ R) :
+  (p - q).support ⊆ p.support ∪ q.support := 
+begin
+  rw [sub_eq_add_neg, ← @support_neg R σ _ q],
+  convert support_add,
+end
 
 lemma degree_of_eq_sup {R : Type u} [comm_semiring R] (j : σ) (f : mv_polynomial σ R) :
   degree_of j f = f.support.sup (λ m , m j) :=
@@ -189,12 +188,26 @@ begin
   convert multiset.count_le_of_le j (degrees_X' j),
   rw multiset.count_singleton_self,
 end
+end mv_polynomial
+
+end PR10646
 
 /-
 
   Total_degree, etc
   
 -/
+namespace mv_polynomial
+variables {R : Type*} {σ : Type*} 
+local attribute [instance] classical.prop_decidable
+
+lemma X_ne_zero [comm_semiring R] [nontrivial R] (j : σ) : 
+  (X j : mv_polynomial σ R) ≠ 0
+:= begin
+  rw ne_zero_iff,
+  use single j 1,
+  simp,
+end
 
 lemma total_degree_sum [comm_semiring R] (s : finset α) (p : α → mv_polynomial σ R) :
   total_degree (∑ i : α in s, p i) ≤ s.sup (λ i , total_degree(p i)) :=
