@@ -52,7 +52,7 @@ begin
   simpa using h,
   intros a s a_notin_s h h',
   rw finset.sum_cons at h',
-  cases (@finset.mem_union _ _ m (f a).support  (s.sum f).support).1 (finset.mem_of_subset _ h')
+  cases finset.mem_union.1 (finset.mem_of_subset _ h')
   with h1 h2,
   use a,
   apply and.intro,
@@ -69,7 +69,7 @@ begin
   right,
   exact hx1,
   exact hx2,
-  convert @support_add R σ _ (f a) (s.sum f),
+  convert support_add,
 end
 
 lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- Do we already have this?
@@ -187,7 +187,7 @@ begin
   cc,
 end
 
-/- TODO in the following we have equality iff f ≠ 0 and R is nontrivial -/
+/- TODO in the following we have equality iff f ≠ 0 -/
 lemma degree_of_mul_X_eq [comm_ring R] (j : σ) (f : mv_polynomial σ R) :
   degree_of j (f * X j)  ≤ degree_of j f + 1 := 
 begin
@@ -247,8 +247,8 @@ begin
 end
 
 lemma total_degree_add_monomial  { n : ℕ } [comm_semiring R] (f : mv_polynomial (fin n) R) 
-(a : fin n →₀ ℕ) (b : R) (h : a ∉ f.support) (h_b: b ≠ 0) :
-total_degree (monomial a b + f) = linear_order.max (total_degree (monomial a b)) (total_degree f) :=
+  (a : fin n →₀ ℕ) (b : R) (h : a ∉ f.support) (h_b: b ≠ 0) :
+  total_degree (monomial a b + f) = linear_order.max (total_degree (monomial a b)) (total_degree f) :=
 begin
   sorry
 end
