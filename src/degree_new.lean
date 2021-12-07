@@ -40,7 +40,7 @@ multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0
 -/
 
 -- this def is also given in flt-regular
-def monomial_degree {s : Type} (t : s →₀ ℕ) : ℕ := t.sum (λ _ e, e) --∑ i in t.support, t i
+def monomial_degree {s : Type*} (t : s →₀ ℕ) : ℕ := t.sum (λ _ e, e) --∑ i in t.support, t i
 
 lemma nat.term_le_sum {s : finset α } (f : α → ℕ){j : α} (hj : j ∈ s) : f j ≤ s.sum f :=
 begin
@@ -99,8 +99,8 @@ begin
   apply finset.le_sup h,
 end
 
-lemma coeff_zero_of_degree_greater_than_total_degree { n : ℕ } {F : Type u} [field F] 
-(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) :
+lemma coeff_zero_of_degree_greater_than_total_degree {F : Type u} [field F] 
+(t : σ →₀ ℕ) (f : mv_polynomial σ F) :
 monomial_degree t > total_degree f → coeff t f = 0 :=
 begin
   intro h,
@@ -111,35 +111,35 @@ begin
   exact c,
 end
 
-def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
-(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
+def max_degree_monomial {F : Type u} [field F] 
+(t : σ →₀ ℕ) (f : mv_polynomial σ F) : Prop := 
 t ∈ f.support ∧ monomial_degree t = total_degree f
 
-def dominant_monomial { n : ℕ } {F : Type u} [field F] 
-(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
+def dominant_monomial {F : Type u} [field F] 
+(t : σ →₀ ℕ) (f : mv_polynomial σ F) : Prop := 
   max_degree_monomial t f 
-  ∧  (∀ t' : fin n →₀ ℕ, monomial_degree t' = monomial_degree t → coeff t' f ≠ 0 → t = t')
+  ∧  (∀ t' : σ →₀ ℕ, monomial_degree t' = monomial_degree t → coeff t' f ≠ 0 → t = t')
 
 -- unused. perhaps useful as intermediate step?
 lemma max_degree_monomial_iff_support_coff
-{ n : ℕ } {F : Type u} [field F] (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) :
+{F : Type u} [field F] (t : σ →₀ ℕ) (f : mv_polynomial σ F) :
 max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ ∀ t' ∈ f.support,  monomial_degree t' ≤ monomial_degree t) :=
 begin
   sorry
 end
 
 -- unused. perhaps useful as intermediate step?
-lemma max_degree_monomial_iff_nonzero_coef_and_le { n : ℕ } {F : Type u} [field F]
-(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) :
+lemma max_degree_monomial_iff_nonzero_coef_and_le {F : Type u} [field F]
+(t : σ →₀ ℕ) (f : mv_polynomial σ F) :
 max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ total_degree f ≤ monomial_degree t) :=
 begin
   sorry
 end
 
 lemma dominant_monomial_of_factor_is_factor_of_max_degree_monomial
-  { n : ℕ } {F : Type u} [field F] (S : finset F) (t t' : fin n →₀ ℕ ) 
-  (f g : mv_polynomial (fin n) F) (hfg : max_degree_monomial t (f*g))
-  (hf : f ≠ 0) (hg : dominant_monomial t' g) : ∀ i : fin n, t' i ≤ t i :=
+  {F : Type u} [field F] (S : finset F) (t t' : σ →₀ ℕ ) 
+  (f g : mv_polynomial σ F) (hfg : max_degree_monomial t (f*g))
+  (hf : f ≠ 0) (hg : dominant_monomial t' g) : ∀ i : σ, t' i ≤ t i :=
 begin
   sorry,
 end

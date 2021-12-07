@@ -221,9 +221,7 @@ begin
   rw finset.sum_cons,
   rw finset.sup_cons,
   apply (total_degree_add _ _).trans,
-  simp, -- TODO nonterminal simp, squeeze_simp not working here
-  right,
-  exact h_ind,
+  simp [h_ind],
 end
 
 lemma total_degree_mul_X_le  [field R]
@@ -273,8 +271,8 @@ begin
   convert finset.sup_union,
 end
 
-lemma total_degree_add_monomial  { n : ℕ } [comm_semiring R] (f : mv_polynomial (fin n) R) 
-  (a : fin n →₀ ℕ) (b : R) (h : a ∉ f.support) (h_b: b ≠ 0) :
+lemma total_degree_add_monomial [comm_semiring R] (f : mv_polynomial σ R) 
+  (a : σ →₀ ℕ) (b : R) (h : a ∉ f.support) (h_b: b ≠ 0) :
   total_degree (monomial a b + f) = linear_order.max (total_degree (monomial a b)) (total_degree f) :=
 begin
   apply total_degree_add_eq_of_disjoint_support,

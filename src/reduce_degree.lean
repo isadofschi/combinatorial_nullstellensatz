@@ -222,7 +222,7 @@ begin
     rw finset.sum_add_distrib,
     clear h,
     congr,
-    rw finsupp.sum_single' },
+    rw finsupp.sum_single' j},
   simp [if_neg, c_j_m],
   have h : (λ x, coeff m ((h x * X j + single j q x) * g x ))
   = single j (coeff m (q * g j)),
