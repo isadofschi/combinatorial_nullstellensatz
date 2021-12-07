@@ -111,37 +111,25 @@ begin
   exact c,
 end
 
-/-
--- Would it be better to use this alternative definition?:
 def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
 (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
 t ∈ f.support ∧ monomial_degree t = total_degree f
--/
-
-def max_degree_monomial  { n : ℕ } {F : Type u} [field F] 
-(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
-(coeff t f ≠ 0) ∧ (∀ t' : fin n →₀ ℕ, monomial_degree t' > monomial_degree t → coeff t' f = 0)
 
 def dominant_monomial { n : ℕ } {F : Type u} [field F] 
 (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) : Prop := 
   max_degree_monomial t f 
   ∧  (∀ t' : fin n →₀ ℕ, monomial_degree t' = monomial_degree t → coeff t' f ≠ 0 → t = t')
 
-lemma max_degree_monomial_iff_nonzero_coeff_and_realizes_total_degree { n : ℕ } {F : Type u} [field F] 
-(t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) :
-max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ total_degree f = monomial_degree t) :=
-begin
-  sorry
-end
-
-lemma max_degree_monomial_iff_support_coff 
+-- unused. perhaps useful as intermediate step?
+lemma max_degree_monomial_iff_support_coff
 { n : ℕ } {F : Type u} [field F] (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) :
 max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ ∀ t' ∈ f.support,  monomial_degree t' ≤ monomial_degree t) :=
 begin
   sorry
 end
 
-lemma max_degree_monomial_iff_nonzero_coef_and_le { n : ℕ } {F : Type u} [field F] 
+-- unused. perhaps useful as intermediate step?
+lemma max_degree_monomial_iff_nonzero_coef_and_le { n : ℕ } {F : Type u} [field F]
 (t : fin n →₀ ℕ) (f : mv_polynomial (fin n) F) :
 max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ total_degree f ≤ monomial_degree t) :=
 begin
