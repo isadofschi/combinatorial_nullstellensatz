@@ -304,11 +304,6 @@ begin
   refine finsupp.map_domain_inj_on _ this _ (by simp) h,
   intros x hx,
   rw [set.mem_set_of_eq, hjp x hx],
-  -- refine finsupp.map_domain_injective _ h,
-  -- intros x y hxy,
-  -- simp at hxy,
-  -- -- TODO something like this but this isnt exactly true
-  -- sorry,
 end
 
 -- TODO this can follow from previous
@@ -322,20 +317,6 @@ begin
   apply is_homogeneous.total_degree,
   refine is_homogeneous_homogenization _ _,
   exact homogenization_ne_zero_of_ne_zero _ hp h,
-  -- rw total_degree,
-  -- have : (homogenization i p).support.nonempty,
-  -- { simp [homogenization],
-  --   sorry,
-  --    },
-  -- rw ← finset.sup'_eq_sup this,
-  -- rw finset.nonempty.sup'_eq_cSup_image,
-  -- suffices : (λ (s : ι →₀ ℕ), s.sum (λ (n : ι) (e : ℕ), e)) '' ↑((homogenization i p).support) =
-  --   {p.total_degree},
-  -- { simp [this], },
-  -- refine set.eq_singleton_iff_unique_mem.mpr _,
-  -- split,
-  -- { simp, sorry, },
-  -- { simp, sorry, },
 end
 
 section leading_terms
@@ -535,13 +516,6 @@ lemma homogeneous_component_add (m  : ℕ) (p q : mv_polynomial ι R) :
   homogeneous_component m (p + q) = homogeneous_component m p + homogeneous_component m q :=
 by rw [homogeneous_component, linear_map.comp_apply, linear_map.comp_apply, linear_map.comp_apply,
     linear_map.map_add, linear_map.map_add]
-
--- TODO lol this isn't true
--- lemma homogeneous_component_mul (m n : ℕ) (p q : mv_polynomial ι R) :
---   homogeneous_component (m + n) (p * q) = homogeneous_component m p * homogeneous_component n q :=
--- begin
---   sorry,
--- end
 
 lemma coeff_leading_terms (p : mv_polynomial ι R) (d : ι →₀ ℕ) :
   coeff d p.leading_terms = if ∑ i in d.support, d i = p.total_degree then coeff d p else 0 :=
