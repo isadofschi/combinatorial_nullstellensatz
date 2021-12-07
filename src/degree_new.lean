@@ -94,7 +94,9 @@ end
 lemma monomial_degree_le_total_degree {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {f  : mv_polynomial σ R} 
   (h : m ∈ f.support) : monomial_degree m ≤ total_degree f :=
 begin
-  sorry
+  rw total_degree,
+  rw monomial_degree,
+  apply finset.le_sup h,
 end
 
 lemma coeff_zero_of_degree_greater_than_total_degree { n : ℕ } {F : Type u} [field F] 
