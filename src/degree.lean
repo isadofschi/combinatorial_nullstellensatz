@@ -9,6 +9,8 @@ import algebra.algebra.basic
 import data.mv_polynomial.comm_ring
 import data.nat.basic
 
+import from_flt_regular.homogenization
+
 universes u v
 
 variables {α : Type v}
@@ -232,25 +234,6 @@ begin
   simp,
 end
 
-open_locale pointwise
-
--- This is https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1129
-lemma support_mul' [comm_semiring R] [decidable_eq σ] (p q : mv_polynomial σ R) :
-  (p * q).support ⊆ p.support + q.support :=
-begin
-  sorry -- by flt-regular
-end
-
-lemma support_mul'' [comm_ring R] {f g : mv_polynomial σ R}{m : σ →₀ ℕ}( h : m ∈ (f * g).support) :
-  ∃ mf mg, mf ∈ f.support ∧ mg ∈ g.support ∧ mf + mg = m :=  finset.mem_add.1 $ support_mul' f g h
-
--- This is https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L774
-lemma total_degree_mul' [comm_ring R] [is_domain R] {f g : mv_polynomial σ R} 
-  (hf : f ≠ 0) (hg : g ≠ 0) : total_degree (f * g) = total_degree f + total_degree g :=
-begin
-  sorry -- by flt-regular
-end
-
 lemma support_add_disjoint [comm_semiring R] {f g : mv_polynomial σ R} 
   (h : f.support ∩ g.support = ∅ ) : (f + g).support = f.support ∪ g.support :=
 begin
@@ -297,6 +280,22 @@ begin
   apply total_degree_add_eq_of_disjoint_support,
   simp [support_monomial, h_b, h],
 end
+
+-- The following depends on https://github.com/leanprover-community/flt-regular
+
+open_locale pointwise
+
+-- this uses code from flt-regular
+lemma support_mul1 [comm_semiring R] [decidable_eq σ] (p q : mv_polynomial σ R) :
+  (p * q).support ⊆ p.support + q.support := by convert support_mul' p q
+
+lemma support_mul'' [comm_ring R] {f g : mv_polynomial σ R}{m : σ →₀ ℕ}( h : m ∈ (f * g).support) :
+  ∃ mf mg, mf ∈ f.support ∧ mg ∈ g.support ∧ mf + mg = m :=  finset.mem_add.1 $ support_mul1 f g h
+
+-- this uses code from flt-regular
+lemma total_degree_mul' [comm_ring R] [is_domain R] {f g : mv_polynomial σ R} 
+  (hf : f ≠ 0) (hg : g ≠ 0) : total_degree (f * g) = total_degree f + total_degree g := total_degree_mul_eq hf hg
+
 
 lemma total_degree_mul_X [field R] {f : mv_polynomial σ R} (h : f ≠ 0)
   (j : σ) : total_degree (f * X j) = total_degree f + 1 :=

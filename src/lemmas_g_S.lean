@@ -10,6 +10,7 @@ import data.mv_polynomial.comm_ring
 import data.nat.basic
 
 import degree
+import degree_new
 
 universes u
 

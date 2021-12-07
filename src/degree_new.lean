@@ -52,16 +52,9 @@ begin
   sorry
 end
 
+-- This depends on flt-regular. Use total_degree_monomial once its merged into mathlib
 lemma total_degree_monomial_eq_monomial_degree  {σ R : Type*}[comm_semiring R] {m :  σ →₀ ℕ} {a : R} (h : a ≠ 0):
-total_degree (monomial m a) = monomial_degree m :=
-begin
-  -- TODO: this proof was taken from flt-regular:
-  -- https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L200
-  -- Use total_degree_monomial once its merged into mathlib
-  rw monomial_degree,
-  classical,
-  simp [total_degree, support_monomial, if_neg, h],
-end
+total_degree (monomial m a) = monomial_degree m := by  convert total_degree_monomial m h
 
 -- Use monomial instead of single!
 lemma monomial_degree_single {σ : Type*} {j : σ} {d : ℕ}:
