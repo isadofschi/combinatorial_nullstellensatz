@@ -57,7 +57,7 @@ begin
   simp,
 end
 
-lemma le_monomial_degree  {s : Type} (t : s →₀ ℕ) (j : s) : t j ≤ monomial_degree t :=
+lemma le_monomial_degree  {s : Type*} (t : s →₀ ℕ) (j : s) : t j ≤ monomial_degree t :=
 begin
   by_cases c : j ∈ t.support,
   { apply nat.term_le_sum,
@@ -85,7 +85,6 @@ total_degree (monomial m a) = monomial_degree m := by  convert total_degree_mono
 -- Use monomial instead of single!
 lemma monomial_degree_single {σ : Type*} {j : σ} {d : ℕ}:
 monomial_degree (single j d) = d :=
---monomial_degree (X j)^d = d :=
 begin
   rw monomial_degree,
   simp,
@@ -98,6 +97,10 @@ begin
   rw monomial_degree,
   apply finset.le_sup h,
 end
+
+lemma le_total_degree  {R σ : Type*} [comm_semiring R] {i: σ} {p : mv_polynomial σ R}
+  {m: σ →₀ ℕ} (h_m : m ∈ p.support) : m i ≤ p.total_degree
+:= (le_monomial_degree m i).trans $ monomial_degree_le_total_degree h_m
 
 lemma coeff_zero_of_degree_greater_than_total_degree {F : Type u} [field F] 
 (t : σ →₀ ℕ) (f : mv_polynomial σ F) :

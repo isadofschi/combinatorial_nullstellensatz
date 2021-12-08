@@ -479,11 +479,11 @@ begin
       by simpa only [h_m'_m1_j] using nat.sub_eq_zero_of_le (le_of_eq m1_j),
     have h : m j ≤ (g j).total_degree,
     { rw [h_mi_eq_mi'_add_mi'', m'_j_eq_0, zero_add],
-      exact mv_polynomial.g_S_lem_7 h_m''_in_supp_gj },
+      exact mv_polynomial.le_total_degree h_m''_in_supp_gj },
     have x' : m'' j = (g j).total_degree :=
       by simpa [← nat.le_antisymm h h_S, h_m_eq_m'_add_m''] using m'_j_eq_0,
     have h_m_eq_m1 : m = m1,
-    { rw [h_m_eq_m'_add_m'', h_m'_m1, @g_S_lem_5 F (fin n) _ j _ (g j) h_m''_in_supp_gj (hg j) x'],
+    { rw [h_m_eq_m'_add_m'', h_m'_m1, @g_S_lem_5 F (fin n) _ j _ (g j) h_m''_in_supp_gj x'],
       ext,
       by_cases c : j = a,
       { simp [←c, m1_j], },

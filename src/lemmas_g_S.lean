@@ -24,38 +24,31 @@ namespace mv_polynomial
 
 --- lemmas for supported
 
-lemma degree_of_eq_total_degree {R σ : Type*} [field R] {p : mv_polynomial σ R}
- (i : σ) (h : p ∈ supported R ({i}: set σ)) : degree_of i p = total_degree p := sorry
+-- unused (may be useful as intermediate step)
+--lemma degree_of_eq_total_degree {R σ : Type*} [field R] {p : mv_polynomial σ R}
+ --(i : σ) (h : p ∈ supported R ({i}: set σ)) : degree_of i p = total_degree p := sorry
 
 
 lemma g_S_lem_6 {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {m: σ →₀ ℕ} {i j : σ} 
   (hp : p ∈ supported R ({i} : set σ)) (h_m : m ∈ p.support) (h : i ≠ j) : m j = 0 :=
 begin
-  -- use https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1164
-  sorry
+  have hp' := mem_supported.1 hp,
+  by_contra c,
+  have hj : j ∈ p.vars := (mem_vars j).2 ⟨m, h_m, (by simp [c])⟩,
+  have t' := mem_singleton_iff.1 (mem_of_subset_of_mem hp' hj),
+  rw t' at h,
+  simpa using h,
 end
 
 lemma g_S_lem_6'{R σ : Type*} [comm_semiring R] {i j: σ}  {p : mv_polynomial σ R}
   {m: σ →₀ ℕ} (hp : p ∈ supported R ({i} : set σ)) (h' : m j ≠ 0) (h : j ≠ i)  :
-    coeff m  p = 0 :=
+    coeff m p = 0 :=
 begin
-  sorry
-end
-
--- this follows from a more general lemma!
-lemma g_S_lem_7  {R σ : Type*} [comm_semiring R] {i: σ} {p : mv_polynomial σ R}
-  {m: σ →₀ ℕ} (h_m : m ∈ p.support) : m i ≤ p.total_degree
-:= sorry
-
--- Maybe the following is useful here:
--- https://github.com/leanprover-community/flt-regular/blob/c85f9a22a02515a27fe7bc93deaf8487ab22ca59/src/ring_theory/polynomial/homogenization.lean#L1151
-
-lemma g_S_lem_5 {R  σ : Type* } [field R] {i : σ}
-  {m: σ →₀ ℕ}  {p : mv_polynomial σ R}
-  (h_m : m ∈ p.support) (hp : p ∈ supported R ({i} : set σ))
-  (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
-begin
-  sorry
+  by_cases c : m ∈ p.support,
+  { have t := g_S_lem_6 hp c h.symm,
+    rw t at h',
+    simpa using h', },
+  simpa using c,
 end
  
 lemma g_S_lem_1 {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
@@ -86,8 +79,45 @@ begin
   sorry,
 end
 
-lemma g_S_lem_supported {R σ : Type*} [field R] (S : finset R) (i : σ) :
-∏ s in S, (X i - C s) ∈ supported R ({i}: set σ) := sorry
+lemma C_mem_supported {R σ : Type*} [comm_semiring R] 
+(s : set σ) (a : R) : C a ∈ supported R s := 
+begin
+  apply mem_supported.2,
+  simp,
+end
+
+lemma add_mem_supported {R σ : Type*} [comm_semiring R] 
+(s : set σ) (f g : mv_polynomial σ R)
+(hf : f ∈ supported R s) (hg : g ∈ supported R s) : f + g ∈ supported R s :=
+subalgebra.add_mem (supported R s) hf hg
+
+
+lemma mul_mem_supported {R σ : Type*} [comm_semiring R] 
+(s : set σ) (f g : mv_polynomial σ R)
+(hf : f ∈ supported R s) (hg : g ∈ supported R s) : f * g ∈ supported R s := 
+subalgebra.mul_mem (supported R s) hf hg
+
+lemma sub_mem_supported {R σ : Type*} [comm_ring R] 
+(s : set σ) (f g : mv_polynomial σ R)
+(hf : f ∈ supported R s) (hg : g ∈ supported R s) : f - g ∈ supported R s := 
+subalgebra.sub_mem (supported R s) hf hg
+
+lemma prod_mem_supported {R σ α : Type*}[decidable_eq α] [comm_semiring R] 
+(s : set σ) (a : finset α) (f : α → mv_polynomial σ R)
+(h : ∀ i ∈ a, f i ∈ supported R s) : ∏ i in a, f i ∈ supported R s := 
+subalgebra.prod_mem (supported R s) h
+
+lemma g_S_lem_supported {R σ : Type*} [comm_ring R] [nontrivial R][decidable_eq R] 
+(S : finset R) (i : σ) : ∏ s in S, (X i - C s) ∈ supported R ({i}: set σ) :=
+begin
+  apply prod_mem_supported,
+  intros s hs,
+  apply sub_mem_supported,
+  apply X_mem_supported.2,
+  simp,
+  exact _inst_2,
+  apply C_mem_supported,
+end
 
 lemma g_S_lem_1' { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
   dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
