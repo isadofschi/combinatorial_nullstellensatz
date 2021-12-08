@@ -49,7 +49,7 @@ begin
   let g : fin n → mv_polynomial (fin n) F := λ i, ∏ s in (S i), (X i - C s),
   let t_map : fin n → ℕ := λ i, (S i).card - 1,
   have hf : ∀ a, t_map a ≠ 0 → a ∈ (finset.fin_range n) := by simp,
-  cases (reduce_degree S hS f) with h h_h,
+  cases (reduce_degree_particular_case S hS f) with h h_h,
   use h,
   apply and.intro,
   exact h_h.1,
@@ -127,7 +127,7 @@ begin
       exact le_antisymm c h1 },
     by_cases c'' : h i ≠ 0,
     { have hfi := dominant_monomial_of_factor_is_factor_of_max_degree_monomial (S i) t 
-        (finsupp.single i ((S i).card)) (h i) (∏ (s : F) in S i, (X i - C s)) ht c'' (by apply g_S_lem_1) i,
+        (finsupp.single i ((S i).card)) (h i) (∏ (s : F) in S i, (X i - C s)) ht c'' (by apply g_S_lem_1') i,
       simp only [ finsupp.single_eq_same, ←h_card_S ] at hfi,
       exfalso,
       simpa using hfi },
