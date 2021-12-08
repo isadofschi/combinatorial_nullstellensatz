@@ -50,34 +50,6 @@ begin
     simpa using h', },
   simpa using c,
 end
- 
-lemma g_S_lem_1 {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
-(hp : p ∈ supported R ({i} : set σ)) : dominant_monomial (finsupp.single i p.total_degree) p :=
-begin
-  sorry,
-end
-
--- special case
-
-lemma eval_is_zero {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS : 0 < S.card) 
-  (s : σ → R) (i : σ) (h_s : s i ∈ S) : eval s (∏ s in S, (X i - C s)) = 0 :=
-by simp  [eval_prod, finset.prod_eq_zero h_s]
-
-
-lemma g_S_lem_0 { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
-(∏ s in S, (X i - C s)) ≠ 0 := sorry
-
-lemma g_S_lem_4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
-  total_degree (∏ s in S, (X i - C s)) = S.card :=
-begin
-  sorry
-end
-
-lemma g_S_lem_8  { n : ℕ } {F : Type u} [field F] (S : finset F)(i : fin n)
-  : coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
-begin
-  sorry,
-end
 
 lemma C_mem_supported {R σ : Type*} [comm_semiring R] 
 (s : set σ) (a : R) : C a ∈ supported R s := 
@@ -107,6 +79,14 @@ lemma prod_mem_supported {R σ α : Type*}[decidable_eq α] [comm_semiring R]
 (h : ∀ i ∈ a, f i ∈ supported R s) : ∏ i in a, f i ∈ supported R s := 
 subalgebra.prod_mem (supported R s) h
 
+lemma g_S_lem_1 {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
+(hp : p ∈ supported R ({i} : set σ)) : dominant_monomial (finsupp.single i p.total_degree) p :=
+begin
+  sorry,
+end
+
+-- special case g_S
+
 lemma g_S_lem_supported {R σ : Type*} [comm_ring R] [nontrivial R][decidable_eq R] 
 (S : finset R) (i : σ) : ∏ s in S, (X i - C s) ∈ supported R ({i}: set σ) :=
 begin
@@ -119,10 +99,65 @@ begin
   apply C_mem_supported,
 end
 
-lemma g_S_lem_1' { n : ℕ } {F : Type u} [field F] (S : finset F) (i : fin n) :
+
+lemma eval_is_zero {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS : 0 < S.card) 
+  (s : σ → R) (i : σ) (h_s : s i ∈ S) : eval s (∏ s in S, (X i - C s)) = 0 :=
+by simp  [eval_prod, finset.prod_eq_zero h_s]
+
+
+lemma g_S_lem_0 { n : ℕ } {F : Type u} [field F] [decidable_eq F] [nontrivial F]
+(S : finset F) (i : fin n) : (∏ s in S, (X i - C s)) ≠ 0 :=
+begin
+  rw finset.prod_ne_zero_iff,
+  intros a ha,
+  by_contra,
+  have h' : ¬ 0 = single i 1,
+  { by_contra,
+    have t : single i 1 i = 1 := by simp,
+    rw ←h at t,
+    simpa using t },
+  have c : coeff (single i 1) (X i - C a)  =  coeff (single i 1) 0 := by rw h,
+  simp only [coeff_X, coeff_C, coeff_sub, coeff_zero, if_neg, h'] at c,
+  simpa using c,
+end
+
+lemma g_S_lem_4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
+  total_degree (∏ s in S, (X i - C s)) = S.card :=
+begin
+  sorry
+end
+
+lemma g_S_lem_8  { n : ℕ } {F : Type u} [field F] (S : finset F)(i : fin n)
+  : coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
+begin
+  apply finset.cons_induction_on S,
+  simp,
+  clear S,
+  intros a S haS hind,
+  rw finset.prod_cons,
+  rw sub_mul,
+  rw coeff_sub,
+  rw finset.card_cons,
+  rw coeff_X_mul',
+  simp only [ if_true, coeff_C_mul, single_eq_same, pi.add_apply, nat.succ_ne_zero,
+              finsupp.mem_support_iff, ne.def, not_false_iff, add_tsub_cancel_right, coe_add,
+              single_add ],
+  rw hind,
+  simp only [sub_eq_self, mul_eq_zero],
+  right,
+  rw ← single_add,
+  apply coeff_zero_of_degree_greater_than_total_degree,
+  rw g_S_lem_4,
+  rw monomial_degree_single,
+  simp,
+end
+
+lemma g_S_lem_1' { n : ℕ } {R : Type* } [field R] [decidable_eq R] (S : finset R) (i : fin n) :
   dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
 begin
-  sorry,
+  rw ← g_S_lem_4,
+  apply g_S_lem_1,
+  apply g_S_lem_supported,
 end
 
 end mv_polynomial
