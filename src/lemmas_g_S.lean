@@ -74,10 +74,63 @@ lemma prod_mem_supported {R σ α : Type*}[decidable_eq α] [comm_semiring R]
 (h : ∀ i ∈ a, f i ∈ supported R s) : ∏ i in a, f i ∈ supported R s := 
 subalgebra.prod_mem (supported R s) h
 
+lemma monomial_support_supported'  {R σ : Type*} [field R] {p : mv_polynomial σ R} 
+{i : σ} { s : set σ} {m : σ →₀ ℕ}
+(hp : p ∈ supported R s)  (hm : m ∈ p.support) (hi : i ∉ s) : m i = 0 :=
+begin
+  by_contradiction c,
+  have h' : i ∈ ((p.vars) : set σ) := by simpa using (mem_vars i).2 ⟨ m, ⟨hm, by simp [c]⟩⟩,
+  rw mem_supported at hp,
+  have t := mem_of_mem_of_subset h' hp,
+  cc,
+end
+
+lemma monomial_support_supported  {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
+(hp : p ∈ supported R ({i} : set σ)) {m : σ →₀ ℕ} (hm : m ∈ p.support) : m = single i (m i)
+:=
+begin
+  ext j,
+  by_cases c : i = j,
+  simp [c],
+  simp only [c, single_eq_of_ne, ne.def, not_false_iff],
+  apply monomial_support_supported' hp hm,
+  simp only [mem_singleton_iff],
+  cc,
+end
+
+lemma g_S_lem_1a {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
+(h : p ≠ 0) (hp : p ∈ supported R ({i} : set σ)) : finsupp.single i p.total_degree ∈ p.support :=
+begin
+  cases exists_max_degree_monomial h with m hm,
+  cases hm with h h',
+  have t := monomial_support_supported hp h,
+  convert h,
+  rw t,
+  congr,
+  rw ← h',
+  rw t,
+  rw monomial_degree_single,
+  simp,
+end
+
 lemma g_S_lem_1 {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
+(h : p ≠ 0)
 (hp : p ∈ supported R ({i} : set σ)) : dominant_monomial (finsupp.single i p.total_degree) p :=
 begin
-  sorry,
+  rw dominant_monomial,
+  apply and.intro,
+  rw max_degree_monomial,
+  apply and.intro,
+  exact g_S_lem_1a h hp,
+  rw monomial_degree_single,
+  intros t' ht',
+  rw max_degree_monomial at ht',
+  have x := monomial_support_supported hp ht'.1,
+  rw x,
+  congr,
+  rw x at ht',
+  rw monomial_degree_single at ht',
+  exact ht'.2,
 end
 
 
@@ -194,6 +247,7 @@ lemma g_S_lem_1' { n : ℕ } {R : Type* } [field R] [decidable_eq R] (S : finset
 begin
   rw ← g_S_lem_4,
   apply g_S_lem_1,
+  apply g_S_lem_0,
   apply g_S_lem_supported,
 end
 

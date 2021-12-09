@@ -65,8 +65,10 @@ begin
   convert support_add,
 end
 
-lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- Do we already have this?
+/-
+lemma mem_support_iff_nonzero_coeff [comm_semiring R] -- Do we already have this?  Yes, it is mem_support_iff
   (p : mv_polynomial σ R) (m : σ →₀ ℕ): m ∈ p.support ↔ coeff m p ≠ 0 := by simp
+-/
 
 end mv_polynomial
 

@@ -144,6 +144,12 @@ def max_degree_monomial {R : Type*} [comm_semiring R]
 (t : σ →₀ ℕ) (f : mv_polynomial σ R) : Prop := 
 t ∈ f.support ∧ monomial_degree t = total_degree f
 
+lemma exists_max_degree_monomial {R : Type*} [comm_semiring R] 
+{f : mv_polynomial σ R} (h : f ≠ 0) : ∃ t, max_degree_monomial t f :=
+begin
+  sorry,
+end
+
 lemma eq_and_eq_of_le_add_le_eq {a1 a2 b1 b2 : ℕ}
 (h1: a1 ≤ b1) (h2 : a2 ≤ b2) (h : a1 + a2 = b1 + b2) : a1 = b1 ∧ a2 = b2 :=
 begin
