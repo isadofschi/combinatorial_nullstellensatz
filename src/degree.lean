@@ -279,15 +279,6 @@ begin
   simp [support_monomial, h_b, h],
 end
 
-lemma g_S_lem_5 {R  σ : Type* } [field R] {i : σ}
-  {m: σ →₀ ℕ}  {p : mv_polynomial σ R}
-  (h_m : m ∈ p.support)
-  (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
-begin
-  sorry
-end
-
-
 -- The following depends on https://github.com/leanprover-community/flt-regular
 
 open_locale pointwise

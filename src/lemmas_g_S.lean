@@ -24,11 +24,6 @@ namespace mv_polynomial
 
 --- lemmas for supported
 
--- unused (may be useful as intermediate step)
---lemma degree_of_eq_total_degree {R σ : Type*} [field R] {p : mv_polynomial σ R}
- --(i : σ) (h : p ∈ supported R ({i}: set σ)) : degree_of i p = total_degree p := sorry
-
-
 lemma g_S_lem_6 {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {m: σ →₀ ℕ} {i j : σ} 
   (hp : p ∈ supported R ({i} : set σ)) (h_m : m ∈ p.support) (h : i ≠ j) : m j = 0 :=
 begin
@@ -85,6 +80,7 @@ begin
   sorry,
 end
 
+
 -- special case g_S
 
 lemma g_S_lem_supported {R σ : Type*} [comm_ring R] [nontrivial R][decidable_eq R] 
@@ -105,11 +101,9 @@ lemma eval_is_zero {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS
 by simp  [eval_prod, finset.prod_eq_zero h_s]
 
 
-lemma g_S_lem_0 { n : ℕ } {F : Type u} [field F] [decidable_eq F] [nontrivial F]
-(S : finset F) (i : fin n) : (∏ s in S, (X i - C s)) ≠ 0 :=
+lemma X_sub_C_ne_0 {R σ : Type*}[comm_ring R] [decidable_eq σ] [nontrivial R]
+ (i : σ) (a : R) :  X i - C a ≠ 0 :=
 begin
-  rw finset.prod_ne_zero_iff,
-  intros a ha,
   by_contra,
   have h' : ¬ 0 = single i 1,
   { by_contra,
@@ -121,10 +115,59 @@ begin
   simpa using c,
 end
 
+lemma total_degree_X_sub_C {R σ : Type*}[comm_ring R] [decidable_eq σ] [nontrivial R]
+ (i : σ) (a : R) :  total_degree (X i - C a) = 1 :=
+begin
+  /-
+  have t := support_sub (X i) (C a),
+  rw support_X at t,
+  rw ←monomial_zero' at t,
+  by_cases c : a = 0,
+  { simp [support_monomial, c] at t,
+    sorry,
+  },
+  simp [support_monomial, c] at t,
+  sorry-/
+  sorry,
+end
+
+lemma g_S_lem_5 {R  σ : Type* } [field R] {i : σ}
+  {m: σ →₀ ℕ}  {p : mv_polynomial σ R}
+  (h_m : m ∈ p.support)
+  (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
+begin
+  have t := monomial_degree_le_total_degree h_m,
+  rw ←h_m_i at t,
+  have t' := (monomial_degree_le_iff_eq_single m i).1 t,
+  rw h_m_i at t',
+  exact t',
+end
+
+
+lemma g_S_lem_0 { n : ℕ } {F : Type*} [field F] [nontrivial F]
+(S : finset F) (i : fin n) : (∏ s in S, (X i - C s)) ≠ 0 :=
+begin
+  rw finset.prod_ne_zero_iff,
+  intros a ha,
+  apply X_sub_C_ne_0,
+end
+
 lemma g_S_lem_4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
   total_degree (∏ s in S, (X i - C s)) = S.card :=
 begin
-  sorry
+  apply finset.cons_induction_on S,
+  simp,
+  clear S,
+  intros a S haS hind,
+  rw finset.prod_cons,
+  rw finset.card_cons,
+  rw total_degree_mul',
+  rw hind,
+  rw add_comm,
+  congr,
+  rw total_degree_X_sub_C,
+  apply X_sub_C_ne_0,
+  apply g_S_lem_0,
 end
 
 lemma g_S_lem_8  { n : ℕ } {F : Type u} [field F] (S : finset F)(i : fin n)

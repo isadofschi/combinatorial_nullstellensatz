@@ -68,6 +68,8 @@ begin
   simp [hz'],
 end
 
+local attribute [instance] classical.prop_decidable -- g_S_lem_1' is stated with `[decidable_eq R]`
+
 theorem combinatorial_nullstellensatz''
 { n : ℕ } {F : Type u} [field F]
 (f : mv_polynomial (fin n) F) 

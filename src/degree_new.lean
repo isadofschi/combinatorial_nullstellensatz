@@ -32,13 +32,6 @@ variables {R : Type*} {σ : Type*}
 
 -/
 
--- Generalize more!
-
-/-
-def max : multiset ℕ  → ℕ :=
-multiset.foldr (max) (λ x y z, by simp [max_left_comm]) 0
--/
-
 -- this def is also given in flt-regular
 def monomial_degree {s : Type*} (t : s →₀ ℕ) : ℕ := t.sum (λ _ e, e) --∑ i in t.support, t i
 
@@ -66,16 +59,33 @@ begin
   simp [c],
 end
 
+lemma monomial_degree_le_of_le  {σ : Type*} {m m' :  σ →₀ ℕ} (h : m' ≤ m) : 
+  monomial_degree m' ≤ monomial_degree m :=
+begin
+  repeat {rw monomial_degree},
+  -- rw finsupp.sum_le_sum, -- do we have this in mathlib?
+  sorry,
+end
+
+lemma monomial_degree_add {σ : Type*} (m m' :  σ →₀ ℕ) : 
+  monomial_degree (m + m') = monomial_degree m + monomial_degree m' :=
+begin
+  repeat {rw monomial_degree},
+  rw sum_add_index,
+  simp,
+  simp,
+end
 
 lemma monomial_degree_sub  {σ : Type*} {m m' :  σ →₀ ℕ} (h : m' ≤ m) : 
   monomial_degree (m - m') = monomial_degree m - monomial_degree m' := 
 begin
-  simp [monomial_degree],
-  rw finsupp.sum,
-  simp,
-  have t:= @finset.sum_sub_distrib ℕ σ (m-m').support m m',
-  apply (int.coe_nat_eq_coe_nat_iff _ _).1,
-  sorry
+  rw eq_tsub_iff_add_eq_of_le (monomial_degree_le_of_le h),
+  rw ← monomial_degree_add,
+  congr,
+  ext,
+  rw le_def at h,
+  simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
+  rw nat.sub_add_cancel (h a),
 end
 
 -- This depends on flt-regular. Use total_degree_monomial once its merged into mathlib
@@ -87,6 +97,22 @@ lemma monomial_degree_single {σ : Type*} {j : σ} {d : ℕ}:
 monomial_degree (single j d) = d :=
 begin
   rw monomial_degree,
+  simp,
+end
+
+lemma monomial_degree_le_iff_eq_single {σ : Type*}
+(m :  σ →₀ ℕ) (i : σ) : monomial_degree m ≤ m i  ↔ m = single i (m i) :=
+begin
+  apply iff.intro,
+  intro h,
+  have t := le_monomial_degree m i,
+  have x := le_antisymm t h,
+  clear t h,
+  ext,
+  sorry,
+  intro h,
+  rw h,
+  rw monomial_degree_single,
   simp,
 end
 
@@ -114,37 +140,75 @@ begin
   exact c,
 end
 
-def max_degree_monomial {F : Type u} [field F] 
-(t : σ →₀ ℕ) (f : mv_polynomial σ F) : Prop := 
+def max_degree_monomial {R : Type*} [comm_semiring R] 
+(t : σ →₀ ℕ) (f : mv_polynomial σ R) : Prop := 
 t ∈ f.support ∧ monomial_degree t = total_degree f
 
-def dominant_monomial {F : Type u} [field F] 
-(t : σ →₀ ℕ) (f : mv_polynomial σ F) : Prop := 
-  max_degree_monomial t f 
-  ∧  (∀ t' : σ →₀ ℕ, monomial_degree t' = monomial_degree t → coeff t' f ≠ 0 → t = t')
-
--- unused. perhaps useful as intermediate step?
-lemma max_degree_monomial_iff_support_coff
-{F : Type u} [field F] (t : σ →₀ ℕ) (f : mv_polynomial σ F) :
-max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ ∀ t' ∈ f.support,  monomial_degree t' ≤ monomial_degree t) :=
+lemma eq_and_eq_of_le_add_le_eq {a1 a2 b1 b2 : ℕ}
+(h1: a1 ≤ b1) (h2 : a2 ≤ b2) (h : a1 + a2 = b1 + b2) : a1 = b1 ∧ a2 = b2 :=
 begin
-  sorry
+  apply and.intro,
+  by_cases c : a1 < b1,
+  { have x := add_lt_add_of_lt_of_le c h2,
+    rw h at x,
+    simpa using x },
+  rw not_lt at c,
+  exact le_antisymm h1 c,
+  by_cases c : a2 < b2,
+  { have x := add_lt_add_of_le_of_lt h1 c,
+    rw h at x,
+    simpa using x },
+  rw not_lt at c,
+  exact le_antisymm h2 c,
 end
 
--- unused. perhaps useful as intermediate step?
-lemma max_degree_monomial_iff_nonzero_coef_and_le {F : Type u} [field F]
-(t : σ →₀ ℕ) (f : mv_polynomial σ F) :
-max_degree_monomial t f ↔ (coeff t f ≠ 0 ∧ total_degree f ≤ monomial_degree t) :=
+lemma max_degree_monomial_mul {σ R : Type*}[comm_ring R][is_domain R] {f g : mv_polynomial σ R}{m : σ →₀ ℕ} 
+(hf : f ≠ 0)(hg : g ≠ 0)
+(h : max_degree_monomial m (f * g)) :
+  ∃ mf mg, max_degree_monomial mf f ∧ max_degree_monomial mg g ∧ mf + mg = m := 
 begin
-  sorry
+  rw max_degree_monomial at h,
+  cases support_mul'' h.1 with mf mgh,
+  cases mgh with mg h',
+  use mf, 
+  use mg,
+  have h_m_in_sup_fg := h.1,
+  have h_deg_m := h.2,
+  clear h,
+  have h_mf_in_sup_f := h'.1,
+  have h_mg_in_sup_g := h'.2.1,
+  have h_mf_add_mg_eq_m := h'.2.2,
+  clear h',
+  have x := total_degree_mul' hf hg,
+  rw ← h_deg_m at x,
+  rw ← h_mf_add_mg_eq_m at x,
+  rw monomial_degree_add at x,
+  have xf := monomial_degree_le_total_degree h_mf_in_sup_f,
+  have xg := monomial_degree_le_total_degree h_mg_in_sup_g,
+  have x' := eq_and_eq_of_le_add_le_eq xf xg x,
+  exact ⟨ ⟨ h_mf_in_sup_f, x'.1 ⟩ , ⟨ h_mg_in_sup_g, x'.2 ⟩, h_mf_add_mg_eq_m ⟩,
 end
+
+def dominant_monomial {R : Type*} [comm_semiring R] 
+(t : σ →₀ ℕ) (f : mv_polynomial σ R) : Prop := 
+  max_degree_monomial t f ∧ (∀ t' : σ →₀ ℕ, max_degree_monomial t' f → t' = t)
 
 lemma dominant_monomial_of_factor_is_factor_of_max_degree_monomial
-  {F : Type u} [field F] (S : finset F) (t t' : σ →₀ ℕ ) 
-  (f g : mv_polynomial σ F) (hfg : max_degree_monomial t (f*g))
-  (hf : f ≠ 0) (hg : dominant_monomial t' g) : ∀ i : σ, t' i ≤ t i :=
+  {R : Type*} [comm_ring R] [is_domain R] (S : finset R) (t t' : σ →₀ ℕ ) 
+  (f g : mv_polynomial σ R) (hfg : max_degree_monomial t (f*g))
+  (hf : f ≠ 0) (hg : dominant_monomial t' g) : t' ≤ t :=
 begin
-  sorry,
+  by_cases c : g = 0,
+  rw c at hg,
+  rw dominant_monomial at hg,
+  rw max_degree_monomial at hg,
+  simpa using hg.1.1,
+  cases max_degree_monomial_mul hf c hfg with mf mgh,
+  cases mgh with mg h,
+  rw dominant_monomial at hg,
+  rw ← hg.2 mg h.2.1,
+  rw ← h.2.2,
+  simp,
 end
 
 end mv_polynomial
