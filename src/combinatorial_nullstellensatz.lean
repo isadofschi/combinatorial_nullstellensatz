@@ -138,6 +138,20 @@ begin
   simp[ mv_polynomial.coeff_sum, h_zero'],
 end
 
+private lemma choose_smaller_sets
+{ n : ℕ }{F : Type*}
+(S : fin n → finset F)
+(t : fin n →₀ ℕ)
+(h_card_S : ∀ i : fin n, t i < (S i).card) :
+∃ S' : fin n → finset F, (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1) 
+:=
+begin
+  have t := λ i, finset.exists_smaller_set (S i) (t i +1) (h_card_S i),
+  convert classical.skolem.1 t,
+  ext S',
+  rw forall_and_distrib,
+end
+
 /-
 Theorem 1.2 in Alon's paper.
 -/
@@ -150,9 +164,9 @@ theorem combinatorial_nullstellensatz
 (h_card_S : ∀ i : fin n, t i < (S i).card) :
 ∃ s : fin n → F, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
 begin
-  let S' : fin n → finset F := λ i, finset.truncate (nat.succ_le_of_lt (h_card_S i)),
-  have h_S_S' : ∀ i : fin n, S' i ⊆ S i := λ i, finset.truncate_sub (h_card_S i),
-  have h_card_S' : ∀ i : fin n, t i + 1 = (S' i).card := λ i , (finset.card_truncate (h_card_S i)).symm,
+  cases choose_smaller_sets S t h_card_S with S' hS',
+  have h_S_S' : ∀ i : fin n, S' i ⊆ S i := hS'.1,
+  have h_card_S' : ∀ i : fin n, t i + 1 = (S' i).card := λ i,  ((hS'.2) i).symm,
   have exists_s := combinatorial_nullstellensatz'' f t h_max S' h_card_S',
   cases exists_s with s h_s',
   use s,
