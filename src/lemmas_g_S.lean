@@ -118,17 +118,11 @@ end
 lemma total_degree_X_sub_C {R σ : Type*}[comm_ring R] [decidable_eq σ] [nontrivial R]
  (i : σ) (a : R) :  total_degree (X i - C a) = 1 :=
 begin
-  /-
-  have t := support_sub (X i) (C a),
-  rw support_X at t,
-  rw ←monomial_zero' at t,
-  by_cases c : a = 0,
-  { simp [support_monomial, c] at t,
-    sorry,
-  },
-  simp [support_monomial, c] at t,
-  sorry-/
-  sorry,
+  -- this could be a separate lemma called `total_degree_sub_eq_left_of_total_degree_lt`
+  rw sub_eq_add_neg,
+  rw total_degree_add_eq_left_of_total_degree_lt,
+  simp,
+  simp,
 end
 
 lemma g_S_lem_5 {R  σ : Type* } [field R] {i : σ}

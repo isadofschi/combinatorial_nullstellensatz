@@ -139,11 +139,11 @@ begin
 end
 
 private lemma choose_smaller_sets
-{ n : ℕ }{F : Type*}
-(S : fin n → finset F)
-(t : fin n →₀ ℕ)
-(h_card_S : ∀ i : fin n, t i < (S i).card) :
-∃ S' : fin n → finset F, (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1) 
+  { n : ℕ }{F : Type*}
+  (S : fin n → finset F)
+  (t : fin n →₀ ℕ)
+  (h_card_S : ∀ i : fin n, t i < (S i).card) :
+  ∃ S' : fin n → finset F, (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1) 
 :=
 begin
   have t := λ i, finset.exists_smaller_set (S i) (t i +1) (h_card_S i),
