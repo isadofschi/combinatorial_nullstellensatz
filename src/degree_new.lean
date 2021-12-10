@@ -59,12 +59,36 @@ begin
   simp [c],
 end
 
+-- this holds for  [ordered_add_comm_monoid N] if 0 ≤ n forall n ∈ N 
+lemma finsupp.support_subset_of_le {s : Type*}  {f g :  s →₀ ℕ} (h : f ≤ g) :
+f.support ⊆ g.support := 
+begin
+  unfold has_subset.subset,
+  intros a ha,
+  simp only [finsupp.mem_support_iff, ne.def] at ha,
+  have t := lt_of_lt_of_le (nat.pos_of_ne_zero ha) (h a),
+  simp only [finsupp.mem_support_iff, ne.def],
+  by_contra,
+  rw h at t,
+  simpa using t,
+end
+
+-- this holds for [ordered_add_comm_monoid N] (with a different proof)
+lemma finsupp.sum_le_sum {s : Type*}  {f g :  s →₀ ℕ} (h : f ≤ g) :
+f.sum (λ x y , y) ≤ g.sum (λ x y , y) :=
+begin
+  rw sum_of_support_subset f (finsupp.support_subset_of_le h) (λ x y, y) (by simp),
+  rw finsupp.sum,
+  apply finset.sum_le_sum,
+  intros i hi,
+  simp only [h i],
+end
+
 lemma monomial_degree_le_of_le  {σ : Type*} {m m' :  σ →₀ ℕ} (h : m' ≤ m) : 
   monomial_degree m' ≤ monomial_degree m :=
 begin
   repeat {rw monomial_degree},
-  -- rw finsupp.sum_le_sum, -- do we have this in mathlib?
-  sorry,
+  exact finsupp.sum_le_sum h,
 end
 
 lemma monomial_degree_add {σ : Type*} (m m' :  σ →₀ ℕ) : 
@@ -100,6 +124,34 @@ begin
   simp,
 end
 
+lemma eq_single_of_monomial_degree_eq {σ : Type*}
+(m :  σ →₀ ℕ) (i : σ) : monomial_degree m = m i  →  m = single i (m i) :=
+begin
+  intro h,
+  rw monomial_degree at h,
+  have h0 : single i (m i) ≤ m := by simp,
+  have y : ∀ j ∈ m.support, m j ≤ single i (m i) j,
+  { by_contra c,
+    simp only [not_le, not_forall] at c,
+    have x := @finset.sum_lt_sum σ ℕ _ (single i (m i)) m m.support (λ i h, h0 i) c,
+    have y := sum_of_support_subset _ (finsupp.support_subset_of_le h0) (λ x y, y) (by simp),
+    rw ←y at x,
+    simp only [sum_single_index] at x,
+    rw ←h at x,
+    rw finsupp.sum at x,
+    simpa using x,
+  },
+  have x := @finset.sum_lt_sum σ ℕ _ (single i (m i)) m m.support (λ i h, h0 i),
+  ext,
+  by_cases c : a ∈ m.support,
+  { exact le_antisymm (y a c) (h0 a)},
+  by_cases c' : i = a,
+  { simp only [c', single_eq_same] },
+  simp only [c', single_eq_of_ne, ne.def, not_false_iff],
+  simpa using c,
+end
+
+
 lemma monomial_degree_le_iff_eq_single {σ : Type*}
 (m :  σ →₀ ℕ) (i : σ) : monomial_degree m ≤ m i  ↔ m = single i (m i) :=
 begin
@@ -108,8 +160,8 @@ begin
   have t := le_monomial_degree m i,
   have x := le_antisymm t h,
   clear t h,
-  ext,
-  sorry,
+  apply eq_single_of_monomial_degree_eq m i,
+  exact x.symm,
   intro h,
   rw h,
   rw monomial_degree_single,
@@ -144,10 +196,25 @@ def max_degree_monomial {R : Type*} [comm_semiring R]
 (t : σ →₀ ℕ) (f : mv_polynomial σ R) : Prop := 
 t ∈ f.support ∧ monomial_degree t = total_degree f
 
+
+-- this uses a lemma from flt-regular
+lemma support_nonempty_iff {R σ: Type*} [comm_semiring R] 
+{f : mv_polynomial σ R} : f.support.nonempty ↔ f ≠ 0 :=
+begin
+  rw iff_not_comm,
+  simp only [support_eq_empty, finset.not_nonempty_iff_eq_empty], 
+end
+
 lemma exists_max_degree_monomial {R : Type*} [comm_semiring R] 
 {f : mv_polynomial σ R} (h : f ≠ 0) : ∃ t, max_degree_monomial t f :=
 begin
-  sorry,
+  unfold max_degree_monomial,
+  rw total_degree,
+  unfold monomial_degree,
+  have h : f.support.nonempty := support_nonempty_iff.2 h,
+  have t:= finset.exists_mem_eq_sup (f.support) h (λ (s : σ →₀ ℕ), s.sum (λ (n : σ) (e : ℕ), e)),
+  cases t with m hm,
+  exact ⟨m, ⟨hm.1, hm.2.symm⟩⟩,
 end
 
 lemma eq_and_eq_of_le_add_le_eq {a1 a2 b1 b2 : ℕ}

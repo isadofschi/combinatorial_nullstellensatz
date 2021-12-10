@@ -11,7 +11,6 @@ import reduce_degree
 import lemma_2_1
 import data.mv_polynomial.comm_ring
 import lemmas_g_S
-import truncate
 
 /-!
 # Combinatorial Nullstellensatz
