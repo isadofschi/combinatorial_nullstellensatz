@@ -35,17 +35,17 @@ open_locale big_operators
 namespace mv_polynomial
 
 /- Theorem 1.1 in Alon's paper. -/
-theorem combinatorial_nullstellensatz' { n : ℕ } {F : Type u} [field F]
-  (f : mv_polynomial (fin n) F) 
-  (S : fin n → finset F)
+theorem combinatorial_nullstellensatz' { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
+  (f : mv_polynomial (fin n) R) 
+  (S : fin n → finset R)
   (hS : ∀ i : fin n, 0 < (S i).card) 
-  (hz : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
-  ∃ h : fin n → mv_polynomial (fin n) F,
+  (hz : ∀ s : fin n → R, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
+  ∃ h : fin n → mv_polynomial (fin n) R,
   (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
   ∧ f = ∑ i : fin n, h i * ∏ s in (S i), (X i - C s)
 :=
 begin
-  let g : fin n → mv_polynomial (fin n) F := λ i, ∏ s in (S i), (X i - C s),
+  let g : fin n → mv_polynomial (fin n) R := λ i, ∏ s in (S i), (X i - C s),
   let t_map : fin n → ℕ := λ i, (S i).card - 1,
   have hf : ∀ a, t_map a ≠ 0 → a ∈ (finset.fin_range n) := by simp,
   cases (reduce_degree_particular_case S hS f) with h h_h,
@@ -59,8 +59,8 @@ begin
   simp only [ring_hom.map_sub],
   rw [hz s h_s, eval_sum],
   simp only [zero_sub, neg_eq_zero, ring_hom.map_mul],
-  have hz' : ∑ (x : fin n), eval s (h x) * eval s (∏ (s : F) in S x, (X x - C s))
-    = ∑ (x : fin n), (eval s) (h x) * (0:F),
+  have hz' : ∑ (x : fin n), eval s (h x) * eval s (∏ (s : R) in S x, (X x - C s))
+    = ∑ (x : fin n), (eval s) (h x) * (0:R),
   { congr,
     ext i,
     rw eval_is_zero (S i) (hS i) s i (h_s i), },
@@ -70,13 +70,13 @@ end
 local attribute [instance] classical.prop_decidable -- g_S_lem_1' is stated with `[decidable_eq R]`
 
 theorem combinatorial_nullstellensatz''
-{ n : ℕ } {F : Type u} [field F]
-(f : mv_polynomial (fin n) F) 
+{ n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
+(f : mv_polynomial (fin n) R) 
 (t : fin n →₀ ℕ)
 (h_max : max_degree_monomial t f)
-(S : fin n → finset F)
+(S : fin n → finset R)
 (h_card_S : ∀ i : fin n, t i + 1 = (S i).card) :
-∃ s : fin n → F, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
+∃ s : fin n → R, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
 begin
   have h_coef_t := h_max.1, have h_deg := h_max.2,
   have h_card_S' : ∀ i : fin n, t i < (S i).card, 
@@ -84,7 +84,7 @@ begin
     rw ← h_card_S i,
     apply nat.lt_succ_self },
   by_contra,
-  have h' : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i) → eval s f = 0 := by simpa using h,
+  have h' : ∀ s : fin n → R, (∀ i : fin n, s i ∈ S i) → eval s f = 0 := by simpa using h,
   clear h,
   have hS : ∀ i : fin n, 0 < (S i).card := λ i , lt_of_le_of_lt (by linarith) (h_card_S' i), 
   have h'' := combinatorial_nullstellensatz' f S hS h',
@@ -101,10 +101,10 @@ begin
     simpa using h_nonzero,
   },
   clear h_nonzero,
-  have h_zero' : (λ i : fin n, coeff t (h i * ∏ s in (S i), (X i - C s))) = (λ i : fin n, (0:F)),
+  have h_zero' : (λ i : fin n, coeff t (h i * ∏ s in (S i), (X i - C s))) = (λ i : fin n, (0:R)),
   { ext i,
     -- using `by_contradiction` here gave deterministic timeout:
-    by_cases c1 : coeff t (h i * ∏ (s : F) in S i, (X i - C s)) = 0,
+    by_cases c1 : coeff t (h i * ∏ (s : R) in S i, (X i - C s)) = 0,
     exact c1,
     have h1 : total_degree (h i * ∏ s in (S i), (X i - C s)) ≤ monomial_degree t,
     { by_cases c' : h i = 0,
@@ -114,13 +114,13 @@ begin
           h_max.2 ],
       by_cases hi0 : h i = 0,
       { exfalso,
-        have hcoeff0 : coeff t (h i * ∏ (s : F) in S i, (X i - C s)) = 0 := by simp [hi0],
+        have hcoeff0 : coeff t (h i * ∏ (s : R) in S i, (X i - C s)) = 0 := by simp [hi0],
         rw hcoeff0 at c1,
         simpa using c1 },
       exact or.resolve_left (h_deg_h i) hi0 },
-    by_cases c : monomial_degree t > total_degree (h i * ∏ (s : F) in S i, (X i - C s)),
+    by_cases c : monomial_degree t > total_degree (h i * ∏ (s : R) in S i, (X i - C s)),
     { exact coeff_zero_of_degree_greater_than_total_degree t _ c },
-    have ht: max_degree_monomial t (h i * ∏ (s : F) in S i, (X i - C s)),
+    have ht: max_degree_monomial t (h i * ∏ (s : R) in S i, (X i - C s)),
     { rw max_degree_monomial,
       apply and.intro,
       simpa using c1,
@@ -128,7 +128,7 @@ begin
       exact le_antisymm c h1 },
     by_cases c'' : h i ≠ 0,
     { have hfi := dominant_monomial_of_factor_is_factor_of_max_degree_monomial (S i) t 
-        (finsupp.single i ((S i).card)) (h i) (∏ (s : F) in S i, (X i - C s)) ht c'' (by apply g_S_lem_1') i,
+        (finsupp.single i ((S i).card)) (h i) (∏ (s : R) in S i, (X i - C s)) ht c'' (by apply g_S_lem_1') i,
       simp only [ finsupp.single_eq_same, ←h_card_S ] at hfi,
       exfalso,
       simpa using hfi },
@@ -137,12 +137,9 @@ begin
   simp[ mv_polynomial.coeff_sum, h_zero'],
 end
 
-private lemma choose_smaller_sets
-  { n : ℕ }{F : Type*}
-  (S : fin n → finset F)
-  (t : fin n →₀ ℕ)
-  (h_card_S : ∀ i : fin n, t i < (S i).card) :
-  ∃ S' : fin n → finset F, (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1) 
+private lemma choose_smaller_sets { n : ℕ }{R : Type*} (S : fin n → finset R) (t : fin n →₀ ℕ)
+  (h_card_S : ∀ i : fin n, t i < (S i).card) : ∃ S' : fin n → finset R,
+    (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1)
 :=
 begin
   have t := λ i, finset.exists_smaller_set (S i) (t i +1) (h_card_S i),
@@ -154,27 +151,14 @@ end
 /-
 Theorem 1.2 in Alon's paper.
 -/
-theorem combinatorial_nullstellensatz
-{ n : ℕ } {F : Type u} [field F]
-(f : mv_polynomial (fin n) F) 
-(t : fin n →₀ ℕ)
-(h_max : max_degree_monomial t f)
-(S : fin n → finset F)
-(h_card_S : ∀ i : fin n, t i < (S i).card) :
-∃ s : fin n → F, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
+theorem combinatorial_nullstellensatz { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
+  (f : mv_polynomial (fin n) R) (t : fin n →₀ ℕ) (h_max : max_degree_monomial t f)
+  (S : fin n → finset R) (h_card_S : ∀ i : fin n, t i < (S i).card) : ∃ s : fin n → R,
+    (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
 begin
   cases choose_smaller_sets S t h_card_S with S' hS',
-  have h_S_S' : ∀ i : fin n, S' i ⊆ S i := hS'.1,
-  have h_card_S' : ∀ i : fin n, t i + 1 = (S' i).card := λ i,  ((hS'.2) i).symm,
-  have exists_s := combinatorial_nullstellensatz'' f t h_max S' h_card_S',
-  cases exists_s with s h_s',
-  use s,
-  apply and.intro,
-  intro i,
-  have h' := h_s'.1 i,
-  have h'' := h_S_S' i,
-  exact finset.mem_of_subset h'' h',
-  exact h_s'.2,
+  cases combinatorial_nullstellensatz'' f t h_max S' (λ i,  ((hS'.2) i).symm) with s h_s',
+  exact ⟨ s, ⟨λ i, finset.mem_of_subset (hS'.1 i) (h_s'.1 i), h_s'.2 ⟩⟩,
 end
 
 end mv_polynomial

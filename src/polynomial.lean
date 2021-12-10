@@ -8,16 +8,9 @@ import data.polynomial.ring_division
 import algebra.algebra.basic
 import data.finset.basic
 
-
-local attribute [instance] classical.prop_decidable
-
 namespace polynomial
 
-universes u v
-
-variables {α : Type v}
-
-lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_semiring R] (p : polynomial R) :
+lemma eq_zero_iff_every_coeff_zero {R : Type*} [comm_semiring R] (p : polynomial R) :
   (∀ (i : ℕ), polynomial.coeff p i = 0) ↔ p = 0 :=
 begin
   apply iff.intro,
@@ -30,8 +23,8 @@ begin
   simp,
 end
 
-theorem number_zeroes_field {F : Type u} [field F]{p : polynomial F}(h : p ≠ 0)
-{Z : finset F } (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
+theorem number_zeroes_field {R : Type*} [comm_ring R] [is_domain R] {p : polynomial R} (h : p ≠ 0)
+  {Z : finset R } (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
 begin
   apply trans _ (polynomial.card_roots' h),
   rw finset.card,

@@ -36,29 +36,29 @@ local attribute [instance] classical.prop_decidable
 namespace mv_polynomial
 
 /- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/
-lemma lemma_2_1 { n : ℕ } {F : Type u} [field F]
-  (f : mv_polynomial (fin n) F)
-  (S : fin n → finset F)
+lemma lemma_2_1 { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
+  (f : mv_polynomial (fin n) R)
+  (S : fin n → finset R)
   (hS : ∀ i : fin n, degree_of i f < (S i).card) 
-  (hz : ∀ s : fin n → F, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
+  (hz : ∀ s : fin n → R, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
   f = 0 :=
 begin
   induction n with n hn,
   simp only [forall_const] at hz,
-  apply (ring_equiv.map_eq_zero_iff (is_empty_ring_equiv F (fin 0))).1,
+  apply (ring_equiv.map_eq_zero_iff (is_empty_ring_equiv R (fin 0))).1,
   simp only [is_empty_ring_equiv_apply],
   simpa using (hz fin.is_empty.elim),
-  apply (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv F n)).1,
-  apply (polynomial.eq_zero_iff_every_coeff_zero ((fin_succ_equiv F n) f)).1,
+  apply (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv R n)).1,
+  apply (polynomial.eq_zero_iff_every_coeff_zero ((fin_succ_equiv R n) f)).1,
   intro i,
-  apply hn (polynomial.coeff ((fin_succ_equiv F n) f) i),
+  apply hn (polynomial.coeff ((fin_succ_equiv R n) f) i),
   exact λ j, lt_of_le_of_lt (degree_of_coeff_fin_suc_equiv f j i) (hS j.succ),
   intros s hs,
   rw ← coeff_eval_eq_eval_coeff,
-  rw (polynomial.eq_zero_iff_every_coeff_zero (polynomial.map (eval s) ((fin_succ_equiv F n) f))).2,
+  rw (polynomial.eq_zero_iff_every_coeff_zero (polynomial.map (eval s) ((fin_succ_equiv R n) f))).2,
   by_contradiction c1,
-  have h0 : ∀ s' : fin n → F, (∀ i : fin n, s' i ∈ S i.succ) → ∀ y : F, y ∈ S 0 →  
-    polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv F n) f)) = 0,
+  have h0 : ∀ s' : fin n → R, (∀ i : fin n, s' i ∈ S i.succ) → ∀ y : R, y ∈ S 0 →  
+    polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) = 0,
   { intros s' hs' y hy,
     rw [← eval_eq_eval_mv_eval', hz],
     intro i,
@@ -71,7 +71,7 @@ begin
     rwa [c, fin.cons_zero] },
   simpa using lt_of_le_of_lt ((polynomial.number_zeroes_field c1 (h0 _ hs)).trans _) (hS 0),
   rw ← nat_degree_fin_suc_equiv f,
-  exact nat_degree_eval_le_nat_degree s (fin_succ_equiv F n f),
+  exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f),
 end
 
 end mv_polynomial
