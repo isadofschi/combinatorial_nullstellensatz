@@ -188,15 +188,15 @@ begin
 end
 
 
-lemma g_S_lem_0 { n : ℕ } {R : Type*} [comm_ring R] [is_domain R] (S : finset R) (i : fin n) :
-  ∏ s in S, (X i - C s) ≠ 0 :=
+lemma g_S_lem_0 {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] (S : finset R)
+ (i : σ) : ∏ s in S, (X i - C s) ≠ 0 :=
 begin
   rw finset.prod_ne_zero_iff,
   intros a ha,
   apply X_sub_C_ne_0,
 end
 
-lemma g_S_lem_4 { n : ℕ } {R : Type u} [comm_ring R] [is_domain R] {S : finset R} {i : fin n} :
+lemma g_S_lem_4 {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] {S : finset R} {i : σ} :
   total_degree (∏ s in S, (X i - C s)) = S.card :=
 begin
   apply finset.cons_induction_on S,
@@ -214,7 +214,7 @@ begin
   apply g_S_lem_0,
 end
 
-lemma g_S_lem_8  { n : ℕ } {R : Type u} [comm_ring R] [is_domain R] (S : finset R)(i : fin n) :
+lemma g_S_lem_8 {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] (S : finset R) (i : σ) :
   coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
 begin
   apply finset.cons_induction_on S,
@@ -239,10 +239,10 @@ begin
   simp,
 end
 
-lemma g_S_lem_1' { n : ℕ } {R : Type* } [comm_ring R] [is_domain R] (S : finset R)
-  (i : fin n) :  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
+lemma g_S_lem_1' {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] (S : finset R)
+  (i : σ) :  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
 begin
-  rw ← g_S_lem_4,
+  rw ← @g_S_lem_4 R σ,
   apply g_S_lem_1,
   apply g_S_lem_0,
   apply g_S_lem_supported,

@@ -34,7 +34,7 @@ variables {R : Type*} {σ : Type*}
 
 local attribute [instance] classical.prop_decidable
 
-lemma support_sum [comm_semiring R]{ α : Type}{s : finset α}
+lemma support_sum [comm_semiring R]{ α : Type*}{s : finset α}
   {f : α → mv_polynomial σ R} {m : σ →₀ ℕ} (h : m ∈ (∑ x in s, f x).support) :
   ∃ x ∈ s, m ∈ (f x).support :=
 begin

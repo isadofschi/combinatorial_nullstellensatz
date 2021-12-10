@@ -88,9 +88,9 @@ begin
   simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff, zero_add],
 end
 
-lemma sum_single' {M : Type*} [semiring M] {n : ℕ}
-(j : fin n) (a : M) : 
-  ∑ ( x : fin n) , (single j a) x  = a := 
+lemma sum_single' {M σ : Type*} [semiring M] [fintype σ]
+(j : σ) (a : M) : 
+  ∑ ( x : σ) , (single j a) x  = a := 
 begin
   rw sum_single'',
   simp,
