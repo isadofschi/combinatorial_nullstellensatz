@@ -6,43 +6,10 @@ Author: Ivan Sadofschi Costa.
 import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
+import data.finset.basic
 
 
 local attribute [instance] classical.prop_decidable
-
-namespace PR10603 -- #10603 - https://github.com/leanprover-community/mathlib/pull/10603
-universes u
-variables {α : Type u}
-open_locale big_operators
-lemma one_le_count_of_mem 
-{α : Type u} [decidable_eq α ]{x :α}
-{a : multiset α} (h : x ∈ a) : 1 ≤ a.count x := 
-begin
-  have t := multiset.count_le_of_le x ( multiset.singleton_le.2 h),
-  simp only [multiset.count_singleton, if_pos] at t,
-  exact t,
-end
-lemma le_of_subset_of_nodup 
-{α : Type u} [decidable_eq α ]
-{a b : multiset α} (h : a ⊆ b) (h' : a.nodup) : a ≤ b 
-:=
-begin
-  apply multiset.le_iff_count.2,
-  intro x,
-  by_cases c : x ∈ a,
-  { rw multiset.count_eq_one_of_mem h' c,
-    exact one_le_count_of_mem (multiset.mem_of_subset h c) },
-  rw multiset.count_eq_zero_of_not_mem c,
-  simp,
-end
-lemma val_le_of_val_subset
-{α : Type u} [decidable_eq α]
-{a : finset α} {b : multiset α} (h : a.val ⊆ b) : a.val ≤ b := 
-begin 
-  exact le_of_subset_of_nodup h a.2,
-end
-end PR10603
-
 
 namespace polynomial
 
@@ -51,7 +18,7 @@ universes u v
 variables {α : Type v}
 
 lemma eq_zero_iff_every_coeff_zero {R : Type u} [comm_semiring R] (p : polynomial R) :
-  (∀ i:ℕ, polynomial.coeff p i = 0) ↔ p = 0 :=
+  (∀ (i : ℕ), polynomial.coeff p i = 0) ↔ p = 0 :=
 begin
   apply iff.intro,
   intro h,
@@ -73,7 +40,7 @@ begin
     intros x hx,
     let z := hZ x hx,
     rwa polynomial.mem_roots h,},
-  apply multiset.card_le_of_le (PR10603.val_le_of_val_subset h0),
+  apply multiset.card_le_of_le (finset.val_le_iff_val_subset.2 h0),
 end
 
 end polynomial

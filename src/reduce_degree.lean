@@ -125,22 +125,16 @@ variables {h_h : (∀ (i : fin n), h i = 0
 variables {c_p_eq_0 : ¬p = 0}
 
 abbreviation p1: mv_polynomial (fin n) F :=  (p - ∑ (i : fin n), h i * g i)
-#check @p1 n F _ j p h
 
 abbreviation f: mv_polynomial (fin n) F := (p - ∑ (i : fin n), h i * g i) * X j
-#check @f n F _ g j p h
 
 abbreviation ms: finset (fin n →₀ ℕ) :=
   finset.filter (λ (m : fin n →₀ ℕ), m j = (g j).total_degree) (@f n F _ g j p h).support
-#check @ms  n F _ g j p h
 
 def q: mv_polynomial (fin n) F :=
   ∑ (m : fin n →₀ ℕ) in @ms  n F _ g j p h, (monomial (m - single j (g j).total_degree)) (coeff m (@f n F _ g j p h))
-#check @q n F _ g j p h
 
 def h1: fin n → mv_polynomial (fin n) F := (λ i,  h i * (X j)) + single j  (@q n F _ g j p h)
-   --λ (i : fin n), ite (i = j) (h j * X j + (@q n F _ S j p h)) (h i * X j)
-#check @h1 n F _ g j p h
 
 lemma prop_ms (m : fin n →₀ ℕ):  m ∈ (@ms n F _ g j p h) →  m j = (g j).total_degree := 
 begin
@@ -148,7 +142,6 @@ begin
   simp at h_m,
   exact h_m.2,
 end
-#check @prop_ms n F _ g j p h
 
 lemma prop_ms'' (m : fin n →₀ ℕ):  m ∈ (@ms  n F _ g j p h) →  m ∈ (@f n F _ g j p h).support :=
 begin
@@ -171,7 +164,6 @@ begin
   rw h',
   simp,
 end
-#check @q_eq_zero_of_ms_empty n F _ g j p 
 
 lemma exists_m1 {m : fin n →₀ ℕ} (h_m : m ∈ (@q n F _ g j p h).support):
   ∃ m1 : (fin n →₀ ℕ),
@@ -188,7 +180,6 @@ begin
   simp only [exists_prop, mem_support_iff, coeff_monomial, ite_eq_right_iff, ne.def, not_forall] at h_m1,
   exact h_m1.1.symm,
 end
-#check @exists_m1 n F _ g j p h
 
 include h_h
 lemma comp_1:  
@@ -258,7 +249,6 @@ begin
   rw finsupp.sum_single' j,
 end
 omit h_h
-#check @comp_1 n F _ g j p h
 
 include hmonic hg
 lemma comp_2 : ∀ m, m ∈ (@ms  n F _ g j p h) → coeff m (@f n F _ g j p h) = coeff m ((@q n F _ g j p h) * g j)
@@ -340,7 +330,6 @@ lemma comp_2 : ∀ m, m ∈ (@ms  n F _ g j p h) → coeff m (@f n F _ g j p h) 
   rw finsupp.sum_single'' hm,
 end
 omit hmonic hg
-#check @comp_2 n F _ g hg hmonic j p h
 
 include h_h
 lemma h_total_degree_f : total_degree (@f n F _ g j p h) ≤ total_degree p + 1 :=
@@ -371,7 +360,6 @@ begin
   rw not_le at h,
   rw max_eq_left h.le,
 end
-#check @h_total_degree_f n F _ g j p h h_h
 omit h_h
 
 include h_h
@@ -419,7 +407,6 @@ begin
   cc,
 end
 omit h_h
-#check @h_total_degree_q n F _ g j p h
 
 include h_h hg hmonic
 lemma H_f : ∀ i (m : (fin n) →₀ ℕ),
@@ -448,7 +435,6 @@ lemma H_f : ∀ i (m : (fin n) →₀ ℕ),
     linarith,
 end
 omit h_h hg hmonic
-#check @H_f n F _ g hg hmonic j p h h_h
 
 include h_h hS hg hmonic
 lemma H_g : ∀ i (m : (fin n) →₀ ℕ), m ∈ ((@q n F _ g j p h) * g j).support 
@@ -586,7 +572,6 @@ lemma h_X_1 :
   exact c_i_eq_j,
 end
 omit c_p_eq_0 h_h
-#check @h_X_1 n F _ g j p h h_h c_p_eq_0
 
 include h_h hS hg hmonic
 lemma h_X_2 :
@@ -605,7 +590,6 @@ begin
   exact degree_of_sub_lt (hS i) (H_f i) (H_g i),
 end
 omit h_h hS hg hmonic
-#check @h_X_2 n F _ g hg hS hmonic j p h h_h 
 
 include hg hmonic
 lemma h_X :
@@ -668,12 +652,11 @@ private lemma h_add_weak { n : ℕ } {F : Type u} [field F]
 (hS : ∀ (i : fin n), 0 < (g i).total_degree) 
 (hm : ∀ i : fin n, coeff (single i (g i).total_degree) (g i) = 1) : 
 ∀ (a : fin n →₀ ℕ) (b : F) (f : mv_polynomial (fin n) F), 
-    a ∉ f.support → b ≠ 0 → M' n F g hg hS hm f → M' n F g hg hS hm (monomial a b + f) :=
+    a ∉ f.support → b ≠ 0 → M' n F g hg hS hm f → M' n F g hg hS hm (monomial a b) → M' n F g hg hS hm (monomial a b + f) :=
 begin
-  intros a b f h_a h_b h_Mf,
+  intros a b f h_a h_b h_Mf h_Mmonomial,
   cases h_Mf with h_f hh_f,
-  have h_MCa := induction_on_monomial (h_C g hg hS hm) (h_X g hg hS hm) a b,
-  cases h_MCa with h_Ca hhC_a,
+  cases h_Mmonomial with h_Ca hhC_a,
   rw M',
   use h_Ca + h_f,
   apply and.intro,
