@@ -69,12 +69,12 @@ lemma sub_mem_supported {R σ : Type*} [comm_ring R]
 (hf : f ∈ supported R s) (hg : g ∈ supported R s) : f - g ∈ supported R s := 
 subalgebra.sub_mem (supported R s) hf hg
 
-lemma prod_mem_supported {R σ α : Type*}[decidable_eq α] [comm_semiring R] 
+lemma prod_mem_supported {R σ α : Type*} [comm_semiring R] 
 (s : set σ) (a : finset α) (f : α → mv_polynomial σ R)
 (h : ∀ i ∈ a, f i ∈ supported R s) : ∏ i in a, f i ∈ supported R s := 
 subalgebra.prod_mem (supported R s) h
 
-lemma monomial_support_supported'  {R σ : Type*} [field R] {p : mv_polynomial σ R} 
+lemma monomial_support_supported'  {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} 
 {i : σ} { s : set σ} {m : σ →₀ ℕ}
 (hp : p ∈ supported R s)  (hm : m ∈ p.support) (hi : i ∉ s) : m i = 0 :=
 begin
@@ -85,7 +85,7 @@ begin
   cc,
 end
 
-lemma monomial_support_supported  {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
+lemma monomial_support_supported  {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {i : σ} 
 (hp : p ∈ supported R ({i} : set σ)) {m : σ →₀ ℕ} (hm : m ∈ p.support) : m = single i (m i)
 :=
 begin
@@ -98,7 +98,7 @@ begin
   cc,
 end
 
-lemma g_S_lem_1a {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
+lemma g_S_lem_1a {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {i : σ} 
 (h : p ≠ 0) (hp : p ∈ supported R ({i} : set σ)) : finsupp.single i p.total_degree ∈ p.support :=
 begin
   cases exists_max_degree_monomial h with m hm,
@@ -113,9 +113,8 @@ begin
   simp,
 end
 
-lemma g_S_lem_1 {R σ : Type*} [field R] {p : mv_polynomial σ R} {i : σ} 
-(h : p ≠ 0)
-(hp : p ∈ supported R ({i} : set σ)) : dominant_monomial (finsupp.single i p.total_degree) p :=
+lemma g_S_lem_1 {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {i : σ} (h : p ≠ 0)
+  (hp : p ∈ supported R ({i} : set σ)) : dominant_monomial (finsupp.single i p.total_degree) p :=
 begin
   rw dominant_monomial,
   apply and.intro,
@@ -136,7 +135,7 @@ end
 
 -- special case g_S
 
-lemma g_S_lem_supported {R σ : Type*} [comm_ring R] [nontrivial R][decidable_eq R] 
+lemma g_S_lem_supported {R σ : Type*} [comm_ring R] [nontrivial R]
 (S : finset R) (i : σ) : ∏ s in S, (X i - C s) ∈ supported R ({i}: set σ) :=
 begin
   apply prod_mem_supported,
@@ -178,10 +177,8 @@ begin
   simp,
 end
 
-lemma g_S_lem_5 {R  σ : Type* } [field R] {i : σ}
-  {m: σ →₀ ℕ}  {p : mv_polynomial σ R}
-  (h_m : m ∈ p.support)
-  (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
+lemma g_S_lem_5 {R  σ : Type* } [comm_semiring R] {i : σ} {m: σ →₀ ℕ} {p : mv_polynomial σ R}
+  (h_m : m ∈ p.support) (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
 begin
   have t := monomial_degree_le_total_degree h_m,
   rw ←h_m_i at t,
@@ -191,15 +188,15 @@ begin
 end
 
 
-lemma g_S_lem_0 { n : ℕ } {F : Type*} [field F] [nontrivial F]
-(S : finset F) (i : fin n) : (∏ s in S, (X i - C s)) ≠ 0 :=
+lemma g_S_lem_0 { n : ℕ } {R : Type*} [comm_ring R] [is_domain R] (S : finset R) (i : fin n) :
+  ∏ s in S, (X i - C s) ≠ 0 :=
 begin
   rw finset.prod_ne_zero_iff,
   intros a ha,
   apply X_sub_C_ne_0,
 end
 
-lemma g_S_lem_4 { n : ℕ } {F : Type u} [field F] {S : finset F} {i : fin n} :
+lemma g_S_lem_4 { n : ℕ } {R : Type u} [comm_ring R] [is_domain R] {S : finset R} {i : fin n} :
   total_degree (∏ s in S, (X i - C s)) = S.card :=
 begin
   apply finset.cons_induction_on S,
@@ -217,8 +214,8 @@ begin
   apply g_S_lem_0,
 end
 
-lemma g_S_lem_8  { n : ℕ } {F : Type u} [field F] (S : finset F)(i : fin n)
-  : coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
+lemma g_S_lem_8  { n : ℕ } {R : Type u} [comm_ring R] [is_domain R] (S : finset R)(i : fin n) :
+  coeff (single i S.card) ∏ s in S, (X i - C s) = 1 :=
 begin
   apply finset.cons_induction_on S,
   simp,
@@ -242,8 +239,8 @@ begin
   simp,
 end
 
-lemma g_S_lem_1' { n : ℕ } {R : Type* } [field R] [decidable_eq R] (S : finset R) (i : fin n) :
-  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
+lemma g_S_lem_1' { n : ℕ } {R : Type* } [comm_ring R] [is_domain R] (S : finset R)
+  (i : fin n) :  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
 begin
   rw ← g_S_lem_4,
   apply g_S_lem_1,

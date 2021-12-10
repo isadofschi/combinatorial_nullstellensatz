@@ -180,8 +180,8 @@ lemma le_total_degree  {R σ : Type*} [comm_semiring R] {i: σ} {p : mv_polynomi
   {m: σ →₀ ℕ} (h_m : m ∈ p.support) : m i ≤ p.total_degree
 := (le_monomial_degree m i).trans $ monomial_degree_le_total_degree h_m
 
-lemma coeff_zero_of_degree_greater_than_total_degree {F : Type u} [field F] 
-(t : σ →₀ ℕ) (f : mv_polynomial σ F) :
+lemma coeff_zero_of_degree_greater_than_total_degree {R : Type*} [comm_semiring R] 
+(t : σ →₀ ℕ) (f : mv_polynomial σ R) :
 monomial_degree t > total_degree f → coeff t f = 0 :=
 begin
   intro h,

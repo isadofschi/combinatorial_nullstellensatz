@@ -226,12 +226,11 @@ begin
   simp [h_ind],
 end
 
-lemma total_degree_mul_X_le  [field R]
-(f : mv_polynomial σ R)(j : σ) :
-total_degree (f * X j) ≤ total_degree f + 1 := 
+lemma total_degree_mul_X_le [comm_semiring R] [nontrivial R] (f : mv_polynomial σ R)(j : σ) :
+  total_degree (f * X j) ≤ total_degree f + 1 := 
 begin
   apply (total_degree_mul f (X j)).trans,
-  simp,
+  simp only [total_degree_X],
 end
 
 lemma support_add_disjoint [comm_semiring R] {f g : mv_polynomial σ R} 
@@ -297,7 +296,7 @@ lemma total_degree_mul' [comm_ring R] [is_domain R] {f g : mv_polynomial σ R}
   (hf : f ≠ 0) (hg : g ≠ 0) : total_degree (f * g) = total_degree f + total_degree g := total_degree_mul_eq hf hg
 
 
-lemma total_degree_mul_X [field R] {f : mv_polynomial σ R} (h : f ≠ 0)
+lemma total_degree_mul_X [comm_ring R] [is_domain R] {f : mv_polynomial σ R} (h : f ≠ 0)
   (j : σ) : total_degree (f * X j) = total_degree f + 1 :=
 by simp [total_degree_mul' h (X_ne_zero j)]
 
