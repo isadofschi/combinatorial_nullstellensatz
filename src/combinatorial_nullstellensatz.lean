@@ -26,24 +26,17 @@ Our reference is
 
 -/
 
-universes u v
-
-variables {α : Type v}
-
 open_locale big_operators
 
 namespace mv_polynomial
 
 /- Theorem 1.1 in Alon's paper. -/
 theorem combinatorial_nullstellensatz' { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
-  (f : mv_polynomial (fin n) R) 
-  (S : fin n → finset R)
-  (hS : ∀ i : fin n, 0 < (S i).card) 
-  (hz : ∀ s : fin n → R, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) :
+  (f : mv_polynomial (fin n) R) (S : fin n → finset R) (hS : ∀ i : fin n, 0 < (S i).card)
+  (hz : ∀ s : fin n → R, (∀ i : fin n, s i ∈ S i ) → eval s f = 0) : 
   ∃ h : fin n → mv_polynomial (fin n) R,
-  (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ f = ∑ i : fin n, h i * ∏ s in (S i), (X i - C s)
-:=
+    (∀ i : fin n, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
+      ∧ f = ∑ i : fin n, h i * ∏ s in (S i), (X i - C s) :=
 begin
   let g : fin n → mv_polynomial (fin n) R := λ i, ∏ s in (S i), (X i - C s),
   let t_map : fin n → ℕ := λ i, (S i).card - 1,
@@ -67,16 +60,10 @@ begin
   simp [hz'],
 end
 
-local attribute [instance] classical.prop_decidable -- g_S_lem_1' is stated with `[decidable_eq R]`
-
-theorem combinatorial_nullstellensatz''
-{ n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
-(f : mv_polynomial (fin n) R) 
-(t : fin n →₀ ℕ)
-(h_max : max_degree_monomial t f)
-(S : fin n → finset R)
-(h_card_S : ∀ i : fin n, t i + 1 = (S i).card) :
-∃ s : fin n → R, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
+theorem combinatorial_nullstellensatz'' { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
+  (f : mv_polynomial (fin n) R) (t : fin n →₀ ℕ) (h_max : max_degree_monomial t f)
+  (S : fin n → finset R) (h_card_S : ∀ i : fin n, t i + 1 = (S i).card) :
+  ∃ s : fin n → R, (∀ i : fin n, s i ∈ S i ) ∧ eval s f ≠ 0 :=
 begin
   have h_coef_t := h_max.1, have h_deg := h_max.2,
   have h_card_S' : ∀ i : fin n, t i < (S i).card, 
@@ -139,8 +126,7 @@ end
 
 private lemma choose_smaller_sets { n : ℕ }{R : Type*} (S : fin n → finset R) (t : fin n →₀ ℕ)
   (h_card_S : ∀ i : fin n, t i < (S i).card) : ∃ S' : fin n → finset R,
-    (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1)
-:=
+    (∀ i : fin n, S' i ⊆ S i) ∧ (∀ i : fin n, (S' i).card = t i + 1) :=
 begin
   have t := λ i, finset.exists_smaller_set (S i) (t i +1) (h_card_S i),
   convert classical.skolem.1 t,
