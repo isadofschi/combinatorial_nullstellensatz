@@ -25,18 +25,37 @@ import polynomial
   This is Lemma 2.1 in Alon's paper "Combinatorial Nullstellensatz".
 -/
 
-universes u v
-
-variables {α : Type v}
-
 open_locale big_operators
 
 local attribute [instance] classical.prop_decidable
 
+namespace multiset
+
+theorem count_map_eq_count' {α β : Type* }[decidable_eq β] {f : α → β} (s : multiset α)
+  (h : function.injective f) (x : α) : (s.map f).count (f x) = s.count x :=
+begin
+  suffices : (filter (λ (a : α), f x = f a) s).count x = card (filter (λ (a : α), f x = f a) s),
+  { rw [count, countp_map, ← this],
+    exact count_filter_of_pos rfl },
+  { simp only [count_filter_of_pos],
+    have h' : ((λ (a : α), f x = f a) : α → Prop)  = eq x,
+    { ext y,
+      apply iff.intro,
+      exact λ h', h h',
+      intro h',
+      rw h', },
+    simp only [h'],
+    rw count,
+    rw countp_eq_card_filter,
+    congr,
+  }
+end
+
+end multiset
+
 namespace mv_polynomial
 
-/- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/
-lemma lemma_2_1 { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
+private lemma lemma_2_1_fin_n { n : ℕ } {R : Type*} [comm_ring R] [is_domain R]
   (f : mv_polynomial (fin n) R)
   (S : fin n → finset R)
   (hS : ∀ i : fin n, degree_of i f < (S i).card) 
@@ -72,6 +91,150 @@ begin
   simpa using lt_of_le_of_lt ((polynomial.number_zeroes_field c1 (h0 _ hs)).trans _) (hS 0),
   rw ← nat_degree_fin_suc_equiv f,
   exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f),
+end
+
+private noncomputable def bundled_map_domain_injective {α β : Type*} {f : α → β} (h : function.injective f) :
+ (α →₀ ℕ)  ↪ (β →₀ ℕ) := ⟨finsupp.map_domain f, finsupp.map_domain_injective h⟩
+
+lemma support_rename_injective {R σ τ : Type*} [comm_semiring R] {p : mv_polynomial σ R}
+  {f : σ → τ} (h : function.injective f) : 
+  ((rename f p).support : finset (τ →₀ ℕ)) = 
+  finset.map (bundled_map_domain_injective h) p.support :=
+begin
+  rw finset.ext_iff,
+  intro a,
+  simp only [exists_prop, finset.mem_map, mem_support_iff, ne.def],
+  apply iff.intro,
+  intro h1,
+  cases coeff_rename_ne_zero f p a h1 with d hd,
+  use d,
+  rw bundled_map_domain_injective,
+  simp only [function.embedding.coe_fn_mk],
+  exact hd.symm,
+  intro h,
+  cases h with b hb,
+  rw ← hb.2,
+  have t := coeff_rename_map_domain f h p b,
+  rw bundled_map_domain_injective,
+  simp only [function.embedding.coe_fn_mk],
+  rw t,
+  exact hb.1,
+end
+
+lemma multiset.sup_map {α β γ : Type* } {f : β → γ} (h : function.injective f) (g : α → multiset β) (s : finset α) : 
+multiset.map f (s.sup g) = s.sup (λ x,  multiset.map f (g x)) :=
+begin
+  apply finset.cons_induction_on s,
+  simp,
+  clear s,
+  intros a s h_a_s h_ind,
+  repeat {rw finset.sup_cons},
+  rw ← h_ind,
+  dsimp,
+  rw multiset.map_union h,
+end
+
+
+lemma rename_degrees_injective {R σ τ : Type*} [comm_semiring R] {p : mv_polynomial σ R}
+{f : σ → τ} (h : function.injective f) : degrees (rename f p) = (degrees p).map f :=
+begin
+  repeat {rw degrees},
+  dsimp only,
+  rw multiset.sup_map h,
+  have h1 : (λ (x : σ →₀ ℕ), multiset.map f (finsupp.to_multiset x)) 
+            = λ x, (x.map_domain f).to_multiset,
+  { ext,
+    rw finsupp.to_multiset_map,},
+  rw h1,
+  rw support_rename_injective h,
+  simp only [finset.sup_map],
+  congr,
+end
+
+
+
+lemma degree_of_rename_injective {R σ τ : Type*} [comm_semiring R] {p : mv_polynomial σ R}
+{f : σ → τ} (h : function.injective f) (i : σ) : degree_of i p = degree_of (f i) (rename f p) :=
+begin
+  repeat {rw degree_of},
+  rw rename_degrees_injective h,
+  rw multiset.count_map_eq_count' (p.degrees) h,
+end
+
+
+
+/- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/
+lemma lemma_2_1 {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
+  (f : mv_polynomial σ R)
+  (S : σ → finset R)
+  (hS : ∀ i : σ, degree_of i f < (S i).card) 
+  (hz : ∀ s : σ → R, (∀ i : σ, s i ∈ S i ) → eval s f = 0) :
+  f = 0 :=
+begin
+  cases exists_fin_rename f with n hn,
+  cases hn with ψ hψ,
+  cases hψ with hψ hq,
+  cases hq with g hg,
+  rw hg,
+  rw hg at hS,
+  rw hg at hz,
+  clear hg f,
+  have h_S_nonempty : ∀ i, ∃ x, x ∈ S i,
+  { intro i,
+    apply multiset.card_pos_iff_exists_mem.1,
+    have h : 0 < (S i).card,
+    { have t:= hS i,
+      linarith },
+    convert h, },
+  have hs0 : ∃ s0 : σ → R, (∀ i : σ, s0 i ∈ S i ) := by apply classical.skolem.1 h_S_nonempty,
+  by_cases c : nonempty (fin n),
+  { have hS' : ∀ i : (fin n), degree_of i g < ((S ∘ ψ) i).card,
+    { intro i,
+      have t := hS (ψ i),
+      convert t,
+      exact degree_of_rename_injective hψ i },
+    have hz' : ∀ s : (fin n) → R, (∀ i : fin n, s i ∈ (S ∘ ψ) i ) → eval s g = 0,
+    { intros s' h,
+      cases hs0 with s0 hs0,
+      let φ := @function.inv_fun (fin n) σ c ψ,
+      have φ_left_inv := @function.left_inverse_inv_fun (fin n) σ c ψ hψ,
+      let s : σ → R := λ i, if h : ∃ j : fin n, ψ j = i then (s' ∘ φ) i else s0 i,
+      have hs' : s' = s ∘ ψ,
+      { ext,
+        simp only [function.comp_app, s],
+        have hx  : ∃ j, ψ j = ψ x := ⟨x, by refl⟩,
+        simp only [hx, dif_pos], 
+        simp only [φ, φ_left_inv x],
+      },
+      have hs : ∀ (i : σ), s i ∈ S i,
+      { intro i,
+        by_cases ch : ∃ (j : fin n), ψ j = i,
+        { simp only [s, dite_eq_ite, function.comp_app, if_pos, ch, φ ],
+          cases ch with j hj,
+          rw ← hj,
+          simp [φ_left_inv j],
+          exact h j },
+          simp only [s, dite_eq_ite, if_neg, ch, not_false_iff],
+          exact hs0 i },
+      rw hs',
+      have t := hz s hs,
+      convert t, 
+      -- this should be a lemma called `eval_rename`!
+      repeat {rw eval},
+      rw eval₂_hom_rename },
+    rw lemma_2_1_fin_n g (S ∘ ψ ) hS' hz',
+    simp },
+  simp only [not_nonempty_iff] at c,
+  cases @C_surjective R _ (fin n) c g with a ha,
+  rw ← ha,
+  rw ← ha at hz,
+  simp only [rename_C],
+  simp only [rename_C] at hz,
+  cases hs0 with s0 hs0,
+  have t := hz s0 hs0,
+  simp only [eval_C] at t,
+  rw t,
+  simp,
 end
 
 end mv_polynomial
