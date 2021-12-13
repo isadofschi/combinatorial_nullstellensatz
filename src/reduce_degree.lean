@@ -103,7 +103,7 @@ local attribute [instance] classical.prop_decidable
 section h_X
 
 variables {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
-{g : σ → mv_polynomial σ R }
+{g : σ → mv_polynomial σ R}
 {hg : ∀ i : σ, g i ∈ supported R ({i} : set σ)}
 {hS : ∀ i : σ, 0 < total_degree (g i)}
 {hmonic : ∀ i : σ, coeff (single i (g i).total_degree) (g i) = 1}

@@ -171,8 +171,7 @@ lemma total_degree_X_sub_C {R σ : Type*}[comm_ring R] [decidable_eq σ] [nontri
  (i : σ) (a : R) :  total_degree (X i - C a) = 1 :=
 begin
   -- this could be a separate lemma called `total_degree_sub_eq_left_of_total_degree_lt`
-  rw sub_eq_add_neg,
-  rw total_degree_add_eq_left_of_total_degree_lt,
+  rw [sub_eq_add_neg, total_degree_add_eq_left_of_total_degree_lt],
   simp,
   simp,
 end
@@ -180,11 +179,9 @@ end
 lemma g_S_lem_5 {R  σ : Type* } [comm_semiring R] {i : σ} {m: σ →₀ ℕ} {p : mv_polynomial σ R}
   (h_m : m ∈ p.support) (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
 begin
-  have t := monomial_degree_le_total_degree h_m,
-  rw ←h_m_i at t,
-  have t' := (monomial_degree_le_iff_eq_single m i).1 t,
-  rw h_m_i at t',
-  exact t',
+  rw ←h_m_i,
+  apply (monomial_degree_le_iff_eq_single m i).1,
+  simpa [h_m_i] using monomial_degree_le_total_degree h_m,
 end
 
 
@@ -196,18 +193,14 @@ begin
   apply X_sub_C_ne_0,
 end
 
-lemma g_S_lem_4 {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] {S : finset R} {i : σ} :
+lemma g_S_lem_4 {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] (S : finset R) (i : σ) :
   total_degree (∏ s in S, (X i - C s)) = S.card :=
 begin
   apply finset.cons_induction_on S,
   simp,
   clear S,
   intros a S haS hind,
-  rw finset.prod_cons,
-  rw finset.card_cons,
-  rw total_degree_mul',
-  rw hind,
-  rw add_comm,
+  rw [finset.prod_cons, finset.card_cons, total_degree_mul', hind, add_comm],
   congr,
   rw total_degree_X_sub_C,
   apply X_sub_C_ne_0,
@@ -221,28 +214,21 @@ begin
   simp,
   clear S,
   intros a S haS hind,
-  rw finset.prod_cons,
-  rw sub_mul,
-  rw coeff_sub,
-  rw finset.card_cons,
-  rw coeff_X_mul',
-  simp only [ if_true, coeff_C_mul, single_eq_same, pi.add_apply, nat.succ_ne_zero,
-              finsupp.mem_support_iff, ne.def, not_false_iff, add_tsub_cancel_right, coe_add,
-              single_add ],
-  rw hind,
-  simp only [sub_eq_self, mul_eq_zero],
+  simp only [finset.prod_cons, sub_mul, coeff_sub, finset.card_cons, coeff_X_mul', if_true,
+            coeff_C_mul, single_eq_same, pi.add_apply, nat.succ_ne_zero, finsupp.mem_support_iff,
+            ne.def, not_false_iff, add_tsub_cancel_right, coe_add, single_add, hind, sub_eq_self,
+            mul_eq_zero],
   right,
   rw ← single_add,
   apply coeff_zero_of_degree_greater_than_total_degree,
-  rw g_S_lem_4,
-  rw monomial_degree_single,
+  rw [g_S_lem_4, monomial_degree_single],
   simp,
 end
 
 lemma g_S_lem_1' {R σ : Type*} [comm_ring R] [is_domain R] [decidable_eq σ] (S : finset R)
   (i : σ) :  dominant_monomial (finsupp.single i (S.card)) (∏ s in S, (X i - C s)) :=
 begin
-  rw ← @g_S_lem_4 R σ,
+  rw ← g_S_lem_4 S i,
   apply g_S_lem_1,
   apply g_S_lem_0,
   apply g_S_lem_supported,

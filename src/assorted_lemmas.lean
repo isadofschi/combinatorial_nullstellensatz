@@ -75,17 +75,16 @@ begin
           rw c at h',
           cc, },
         simp [j'_ne_x] },
-      have t0 := @finset.sum_congr _ _ s s f1 g1 _ (by refl) h0,
-      rw t0,
+      rw @finset.sum_congr _ _ s s f1 g1 _ (by refl) h0,
       simp, },
     rw h,
     simp },
-  rw h j_in_s,
-  have j_ne_j' : j ≠ j',
-  { by_contra c,
-    rw c at j_in_s,
-    cc, },
-  simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff, zero_add],
+ { rw h j_in_s,
+   have j_ne_j' : j ≠ j',
+   { by_contra c,
+     rw c at j_in_s,
+     cc, },
+  simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff, zero_add] }
 end
 
 lemma sum_single' {M σ : Type*} [semiring M] [fintype σ]
@@ -98,8 +97,9 @@ end
 
 variables {σ : Type*} 
 
--- what should we put here instead of ℕ?
-lemma lt_of_le_and_ne {m n: σ →₀ ℕ} (h : m ≤ n) : m ≠ n → m < n :=
+-- analogue of nat.lt_of_le_and_ne
+lemma lt_of_le_and_ne {N : Type*} [linear_order N] [has_zero N] {m n: σ →₀ N} (h : m ≤ n) :
+  m ≠ n → m < n :=
 begin
   intro h1,
   unfold has_lt.lt preorder.lt,
@@ -107,7 +107,7 @@ begin
   unfold has_le.le preorder.le at h,
   exact h,
   by_contra c,
-  let h2 : m = n := le_antisymm h (by simpa using c),
+  have h2 : m = n := le_antisymm h (by simpa using c),
   cc,
 end
 

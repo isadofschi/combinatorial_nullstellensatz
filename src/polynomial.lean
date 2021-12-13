@@ -15,12 +15,10 @@ lemma eq_zero_iff_every_coeff_zero {R : Type*} [comm_semiring R] (p : polynomial
 begin
   apply iff.intro,
   intro h,
-  ext,
-  rw h n,
-  simp only [polynomial.coeff_zero],
+  ext i,
+  simp only [h i, polynomial.coeff_zero],
   intros h i,
-  rw h,
-  simp,
+  simp [h],
 end
 
 theorem number_zeroes_field {R : Type*} [comm_ring R] [is_domain R] {p : polynomial R} (h : p ≠ 0)
@@ -28,12 +26,10 @@ theorem number_zeroes_field {R : Type*} [comm_ring R] [is_domain R] {p : polynom
 begin
   apply trans _ (polynomial.card_roots' h),
   rw finset.card,
-  have h0 : Z.val ⊆ p.roots,
-  { rw multiset.subset_iff,
-    intros x hx,
-    let z := hZ x hx,
-    rwa polynomial.mem_roots h,},
-  apply multiset.card_le_of_le (finset.val_le_iff_val_subset.2 h0),
+  apply multiset.card_le_of_le (finset.val_le_iff_val_subset.2 _),
+  rw multiset.subset_iff,
+  intros x hx,
+  simpa [polynomial.mem_roots h] using hZ x hx,
 end
 
 end polynomial
