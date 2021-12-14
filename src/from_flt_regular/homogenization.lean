@@ -421,7 +421,7 @@ end
 -- TODO mathlib
 @[simp] lemma support_eq_empty {f : mv_polynomial ι R} : f.support = ∅ ↔ f = 0 :=
 finsupp.support_eq_empty
-@[simp] lemma support_zero : (0 : mv_polynomial ι R).support = ∅ := finsupp.support_zero
+
 
 lemma support_add_eq [decidable_eq ι] {g₁ g₂ : mv_polynomial ι R}
   (h : disjoint g₁.support g₂.support) : (g₁ + g₂).support = g₁.support ∪ g₂.support :=
@@ -915,25 +915,13 @@ open finset
 variables {α : Type*} {β : Type*} {s s₁ s₂ t t₁ t₂ u : finset α} {a b : α} {x y : β}
 open_locale pointwise
 
-/-- The set `(1 : finset α)` is defined as `{1}` in locale `pointwise`. -/
-@[to_additive
-/-"The set `(0 : finset α)` is defined as `{0}` in locale `pointwise`. "-/]
-protected def has_one [has_one α] : has_one (finset α) := ⟨{1}⟩
-
 localized "attribute [instance] finset.has_one finset.has_zero" in pointwise
 
 @[to_additive]
 lemma singleton_one [has_one α] : ({1} : finset α) = 1 := rfl
 
-@[simp, to_additive]
-lemma mem_one [has_one α] : a ∈ (1 : finset α) ↔ a = 1 :=
-by simp [has_one.one]
-
 @[to_additive]
 lemma one_mem_one [has_one α] : (1 : α) ∈ (1 : finset α) := by simp [has_one.one]
-
-@[simp, to_additive]
-theorem one_subset [has_one α] : 1 ⊆ s ↔ (1 : α) ∈ s := singleton_subset_iff
 
 @[to_additive]
 theorem one_nonempty [has_one α] : (1 : finset α).nonempty := ⟨1, one_mem_one⟩
@@ -1010,71 +998,9 @@ lemma preimage_mul_left_one' [group α] :
 lemma preimage_mul_right_one' [group α] :
   preimage 1 (λ a, a * b⁻¹) (assume x hx y hy, (mul_left_inj _).mp) = {b} := by simp
 
-@[simp, to_additive]
-lemma mul_singleton [decidable_eq α] [has_mul α] : s * {b} = image (λ a, a * b) s :=
-begin
-  have := @set.mul_singleton _ (s : set α) b _,
-  norm_cast at this,
-  rw (by simp : ({b} : set α) = ↑({b} : finset α)) at this,
-  exact_mod_cast this,
-end
-
-@[simp, to_additive]
-lemma singleton_mul [decidable_eq α] [has_mul α] : {a} * t = image (λ b, a * b) t :=
-begin
-  have := @set.singleton_mul _ (t : set α) a _,
-  norm_cast at this,
-  rw (by simp : ({a} : set α) = ↑({a} : finset α)) at this,
-  exact_mod_cast this,
-end
-
-@[simp, to_additive]
-lemma singleton_mul_singleton [decidable_eq α] [has_mul α] : ({a} : finset α) * {b} = {a * b} :=
-begin
-  have := @set.singleton_mul_singleton _ a b _,
-  rw (by simp : ({a} : set α) = ↑({a} : finset α)) at this,
-  rw (by simp : ({b} : set α) = ↑({b} : finset α)) at this,
-  exact_mod_cast this,
-end
-
 @[to_additive]
 protected lemma mul_comm [decidable_eq α] [comm_semigroup α] : s * t = t * s :=
 by exact_mod_cast @set.mul_comm _ (s : set α) t _
-
-/-- `finset α` is a `mul_one_class` under pointwise operations if `α` is. -/
-@[to_additive /-"`set α` is an `add_zero_class` under pointwise operations if `α` is."-/]
-protected def mul_one_class [decidable_eq α] [mul_one_class α] : mul_one_class (finset α) :=
-{ mul_one := λ s, by { simp only [← singleton_one, mul_singleton, mul_one, image_id'] },
-  one_mul := λ s, by { simp only [← singleton_one, singleton_mul, one_mul, image_id'] },
-  ..finset.has_one, ..finset.has_mul }
-
-/-- `set α` is a `semigroup` under pointwise operations if `α` is. -/
-@[to_additive /-"`set α` is an `add_semigroup` under pointwise operations if `α` is. "-/]
-protected def semigroup [decidable_eq α] [semigroup α] : semigroup (finset α) :=
-{ mul_assoc := λ a b c,
-    by exact_mod_cast (set.semigroup.mul_assoc : ∀ (a b c : set α), a * b * c = a * (b * c)) a b c,
-  ..finset.has_mul }
-
-/-- `set α` is a `monoid` under pointwise operations if `α` is. -/
-@[to_additive /-"`set α` is an `add_monoid` under pointwise operations if `α` is. "-/]
-protected def monoid [decidable_eq α] [monoid α] : monoid (finset α) :=
-{ ..finset.semigroup,
-  ..finset.mul_one_class }
-
-/-- `set α` is a `comm_monoid` under pointwise operations if `α` is. -/
-@[to_additive /-"`set α` is an `add_comm_monoid` under pointwise operations if `α` is. "-/]
-protected def comm_monoid [decidable_eq α] [comm_monoid α] : comm_monoid (finset α) :=
-{ mul_comm := λ _ _, finset.mul_comm, ..finset.monoid }
-
-localized "attribute [instance] finset.mul_one_class finset.add_zero_class finset.semigroup
-  finset.add_semigroup finset.monoid finset.add_monoid finset.comm_monoid finset.add_comm_monoid"
-  in pointwise
-
--- TODO there is loads more API in pointwise that could (should) be duplicated?
-
--- TODO a lemma mem_prod for both set and finset, saying that something is in a product of sets
--- only if it is a product of elements of each
-
 
 end finset
 end finset_prod
@@ -1117,49 +1043,9 @@ open_locale pointwise
 @[simp] lemma support_one : (1 : mv_polynomial ι R).support ⊆ 0 :=
 finsupp.support_single_subset
 
-@[simp] lemma support_one_of_nontrivial [nontrivial R] : (1 : mv_polynomial ι R).support = 0 :=
-finsupp.support_single_ne_zero one_ne_zero
 
 end
 
-variable [decidable_eq ι]
-lemma support_prod (P : finset (mv_polynomial ι R)) : (P.prod id).support ⊆ P.sum support :=
-begin
-  classical,
-  induction P using finset.induction with p S hS hSi,
-  { simp [support_X], },
-  rw [finset.prod_insert hS, finset.sum_insert hS],
-  simp only [id.def],
-  refine finset.subset.trans (support_mul' _ _) _,
-  convert finset.add_subset_add (finset.subset.refl _) hSi,
-end
-
-end
-
-open_locale big_operators
-lemma homogenization_prod {σ S : Type*} [comm_ring S] [is_domain S] (i : ι)
-  (P : σ → mv_polynomial ι S) (L : finset σ) :
-  (∏ l in L, P l).homogenization i = ∏ l in L, (P l).homogenization i :=
-begin
-  classical,
-  induction L using finset.induction with p S hS hSi,
-  { simp, },
-  simp only [finset.prod_insert hS],
-  rw homogenization_mul,
-  rw hSi,
-end
-
-lemma homogenization_prod_id {S : Type*} [comm_ring S] [is_domain S] (i : ι)
-  (P : finset (mv_polynomial ι S)) :
-  (P.prod id).homogenization i = P.prod (λ p, p.homogenization i) :=
-begin
-  classical,
-  induction P using finset.induction with p S hS hSi,
-  { simp, },
-  simp only [finset.prod_insert hS],
-  rw homogenization_mul,
-  rw hSi,
-  rw [id.def],
 end
 
 end mv_polynomial

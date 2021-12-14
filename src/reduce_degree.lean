@@ -167,6 +167,7 @@ lemma exists_m1 {m : σ →₀ ℕ} (h_m : m ∈ (@q R σ _ _ _ g j p h).support
 begin
   rw q at h_m,
   have h_m' := support_sum h_m,
+  rw [←finset.sup_eq_bUnion, finset.mem_sup] at h_m',
   cases h_m' with m1 h_m1',
   clear h_m,
   cases h_m1' with H h_m1,

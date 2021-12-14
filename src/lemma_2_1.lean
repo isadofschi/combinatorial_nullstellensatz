@@ -11,7 +11,7 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 import fin_succ_equiv
-import polynomial
+import pr.polynomial
 import pr.rename
 
 /-

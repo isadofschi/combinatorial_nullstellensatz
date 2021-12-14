@@ -8,8 +8,8 @@ import data.mv_polynomial.variables
 import algebra.algebra.basic
 import data.mv_polynomial.comm_ring
 import data.nat.basic
-import pr.support_sum
-import pr.degree_of
+--import pr.support_sum
+--import pr.degree_of
 import from_flt_regular.homogenization
 
 universes u v

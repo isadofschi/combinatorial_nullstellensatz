@@ -11,7 +11,7 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 
-import pr.degree_of_zero
+--import pr.degree_of_zero
 import cons_tail
 
 namespace mv_polynomial
@@ -134,6 +134,7 @@ begin
   apply fin_succ_equiv_coeff_coeff_case_p_X,
 end
 
+/-
 lemma degree_of_eq {R : Type*} [comm_semiring R] {σ : Type*} (p : mv_polynomial σ R) (j : σ) :
   degree_of j p = p.support.sup (λm, m j) :=
 begin
@@ -142,6 +143,7 @@ begin
   ext,
   simp,
 end
+-/
 
 lemma eval_eq_eval_mv_eval' {n : ℕ} {R : Type u} [comm_semiring R] (s : fin n → R) (y : R)
   (f : mv_polynomial (fin (n + 1)) R) : eval (fin.cons y s : fin (n + 1) → R) f
@@ -255,7 +257,7 @@ begin
     cc },
   rw polynomial.degree,
   have h : (fin_succ_equiv R n f).support.sup (λ x , x)  = degree_of 0 f,
-  { rw degree_of_eq,
+  { rw degree_of_eq_sup,
     apply nat.le_antisymm,
     apply finset.sup_le,
     intros i hi,
@@ -286,7 +288,7 @@ lemma degree_of_coeff_fin_suc_equiv {n : ℕ} {R : Type u} [comm_semiring R]
   (p : mv_polynomial (fin (n + 1)) R) (j : fin n) (i : ℕ) : 
   degree_of j (polynomial.coeff (fin_succ_equiv R n p) i) ≤ degree_of j.succ p :=
 begin
-  rw [degree_of_eq, degree_of_eq, finset.sup_le_iff],
+  rw [degree_of_eq_sup, degree_of_eq_sup, finset.sup_le_iff],
   intros m hm,
   rw ← fin.finsupp.cons_succ j i m,
   convert finset.le_sup (support_f_i.1 hm),
