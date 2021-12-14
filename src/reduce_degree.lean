@@ -56,8 +56,6 @@ private def M' (R σ : Type*) [comm_ring R] [is_domain R] [fintype σ]
   (∀ i : σ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
   ∧ ∀ i : σ,  degree_of i (f - (∑ j : σ, h j * g j)) < total_degree (g i)
 
-
-
 private def M {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
   {g : σ → mv_polynomial σ R}
   {hg : ∀ i : σ, g i ∈ supported R ({i} : set σ)}

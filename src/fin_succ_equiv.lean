@@ -11,6 +11,7 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 
+import pr.degree_of_zero
 import cons_tail
 
 namespace mv_polynomial
@@ -20,11 +21,6 @@ universes u v
 variables {α : Type v}
 
 open_locale big_operators
-
--- this should be near the definition of degree_of. TODO PR this one separately!
-lemma degree_of_zero {R : Type*} [comm_semiring R] {σ : Type*} (i : σ) :
-  degree_of i (0 : mv_polynomial σ R) = 0 :=
-by simp only [degree_of, degrees_zero, multiset.count_zero]
 
 lemma fin_succ_equiv_add {n : ℕ} {R : Type u} [comm_semiring R]
   (f g : mv_polynomial (fin (n + 1)) R) : fin_succ_equiv R n (f + g)

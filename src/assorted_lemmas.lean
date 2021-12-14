@@ -61,39 +61,28 @@ begin
   rw finset.sum_cons,
   rw finset.mem_cons at h'',
   cases h'' with j_eq_j' j_in_s,
-  { rw j_eq_j',
-    simp only [single_eq_same],
-    rw add_comm,
-    have h: s.sum ⇑(single j' a) = 0,
+  { have h: s.sum ⇑(single j' a) = 0,
     { let f1 : α → M := (λ x, single j' a x),
       let g1 : α → M := (λ x, 0),
-      have h0 : ∀ x ∈ s, f1 x = g1 x,
-      { intros x hx,
-        simp only [f1, g1],
-        have j'_ne_x : j' ≠ x,
-        { by_contra c,
-          rw c at h',
-          cc, },
-        simp [j'_ne_x] },
-      rw @finset.sum_congr _ _ s s f1 g1 _ (by refl) h0,
-      simp, },
-    rw h,
-    simp },
- { rw h j_in_s,
-   have j_ne_j' : j ≠ j',
+      rw @finset.sum_congr _ _ s s f1 g1 _ (by refl) _,
+      simp,
+      intros x hx,
+      simp only [f1, g1],
+      have j'_ne_x : j' ≠ x,
+      { by_contra c,
+        rw c at h',
+        cc, },
+      simp [j'_ne_x] },
+    simp [j_eq_j', h]},
+ { have j_ne_j' : j ≠ j',
    { by_contra c,
      rw c at j_in_s,
      cc, },
-  simp only [j_ne_j', single_eq_of_ne, ne.def, not_false_iff, zero_add] }
+  simp [h j_in_s, j_ne_j'] }
 end
 
-lemma sum_single' {M σ : Type*} [semiring M] [fintype σ]
-(j : σ) (a : M) : 
-  ∑ ( x : σ) , (single j a) x  = a := 
-begin
-  rw sum_single'',
-  simp,
-end
+lemma sum_single' {M σ : Type*} [semiring M] [fintype σ] (j : σ) (a : M) :
+  ∑ ( x : σ) , single j a x  = a := by simp [sum_single'']
 
 variables {σ : Type*} 
 
