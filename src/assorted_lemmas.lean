@@ -27,21 +27,20 @@ universe u
 variables {α : Type u} [linear_order α]
 
 -- what should we put here instead of ℕ?
-lemma max_add {a b c: ℕ} : max a b + c = max (a+c) (b+c) :=
+lemma max_add {N : Type*} [linear_ordered_add_comm_monoid N] {a b c: N} : 
+  max a b + c = max (a+c) (b+c) :=
 begin
   by_cases h : a ≤ b,
-  { rw max_eq_right h,
-    have h' : a + c ≤ b + c := by linarith,
-    rw max_eq_right h',
-  },
-  rw not_le at h,
-  rw max_eq_left h.le,
-  have h' : b + c ≤ a + c := by linarith,
-  rw max_eq_left h',
+  { rw [max_eq_right h, max_eq_right _],
+    rw [add_comm, add_comm b],
+    apply add_le_add_left h },
+  { rw not_le at h,
+    rw [max_eq_left h.le, max_eq_left _],
+    rw [add_comm, add_comm a],
+    apply add_le_add_left (le_of_lt  h) },
 end
 
 end
-
 
 namespace finsupp
 

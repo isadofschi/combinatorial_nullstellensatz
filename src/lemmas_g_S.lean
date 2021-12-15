@@ -153,18 +153,19 @@ lemma eval_is_zero {R σ : Type*} [comm_ring R] [is_domain R] (S : finset R) (hS
 by simp  [eval_prod, finset.prod_eq_zero h_s]
 
 
-lemma X_sub_C_ne_0 {R σ : Type*}[comm_ring R] [decidable_eq σ] [nontrivial R]
+lemma X_sub_C_ne_0 {R σ : Type*} [comm_ring R] [decidable_eq σ] [nontrivial R]
  (i : σ) (a : R) :  X i - C a ≠ 0 :=
 begin
-  by_contra,
+  rw nonzero_iff_exists,
+  use single i 1,
   have h' : ¬ 0 = single i 1,
-  { by_contra,
+  { by_contra h,
     have t : single i 1 i = 1 := by simp,
     rw ←h at t,
     simpa using t },
-  have c : coeff (single i 1) (X i - C a)  =  coeff (single i 1) 0 := by rw h,
-  simp only [coeff_X, coeff_C, coeff_sub, coeff_zero, if_neg, h'] at c,
-  simpa using c,
+  have c : coeff (single i 1) (X i - C a)  =  1 := by simp [h'],
+  rw coeff at c,
+  simp [c],
 end
 
 lemma total_degree_X_sub_C {R σ : Type*}[comm_ring R] [decidable_eq σ] [nontrivial R]

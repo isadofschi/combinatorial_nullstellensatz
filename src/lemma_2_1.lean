@@ -10,7 +10,7 @@ import data.mv_polynomial.supported
 import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
-import fin_succ_equiv
+import pr.fin_succ_equiv
 import pr.polynomial
 import pr.rename
 
@@ -48,7 +48,7 @@ begin
   apply (polynomial.eq_zero_iff_every_coeff_zero ((fin_succ_equiv R n) f)).1,
   intro i,
   apply hn (polynomial.coeff ((fin_succ_equiv R n) f) i),
-  exact λ j, lt_of_le_of_lt (degree_of_coeff_fin_suc_equiv f j i) (hS j.succ),
+  exact λ j, lt_of_le_of_lt (degree_of_coeff_fin_succ_equiv f j i) (hS j.succ),
   intros s hs,
   rw [ ← coeff_eval_eq_eval_coeff, (polynomial.eq_zero_iff_every_coeff_zero (polynomial.map (eval s)
        ((fin_succ_equiv R n) f))).2 ],
@@ -64,7 +64,7 @@ begin
     { simp only [not_not] at c,
       rwa [c, fin.cons_zero] } },
   simpa using lt_of_le_of_lt ((polynomial.number_zeroes_field c1 (h0 _ hs)).trans _) (hS 0),
-  rw ← nat_degree_fin_suc_equiv f,
+  rw ← nat_degree_fin_succ_equiv f,
   exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f),
 end
 
