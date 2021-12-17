@@ -45,13 +45,16 @@ begin
   simp only [is_empty_ring_equiv_apply],
   simpa using (hz fin.is_empty.elim),
   apply (ring_equiv.map_eq_zero_iff ↑(fin_succ_equiv R n)).1,
-  apply (polynomial.eq_zero_iff_every_coeff_zero ((fin_succ_equiv R n) f)).1,
+  apply polynomial.ext_iff.2,
+  rw ← polynomial.coeff_zero,
   intro i,
   apply hn (polynomial.coeff ((fin_succ_equiv R n) f) i),
   exact λ j, lt_of_le_of_lt (degree_of_coeff_fin_succ_equiv f j i) (hS j.succ),
   intros s hs,
-  rw [ ← coeff_eval_eq_eval_coeff, (polynomial.eq_zero_iff_every_coeff_zero (polynomial.map (eval s)
-       ((fin_succ_equiv R n) f))).2 ],
+  rw [ ← coeff_eval_eq_eval_coeff],
+  suffices h : polynomial.map (eval s) (fin_succ_equiv R n f) = 0,
+  { rw h,
+    simp },
   by_contradiction c1,
   have h0 : ∀ s' : fin n → R, (∀ i : fin n, s' i ∈ S i.succ) → ∀ y : R, y ∈ S 0 →  
     polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) = 0,
@@ -63,9 +66,10 @@ begin
       exact hs' (fin.pred i c) },
     { simp only [not_not] at c,
       rwa [c, fin.cons_zero] } },
-  simpa using lt_of_le_of_lt ((polynomial.number_zeroes_field c1 (h0 _ hs)).trans _) (hS 0),
+  simpa using lt_of_le_of_lt ((polynomial.card_le_degree_of_finset_roots c1 (h0 _ hs)).trans _) (hS 0),
   rw ← nat_degree_fin_succ_equiv f,
   exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f),
+  exact n,
 end
 
 /- Lemma 2.1 in Alon's "Combinatorial Nullstellensatz" paper. -/

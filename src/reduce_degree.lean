@@ -279,7 +279,7 @@ lemma comp_2 : ∀ m, m ∈ (@ms R σ _ _ _ g j p h) → coeff m (@f R σ _ _ _ 
     { rw coeff_monomial_mul',
       rw mul_eq_zero_of_right,
       simp,
-      have x : m' < m := finsupp.lt_of_le_and_ne c_m_m' h_m_ne_m'.symm,
+      have x : m' < m := lt_of_le_of_ne c_m_m' h_m_ne_m'.symm,
       have x' := x.2,
       simp only [not_le, not_forall] at x',
       cases x' with x hx,
@@ -694,7 +694,7 @@ begin
   have z : (h_f i).total_degree + (g i).total_degree ≤ total_degree f :=
     or.resolve_left (hh_f.1 i) h_f0,
   have x' := add_le_add_right x (g i).total_degree,
-  rw max_add at x',
+  rw ← max_add_add_right at x',
   exact x'.trans (max_le_max y z),
   intro j,
   rw [ h_add_weak_aux_comp g (monomial a b) f h_Ca h_f],

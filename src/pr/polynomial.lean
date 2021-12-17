@@ -10,19 +10,9 @@ import data.finset.basic
 
 namespace polynomial
 
-lemma eq_zero_iff_every_coeff_zero {R : Type*} [comm_semiring R] (p : polynomial R) :
-  (∀ (i : ℕ), polynomial.coeff p i = 0) ↔ p = 0 :=
-begin
-  apply iff.intro,
-  intro h,
-  ext i,
-  simp only [h i, polynomial.coeff_zero],
-  intros h i,
-  simp [h],
-end
-
-theorem number_zeroes_field {R : Type*} [comm_ring R] [is_domain R] {p : polynomial R} (h : p ≠ 0)
-  {Z : finset R } (hZ : ∀ z ∈ Z, polynomial.eval z p = 0) : Z.card ≤ p.nat_degree :=
+-- This is PR #10824
+theorem card_le_degree_of_finset_roots {R : Type*} [comm_ring R] [is_domain R] {p : polynomial R} (h : p ≠ 0)
+  {Z : finset R } (hZ : ∀ z ∈ Z, is_root p z) : Z.card ≤ p.nat_degree :=
 begin
   apply trans _ (polynomial.card_roots' h),
   rw finset.card,

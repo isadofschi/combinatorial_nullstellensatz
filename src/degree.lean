@@ -8,8 +8,6 @@ import data.mv_polynomial.variables
 import algebra.algebra.basic
 import data.mv_polynomial.comm_ring
 import data.nat.basic
---import pr.support_sum
---import pr.degree_of
 import from_flt_regular.homogenization
 
 universes u v
@@ -59,6 +57,8 @@ begin
   simp only [total_degree_X],
 end
 
+-- The following depends on https://github.com/leanprover-community/flt-regular
+
 -- this appears in flt-regular as support_add_eq
 lemma support_add_disjoint [comm_semiring R] {f g : mv_polynomial σ R} 
   (h : disjoint f.support g.support) : (f + g).support = f.support ∪ g.support := 
@@ -78,8 +78,6 @@ begin
   apply total_degree_add_eq_of_disjoint_support,
   simp [support_monomial, h_b, h],
 end
-
--- The following depends on https://github.com/leanprover-community/flt-regular
 
 open_locale pointwise
 

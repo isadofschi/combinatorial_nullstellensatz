@@ -14,7 +14,14 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 
-import cons_tail
+import pr.cons_tail
+
+namespace polynomial
+
+lemma degree_le_degree_of_support_sub_support {R S: Type*} [comm_semiring R][comm_semiring S] 
+{f : polynomial R}{g : polynomial S} (h : f.support ⊆ g.support) : f.degree ≤ g.degree :=
+by simpa only [degree] using finset.sup_mono h
+end polynomial
 
 namespace mv_polynomial
 
@@ -185,11 +192,7 @@ finset.subset_iff.1 (support_eval' s' f)
 lemma degree_eval_le_degree {n : ℕ} {R : Type u} [comm_semiring R] (s' : fin n → R)
   (f : polynomial (mv_polynomial (fin n) R)) : 
   polynomial.degree (polynomial.map (eval s') f) ≤ polynomial.degree f :=
-begin
-  rw [polynomial.degree, polynomial.degree, finset.sup_le_iff],
-  intros b hb,
-  apply finset.le_sup (support_eval' s' f b hb),
-end
+polynomial.degree_le_degree_of_support_sub_support ( support_eval s' f)
 
 lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_semiring R] (s : fin n → R)
   (f : polynomial (mv_polynomial (fin n) R)) :
@@ -273,7 +276,7 @@ lemma nat_degree_fin_succ_equiv {n : ℕ} {R : Type u} [comm_semiring R]
   (f : mv_polynomial (fin (n + 1)) R) : (fin_succ_equiv R n f).nat_degree = degree_of 0 f :=
 begin
   by_cases c : f = 0,
-  { rw [c, fin_succ_equiv_zero, polynomial.nat_degree_zero, degree_of_zero] },
+  { rw [c, (fin_succ_equiv R n).map_zero, polynomial.nat_degree_zero, degree_of_zero] },
   { rw [polynomial.nat_degree, degree_fin_succ_equiv (by simpa only [ne.def]) ],
     simp },
 end
