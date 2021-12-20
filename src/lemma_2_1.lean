@@ -66,9 +66,17 @@ begin
       exact hs' (fin.pred i c) },
     { simp only [not_not] at c,
       rwa [c, fin.cons_zero] } },
-  simpa using lt_of_le_of_lt ((polynomial.card_le_degree_of_finset_roots c1 (h0 _ hs)).trans _) (hS 0),
+  have h' : (S 0).val ⊆ (polynomial.map (eval (λ (i : fin n), s i)) (fin_succ_equiv R n f)).roots, 
+  { rw multiset.subset_iff,
+    intros x hx,
+    rw polynomial.mem_roots,
+    simpa using h0 _ hs x hx,
+    exact c1 },
+  simpa using lt_of_le_of_lt ((polynomial.card_le_degree_of_finset_roots c1 h').trans _) (hS 0),
   rw ← nat_degree_fin_succ_equiv f,
   exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f),
+  --alternative:
+  -- exact polynomial.nat_degree_le_nat_degree (polynomial.degree_mono (support_eval s (fin_succ_equiv R n f))),
   exact n,
 end
 
@@ -98,7 +106,7 @@ begin
     { intro i,
       have t := hS (ψ i),
       convert t,
-      exact degree_of_rename_injective hψ i },
+      exact degree_of_rename_of_injective hψ i },
     have hz' : ∀ s : (fin n) → R, (∀ i : fin n, s i ∈ (S ∘ ψ) i ) → eval s g = 0,
     { intros s' h,
       cases hs0 with s0 hs0,

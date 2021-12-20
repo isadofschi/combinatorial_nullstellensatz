@@ -53,11 +53,11 @@ begin
   simp,
 end
 
+/- probably it is redundant to have these: -/
 lemma add_mem_supported {R σ : Type*} [comm_semiring R] 
 (s : set σ) (f g : mv_polynomial σ R)
 (hf : f ∈ supported R s) (hg : g ∈ supported R s) : f + g ∈ supported R s :=
 subalgebra.add_mem (supported R s) hf hg
-
 
 lemma mul_mem_supported {R σ : Type*} [comm_semiring R] 
 (s : set σ) (f g : mv_polynomial σ R)

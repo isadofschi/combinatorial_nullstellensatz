@@ -31,11 +31,7 @@ variables {R : Type*} {σ : Type*}
 local attribute [instance] classical.prop_decidable
 
 lemma X_ne_zero [comm_semiring R] [nontrivial R] (j : σ) : (X j : mv_polynomial σ R) ≠ 0 :=
-begin
-  rw ne_zero_iff,
-  use single j 1,
-  simp,
-end
+  ne_zero_iff.2 ⟨single j 1, by simp⟩
 
 lemma total_degree_sum [comm_semiring R] (s : finset α) (p : α → mv_polynomial σ R) :
   total_degree (∑ i : α in s, p i) ≤ s.sup (λ i , total_degree(p i)) :=
@@ -44,8 +40,7 @@ begin
   simp,
   clear s,
   intros a s h_a_in_s h_ind,
-  rw finset.sum_cons,
-  rw finset.sup_cons,
+  repeat {rw finset.sum_cons},
   apply (total_degree_add _ _).trans,
   simp [h_ind],
 end

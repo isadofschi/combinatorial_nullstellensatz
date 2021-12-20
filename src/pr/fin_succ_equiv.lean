@@ -18,7 +18,7 @@ import pr.cons_tail
 
 namespace polynomial
 
-lemma degree_le_degree_of_support_sub_support {R S: Type*} [comm_semiring R][comm_semiring S] 
+lemma degree_mono {R S: Type*} [comm_semiring R][comm_semiring S] 
 {f : polynomial R}{g : polynomial S} (h : f.support ⊆ g.support) : f.degree ≤ g.degree :=
 by simpa only [degree] using finset.sup_mono h
 end polynomial
@@ -192,7 +192,7 @@ finset.subset_iff.1 (support_eval' s' f)
 lemma degree_eval_le_degree {n : ℕ} {R : Type u} [comm_semiring R] (s' : fin n → R)
   (f : polynomial (mv_polynomial (fin n) R)) : 
   polynomial.degree (polynomial.map (eval s') f) ≤ polynomial.degree f :=
-polynomial.degree_le_degree_of_support_sub_support ( support_eval s' f)
+polynomial.degree_mono ( support_eval s' f)
 
 lemma nat_degree_eval_le_nat_degree {n : ℕ} {R : Type u} [comm_semiring R] (s : fin n → R)
   (f : polynomial (mv_polynomial (fin n) R)) :

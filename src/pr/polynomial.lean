@@ -11,15 +11,20 @@ import data.finset.basic
 namespace polynomial
 
 -- This is PR #10824
-theorem card_le_degree_of_finset_roots {R : Type*} [comm_ring R] [is_domain R] {p : polynomial R} (h : p ≠ 0)
-  {Z : finset R } (hZ : ∀ z ∈ Z, is_root p z) : Z.card ≤ p.nat_degree :=
+
+theorem card_le_degree_of_finset_roots {R : Type*}[comm_ring R][is_domain R]
+{p : polynomial R} (hp : p ≠ 0) {Z : finset R}
+  (h : Z.val ⊆ p.roots) : Z.card ≤ p.nat_degree :=
 begin
-  apply trans _ (polynomial.card_roots' h),
+  apply trans _ (polynomial.card_roots' p),
   rw finset.card,
   apply multiset.card_le_of_le (finset.val_le_iff_val_subset.2 _),
   rw multiset.subset_iff,
   intros x hx,
-  simpa [polynomial.mem_roots h] using hZ x hx,
+  rw polynomial.mem_roots hp,
+  have t:= h hx,
+  rwa mem_roots at t,
+  exact hp,
 end
 
 end polynomial
