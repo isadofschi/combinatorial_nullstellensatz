@@ -137,8 +137,7 @@ begin
     cases hs0 with s0 hs0,
     have t := hz s0 hs0,
     simp only [eval_C] at t,
-    rw t,
-    simp },
+    simp [t] },
 end
 
 end mv_polynomial

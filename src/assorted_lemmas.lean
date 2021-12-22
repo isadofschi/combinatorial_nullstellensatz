@@ -23,9 +23,7 @@ lemma sum_single'' {M : Type*} [semiring M] {α : Type*} {s : finset α} {j : α
 begin
   revert h,
   apply finset.cons_induction_on s,
-  intro h,
-  exfalso,
-  simpa using h,
+  simp,
   clear s,
   intros j' s h' h h'',
   rw finset.sum_cons,
@@ -51,6 +49,5 @@ end
 lemma sum_single' {M σ : Type*} [semiring M] [fintype σ] (j : σ) (a : M) :
   ∑ ( x : σ) , single j a x  = a := by simp only [sum_single'', finset.mem_univ]
 
-variables {σ : Type*} 
 
 end finsupp

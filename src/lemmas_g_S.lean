@@ -27,11 +27,9 @@ namespace mv_polynomial
 lemma g_S_lem_6 {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {m: σ →₀ ℕ} {i j : σ} 
   (hp : p ∈ supported R ({i} : set σ)) (h_m : m ∈ p.support) (h : i ≠ j) : m j = 0 :=
 begin
-  have hp' := mem_supported.1 hp,
   by_contra c,
   have hj : j ∈ p.vars := (mem_vars j).2 ⟨m, h_m, (by simp [c])⟩,
-  have t' := mem_singleton_iff.1 (mem_of_subset_of_mem hp' hj),
-  rw t' at h,
+  rw mem_singleton_iff.1 (mem_of_subset_of_mem (mem_supported.1 hp) hj) at h,
   simpa using h,
 end
 
@@ -40,18 +38,13 @@ lemma g_S_lem_6'{R σ : Type*} [comm_semiring R] {i j: σ}  {p : mv_polynomial �
     coeff m p = 0 :=
 begin
   by_cases c : m ∈ p.support,
-  { have t := g_S_lem_6 hp c h.symm,
-    rw t at h',
+  { rw g_S_lem_6 hp c h.symm at h',
     simpa using h', },
   simpa using c,
 end
 
-lemma C_mem_supported {R σ : Type*} [comm_semiring R] 
-(s : set σ) (a : R) : C a ∈ supported R s := 
-begin
-  apply mem_supported.2,
-  simp,
-end
+lemma C_mem_supported {R σ : Type*} [comm_semiring R] (s : set σ) (a : R) : C a ∈ supported R s :=
+mem_supported.2 (by simp)
 
 /- probably it is redundant to have these: -/
 lemma add_mem_supported {R σ : Type*} [comm_semiring R] 
@@ -80,8 +73,7 @@ lemma monomial_support_supported'  {R σ : Type*} [comm_semiring R] {p : mv_poly
 begin
   by_contradiction c,
   have h' : i ∈ ((p.vars) : set σ) := by simpa using (mem_vars i).2 ⟨ m, ⟨hm, by simp [c]⟩⟩,
-  rw mem_supported at hp,
-  have t := mem_of_mem_of_subset h' hp,
+  have t := mem_of_mem_of_subset h' (mem_supported.1 hp),
   cc,
 end
 
@@ -91,11 +83,11 @@ lemma monomial_support_supported  {R σ : Type*} [comm_semiring R] {p : mv_polyn
 begin
   ext j,
   by_cases c : i = j,
-  simp [c],
-  simp only [c, single_eq_of_ne, ne.def, not_false_iff],
-  apply monomial_support_supported' hp hm,
-  simp only [mem_singleton_iff],
-  cc,
+  { simp [c] },
+  { simp only [c, single_eq_of_ne, ne.def, not_false_iff],
+    apply monomial_support_supported' hp hm,
+    simp only [mem_singleton_iff],
+    cc },
 end
 
 lemma g_S_lem_1a {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {i : σ} 
@@ -107,9 +99,7 @@ begin
   convert h,
   rw t,
   congr,
-  rw ← h',
-  rw t,
-  rw monomial_degree_single,
+  rw [← h', t, monomial_degree_single],
   simp,
 end
 
@@ -158,7 +148,7 @@ lemma X_sub_C_ne_0 {R σ : Type*} [comm_ring R] [decidable_eq σ] [nontrivial R]
 begin
   rw nonzero_iff_exists,
   use single i 1,
-  have h' : ¬ 0 = single i 1,
+  have h' : ¬ 0 = single i 1, -- is this on mathlib?
   { by_contra h,
     have t : single i 1 i = 1 := by simp,
     rw ←h at t,
