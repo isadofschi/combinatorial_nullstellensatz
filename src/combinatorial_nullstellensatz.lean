@@ -55,40 +55,32 @@ theorem combinatorial_nullstellensatz'' {R σ : Type*} [comm_ring R] [is_domain 
   (h_max : max_degree_monomial t f) (S : σ → finset R) (h_card_S : ∀ i : σ, t i + 1 = (S i).card) :
   ∃ s : σ → R, (∀ i : σ, s i ∈ S i ) ∧ eval s f ≠ 0 :=
 begin
-  have h_card_S' : ∀ i : σ, t i < (S i).card, 
-  { intro i,
-    rw ← h_card_S i,
-    apply nat.lt_succ_self },
   by_contra hc,
-  cases combinatorial_nullstellensatz' f S (λ i , lt_of_le_of_lt (by linarith) (h_card_S' i))
+  cases combinatorial_nullstellensatz' f S (λ i , lt_of_le_of_lt (zero_le (t i)) (by simp [←h_card_S i]))
     (by simpa using hc) with h h1,
   clear hc,
   suffices h_zero : coeff t (∑ i : σ, h i * ∏ s in (S i), (X i - C s)) =  0,
-  { have h_fgh := h1.2,
-    have h_nonzero : coeff t (∑ i : σ, h i * ∏ s in (S i), (X i - C s)) ≠ 0,
-    { simpa [← h_fgh] using h_max.1 },
-    simpa [h_zero] using h_nonzero },
+  { simpa [h_zero, h1.2] using h_max.1 },
   simp only [coeff_sum],
   apply finset.sum_eq_zero,
   intros i hi,
-  -- using `by_contradiction` here gave deterministic timeout:
+  -- replacing this by `by_contradiction c1` gives deterministic timeout. Why?
   by_cases c1 : coeff t (h i * ∏ (s : R) in S i, (X i - C s)) = 0,
   { exact c1 },
-  { have h1 : total_degree (h i * ∏ s in (S i), (X i - C s)) ≤ monomial_degree t,
-    { by_cases c' : h i = 0,
-      { simp [c', zero_mul] },
-      { rw [total_degree_mul' c' (g_S_lem_0 (S i) i), g_S_lem_4, h_max.2],
-        by_cases hi0 : h i = 0,
-        { simpa [hi0] using c1 },
-        { exact or.resolve_left (h1.1 i) hi0 } } },
-    by_cases c : monomial_degree t > total_degree (h i * ∏ (s : R) in S i, (X i - C s)),
+  { by_cases c : monomial_degree t > total_degree (h i * ∏ (s : R) in S i, (X i - C s)),
     { exact coeff_zero_of_degree_greater_than_total_degree t _ c },
     { by_cases c'' : h i = 0,
       { simp [c''] },
-      { have hfi := dominant_monomial_of_factor_is_factor_of_max_degree_monomial (S i) t 
-          (finsupp.single i ((S i).card)) (h i) (∏ (s : R) in S i, (X i - C s))
-          ⟨mem_support_iff.2 c1, le_antisymm (not_lt.1 c) h1⟩ c'' (by apply g_S_lem_1') i,
-        simpa [ finsupp.single_eq_same, ←h_card_S ] using hfi } } },
+      { simpa only [finsupp.single_eq_same, ←h_card_S, add_le_iff_nonpos_right, le_zero_iff] using
+          dominant_monomial_of_factor_is_factor_of_max_degree_monomial (S i) t 
+            (finsupp.single i (S i).card) (h i) (∏ (s : R) in S i, (X i - C s))
+            ⟨mem_support_iff.mpr c1, le_antisymm (not_lt.mp c) _⟩  c'' (g_S_lem_1' (S i) i) i,
+        by_cases c' : h i = 0,
+        { simp [c', zero_mul] },
+        { rw [total_degree_mul' c' (g_S_lem_0 (S i) i), g_S_lem_4, h_max.2],
+          by_cases hi0 : h i = 0,
+          { simpa [hi0] using c1 },
+          { exact or.resolve_left (h1.1 i) hi0 } } } } },
 end
 
 private lemma choose_smaller_sets {R σ : Type*} (S : σ → finset R) (t : σ →₀ ℕ)
