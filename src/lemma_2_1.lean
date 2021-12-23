@@ -11,7 +11,6 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 import pr.fin_succ_equiv
-import pr.polynomial
 import pr.rename
 
 /-
@@ -56,7 +55,7 @@ begin
     simp },
   by_contradiction c1,
   suffices h1 : (S 0).val ⊆ (polynomial.map (eval (λ (i : fin n), s i)) (fin_succ_equiv R n f)).roots, 
-  { simpa using lt_of_le_of_lt ((polynomial.card_le_degree_of_finset_roots c1 h1).trans _) (hS 0),
+  { simpa using lt_of_le_of_lt ((polynomial.card_le_degree_of_subset_roots h1).trans _) (hS 0),
     rw ← nat_degree_fin_succ_equiv f,
     -- exact polynomial.nat_degree_le_nat_degree (polynomial.degree_mono (support_eval s (fin_succ_equiv R n f))),
     exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f) },
