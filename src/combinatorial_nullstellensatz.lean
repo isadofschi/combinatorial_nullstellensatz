@@ -64,7 +64,6 @@ begin
   simp only [coeff_sum],
   apply finset.sum_eq_zero,
   intros i hi,
-  -- replacing this by `by_contradiction c1` gives deterministic timeout. Why?
   by_cases c1 : coeff t (h i * ∏ (s : R) in S i, (X i - C s)) = 0,
   { exact c1 },
   { by_cases c : monomial_degree t > total_degree (h i * ∏ (s : R) in S i, (X i - C s)),
