@@ -11,7 +11,6 @@ import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
 import pr.fin_succ_equiv
-import pr.rename
 
 /-
 # Add one variable
@@ -96,7 +95,7 @@ begin
   { have hS' : ∀ i : (fin n), degree_of i g < ((S ∘ ψ) i).card,
     { intro i,
       convert hS (ψ i),
-      exact degree_of_rename_of_injective hψ i },
+      rw degree_of_rename_of_injective hψ i },
     suffices hz' : ∀ s : (fin n) → R, (∀ i : fin n, s i ∈ (S ∘ ψ) i ) → eval s g = 0,
       by simp [lemma_2_1_fin_n g (S ∘ ψ ) hS' hz'],
     intros s' h,
