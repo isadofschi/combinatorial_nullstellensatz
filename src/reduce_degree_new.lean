@@ -95,7 +95,7 @@ calc p + q - (∑ (i : τ), (h1 + h2) i * g i)
        + (q - (∑ (i : τ), h2 i * g i)) : 
   by rw [← add_sub_assoc, ← sub_sub (p+q), sub_left_inj,sub_add_eq_add_sub]
 
-lemma reduce_degree_h_add_weak {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
+private lemma reduce_degree_h_add_weak {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
   (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
   (a : σ →₀ ℕ) (b : R) (f : mv_polynomial σ R) (ha : a ∉ f.support) (hb : b ≠ 0)
@@ -132,7 +132,15 @@ end
 
 local attribute [instance] classical.prop_decidable
 
-lemma reduce_degree_h_monomial {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
+private lemma total_degree_p {R σ : Type*} [comm_ring R] [is_domain R]
+  {g :  mv_polynomial σ R} {m a : (σ →₀ ℕ)} (hm : dominant_monomial m g) (h_monic : coeff m g = 1)
+  {b : R} (hb : b ≠ 0) (h_m_le_a : m ≤ a )
+  : total_degree (monomial a b - (monomial (a - m) b) * g) < monomial_degree a :=
+begin
+  sorry
+end
+
+private lemma reduce_degree_h_monomial {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
   (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
   (a : σ →₀ ℕ) (b : R) (hp : ∀ (p : mv_polynomial σ R), p.total_degree < monomial_degree a 
@@ -156,25 +164,65 @@ begin
       have ha := ha'.2,
       rw ha'.1 at ha,
       clear ha' a',
-      let h0 : τ → mv_polynomial σ R := λ j, if j = i then monomial (a - m i) b else 0,
-      use h0,
+      let p := monomial a b - (monomial (a - m i) b) * (g i),
+      have h_total_degree_p : p.total_degree < monomial_degree a,
+      { exact total_degree_p (hm i) (hmonic i) b_eq_zero ha },
+      cases hp p h_total_degree_p with h0 h_h0,
+      let h := h0 + single i (monomial (a - m i) b),
+      use h,
       split,
       { intro j,
         by_cases c : j = i,
         { right,
           rw c,
-          simp only [h0, if_pos, total_degree_monomial_eq_monomial_degree b_eq_zero],
+          simp only [h, total_degree_monomial_eq_monomial_degree b_eq_zero, single_eq_same, pi.add_apply],
           have t := hm i,
           simp only [dominant_monomial, max_degree_monomial] at t,
           rw ← t.1.2,
-          apply le_of_eq,
-          rw [monomial_degree_sub ha, nat.sub_add_cancel],
-          exact monomial_degree_le_of_le ha },
-        { simp only [c, forall_false_left, true_or, ite_eq_right_iff] } },
-      { intro i,
-        have t := hp (monomial a b - ∑ (j : τ), h j * g j),
-        rw M at t,
-        sorry } } }
+          clear c j h,
+          cases h_h0.1 i with hl hr,
+          { rw [hl, zero_add],
+            apply le_of_eq,
+            rw [total_degree_monomial_eq_monomial_degree, monomial_degree_sub ha, nat.sub_add_cancel],
+            { exact monomial_degree_le_of_le ha },
+            { exact b_eq_zero } },
+          { apply (add_le_add_right (total_degree_add (h0 i) (monomial (a - m i) b)) (monomial_degree (m i))).trans,
+            by_cases c : (h0 i).total_degree ≤ (monomial (a - m i) b).total_degree,
+            { simp only [c, max_eq_right],
+              rw [total_degree_monomial_eq_monomial_degree, monomial_degree_sub ha, nat.sub_add_cancel],
+              { exact monomial_degree_le_of_le ha },
+              { exact b_eq_zero} },
+            { simp only [not_le] at c,
+              simp only [c.le, max_eq_left],
+              rw t.1.2,
+              exact hr.trans h_total_degree_p.le } } },
+        { simp only [h, pi.add_apply, c, forall_false_left, true_or, ite_eq_right_iff],
+          rw single_eq_of_ne,
+          cases h_h0.1 j,
+          { left,
+            simpa using h_1 },
+          { right,
+            rw add_zero,
+            apply h_1.trans,
+            rw total_degree_monomial_eq_monomial_degree,
+            { exact le_of_lt h_total_degree_p },
+            { exact b_eq_zero } },
+          symmetry,
+          simpa using c, } },
+      { have comp : monomial a b - ∑ (j : τ), h j * g j = p - ∑ (j : τ), h0 j * g j,
+        { simp only [p, h, pi.add_apply],
+          rw sub_sub,
+          congr,
+          rw [← sum_single' i (monomial (a - m i) b * g i), ←finset.sum_add_distrib],
+          congr,
+          ext1 j,
+          rw [add_mul, add_comm (h0 j * g j)],
+          congr,
+          by_cases c : i = j,
+          { simp [c] },
+          { simp [c] } },
+        rw comp,
+        exact h_h0.2 } } },
 end
 
 lemma reduce_degree_general {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
