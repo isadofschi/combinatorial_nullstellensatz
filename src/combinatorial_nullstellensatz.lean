@@ -32,7 +32,7 @@ namespace mv_polynomial
 
 /- Theorem 1.1 in Alon's paper. -/
 theorem combinatorial_nullstellensatz' {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
-  (f : mv_polynomial σ R) (S : σ → finset R) (hS : ∀ i : σ, 0 < (S i).card)
+ [decidable_eq σ] (f : mv_polynomial σ R) (S : σ → finset R) (hS : ∀ i : σ, 0 < (S i).card)
   (hz : ∀ s : σ → R, (∀ i : σ, s i ∈ S i ) → eval s f = 0) : 
   ∃ h : σ → mv_polynomial σ R, (∀ i : σ, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
     ∧ f = ∑ i : σ, h i * ∏ s in (S i), (X i - C s) :=
