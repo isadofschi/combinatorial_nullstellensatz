@@ -104,8 +104,6 @@ lemma induction_on_new {R σ : Type*} [comm_semiring R] {M : mv_polynomial σ R 
             simpa using ha } } } },
   end
   
-
-
 def is_reduced {R σ : Type*} [comm_ring R] (f : mv_polynomial σ R) (m : σ →₀ ℕ) : Prop
 := ∀ m' ∈ f.support, ¬ m ≤ m' -- would ∀ m', m≤ m' → m ∉ f.support be better?
 
@@ -185,7 +183,16 @@ begin
     exact is_reduced_add (h_hab.2 i) (h_hf.2 i) }
 end
 
+lemma total_degree_eq' {R σ : Type*} [comm_semiring R] (p : mv_polynomial σ R) :
+  p.total_degree = p.support.sup (monomial_degree) :=
+begin
+  rw [total_degree],
+  congr, funext m,
+end
 
+lemma total_degree_lt_iff {R σ : Type*} [comm_semiring R] {f : mv_polynomial σ R} {d : ℕ} (h : 0 < d) :
+  total_degree f < d ↔ ∀ m : σ →₀ ℕ, m ∈ f.support → monomial_degree m < d :=
+by rwa [total_degree_eq', finset.sup_lt_iff]
 
 lemma total_degree_sub_lt {R σ : Type*} [comm_ring R] [is_domain R] 
 {f g : mv_polynomial σ R} {k : ℕ} (h : 0 < k)
@@ -193,14 +200,16 @@ lemma total_degree_sub_lt {R σ : Type*} [comm_ring R] [is_domain R]
   (hg : ∀ (m : σ →₀ ℕ), m ∈ g.support → (k ≤ monomial_degree m) → coeff m f = coeff m g) :
   total_degree (f - g) < k :=
 begin
-  sorry,
-end
-
-lemma total_degree_eq' {R σ : Type*} [comm_semiring R] (p : mv_polynomial σ R) :
-  p.total_degree = p.support.sup (monomial_degree) :=
-begin
-  rw [total_degree],
-  congr, funext m,
+  rw total_degree_lt_iff h,
+  intros m hm,
+  by_contra hc,
+  simp only [not_lt] at hc,
+  have h' := support_sub σ f g hm,
+  simp only [mem_support_iff, ne.def, coeff_sub, sub_eq_zero] at hm,
+  simp [mem_union] at h',
+  cases h' with cf cg,
+  { exact hm (hf m (by simpa using cf) hc) },
+  { exact hm (hg m (by simpa using cg) hc) }
 end
 
 lemma max_degree_monomial_iff_of_eq_degree' {R σ : Type*} [comm_semiring R] (p : mv_polynomial σ R)
