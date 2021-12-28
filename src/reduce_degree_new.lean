@@ -566,7 +566,19 @@ lemma reduce_degree {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
     (∀ i : σ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
       ∧ ∀ i : σ,  degree_of i (f - (∑ j : σ, h j * g j)) < total_degree (g i) := 
 begin
-  sorry -- use reduce_degree_general
+  have hm' : ∀ i : σ, dominant_monomial (single i (g i).total_degree) (g i),
+  { intro i,
+    apply g_S_lem_1 _ (hg i),
+    by_contradiction,
+    simpa [h] using h0 i },
+  cases reduce_degree_general f g hm' h0 hm with h h_h,
+  use h,
+  split,
+  { exact h_h.1 },
+  { intro i,
+    rw [degree_of_eq_sup, finset.sup_lt_iff],
+    { simpa only [is_reduced, single_le_iff, not_le, ne.def] using h_h.2 i },
+    { exact h0 i } }
 end
 
 lemma reduce_degree_particular_case {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ] [decidable_eq σ]
