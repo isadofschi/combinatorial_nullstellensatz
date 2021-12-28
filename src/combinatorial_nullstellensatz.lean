@@ -37,7 +37,7 @@ theorem combinatorial_nullstellensatz' {R σ : Type*} [comm_ring R] [is_domain R
   ∃ h : σ → mv_polynomial σ R, (∀ i : σ, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
     ∧ f = ∑ i : σ, h i * ∏ s in (S i), (X i - C s) :=
 begin
-  cases (reduce_degree_particular_case S hS f) with h h_h,
+  cases (reduce_degree_special_case S hS f) with h h_h,
   use h,
   apply and.intro,
   exact h_h.1,
