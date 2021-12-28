@@ -167,6 +167,7 @@ begin
   simp,
 end
 
+-- unused
 lemma g_S_lem_5 {R  σ : Type* } [comm_semiring R] {i : σ} {m: σ →₀ ℕ} {p : mv_polynomial σ R}
   (h_m : m ∈ p.support) (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
 begin
