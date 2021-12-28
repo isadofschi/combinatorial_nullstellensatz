@@ -92,6 +92,41 @@ begin
   simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply, nat.sub_add_cancel (h a)],
 end
 
+-- is this on mathlib? name?
+lemma sub_le_etc {a b c : ℕ } (h : a - b ≤ c) : a ≤ c + b :=
+begin
+  apply nat.le_of_sub_eq_zero,
+  rw [add_comm, ←nat.sub_sub],
+  exact nat.sub_eq_zero_of_le h,
+end
+
+lemma monomial_degree_sub_le {σ : Type*} (m m' : σ →₀ ℕ) : 
+  monomial_degree m - monomial_degree m' ≤ monomial_degree (m - m') := 
+begin
+  have h : m ≤ (m - m') + m',
+  { intro i,
+    simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
+    apply sub_le_etc,
+    refl },
+  have h' := monomial_degree_le_of_le h,
+  rw monomial_degree_add at h',
+  simp only [tsub_le_iff_right],
+  exact h',
+end
+
+
+lemma monomial_degree_zero_iff {σ : Type*} {m : σ →₀ ℕ} : monomial_degree m = 0 ↔ m = 0 :=
+begin
+  split,
+  { intro h,
+    ext i,
+    apply nat.eq_zero_of_le_zero _,
+    apply (le_monomial_degree m i).trans,
+    rw h, },
+  { intro h,
+    simp [h, monomial_degree], },
+end
+
 -- This depends on flt-regular. Use total_degree_monomial once its merged into mathlib
 lemma total_degree_monomial_eq_monomial_degree {σ R : Type*} [comm_semiring R] {m : σ →₀ ℕ} {a : R} 
   (h : a ≠ 0): total_degree (monomial m a) = monomial_degree m :=
