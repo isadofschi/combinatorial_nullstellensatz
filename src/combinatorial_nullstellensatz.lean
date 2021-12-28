@@ -47,7 +47,7 @@ begin
   simp only [ring_hom.map_sub, hz s h_s, eval_sum, zero_sub, neg_eq_zero, ring_hom.map_mul],
   apply finset.sum_eq_zero,
   intros i hi,
-  simp [eval_is_zero (S i) (hS i) s i (h_s i)],
+  simp [eval_g_S_eq_zero (S i) (hS i) s i (h_s i)],
 end
 
 theorem combinatorial_nullstellensatz'' {R σ : Type*} [comm_ring R] [is_domain R]
@@ -73,10 +73,10 @@ begin
       { simpa only [finsupp.single_eq_same, ←h_card_S, add_le_iff_nonpos_right, le_zero_iff] using
           dominant_monomial_of_factor_is_factor_of_max_degree_monomial (S i) t 
             (finsupp.single i (S i).card) (h i) (∏ (s : R) in S i, (X i - C s))
-            ⟨mem_support_iff.mpr c1, le_antisymm (not_lt.mp c) _⟩  c'' (g_S_lem_1' (S i) i) i,
+            ⟨mem_support_iff.mpr c1, le_antisymm (not_lt.mp c) _⟩  c'' (dominant_monomial_g_S (S i) i) i,
         by_cases c' : h i = 0,
         { simp [c', zero_mul] },
-        { rw [total_degree_mul' c' (g_S_lem_0 (S i) i), g_S_lem_4, h_max.2],
+        { rw [total_degree_mul' c' (g_S_ne_0 (S i) i), total_degree_g_S, h_max.2],
           by_cases hi0 : h i = 0,
           { simpa [hi0] using c1 },
           { exact or.resolve_left (h1.1 i) hi0 } } } } },

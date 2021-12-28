@@ -46,10 +46,28 @@ open set function finsupp add_monoid_algebra
 
 local attribute [instance] classical.prop_decidable
 
+lemma nat_lemma_2 { a b c : ℕ} (h' : c - a ≤ b):  c ≤ b + a :=
+begin
+  by_cases h : a ≤ c,
+  { zify,
+    rw [←sub_le_iff_le_add, ←int.coe_nat_sub],
+    { rw int.coe_nat_le,
+      exact h' },
+    { exact h } },
+  { linarith }
+end
+
+lemma nat_lemma_1 {a b c : ℕ} (h : c ≤ b) (h' : b - c ≤ a) : a - (b - c) = a + c - b :=
+begin
+  zify,
+  rw int.coe_nat_sub,
+  { rw [int.coe_nat_add, ←sub_add, sub_add_eq_add_sub] },
+  { apply nat_lemma_2 h' }
+end
 
 private def M {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} {hm : ∀ i : τ, dominant_monomial (m i) (g i)}
-  {h0 : ∀ i : τ, 0 < total_degree (g i)} {hmonic : ∀ i : τ, coeff (m i) (g i) = 1}
+  (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
   : mv_polynomial σ R → Prop :=
   λ f, ∃ h : τ → mv_polynomial σ R, (∀ i : τ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
     ∧ ∀ i : τ,  is_reduced (f - (∑ j : τ, h j * g j)) (m i)
@@ -111,32 +129,12 @@ begin
     exact is_reduced_add (h_hab.2 i) (h_hf.2 i) }
 end
 
-lemma nat_lemma_2 { a b c : ℕ} (h' : c - a ≤ b):  c ≤ b + a :=
-begin
-  by_cases h : a ≤ c,
-  { zify,
-    rw [←sub_le_iff_le_add, ←int.coe_nat_sub],
-    { rw int.coe_nat_le,
-      exact h' },
-    { exact h } },
-  { linarith }
-end
-
-
 private lemma total_degree_p_aux_2 { σ : Type*} { m m' a: σ →₀ ℕ}
   (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  a ≤ m' + m:=
 begin
   intro i,
   simp only [pi.add_apply, coe_add], 
   apply nat_lemma_2 (c i),
-end
-
-lemma nat_lemma_1 {a b c : ℕ} (h : c ≤ b) (h' : b - c ≤ a) : a - (b - c) = a + c - b :=
-begin
-  zify,
-  rw int.coe_nat_sub,
-  { rw [int.coe_nat_add, ←sub_add, sub_add_eq_add_sub] },
-  { apply nat_lemma_2 h' }
 end
 
 private lemma total_degree_p_aux_1 { σ : Type*} { m m' a: σ →₀ ℕ}
@@ -228,7 +226,6 @@ begin
     { simp only [c, eq_self_iff_true, not_true, if_false] at hm',
       simpa using hm' } }
 end
-
 
 private lemma reduce_degree_h_monomial_a_eq_zero {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
@@ -370,7 +367,7 @@ lemma reduce_degree' {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
 begin
   have hm' : ∀ i : σ, dominant_monomial (single i (g i).total_degree) (g i),
   { intro i,
-    apply g_S_lem_1 _ (hg i),
+    apply dominant_monomial_single_of_supported_singleton _ (hg i),
     by_contradiction,
     simpa [h] using h0 i },
   cases reduce_degree f g hm' h0 hm with h h_h,
@@ -392,59 +389,24 @@ lemma reduce_degree_special_case {R σ : Type*} [comm_ring R] [is_domain R] [fin
   degree_of j (f - (∑ i : σ, h i * ∏ s in S i, (X i - C s))) < (S j).card :=
 begin
   let g : σ → mv_polynomial σ R := λ i, ∏ s in S i, (X i - C s),
-  let hg : ∀ i : σ, g i ∈ supported R ({i} : set σ) := λ i,  g_S_lem_supported (S i) i,
+  let hg : ∀ i : σ, g i ∈ supported R ({i} : set σ) := λ i,  g_S_mem_supported (S i) i,
   have h0 : ∀ i : σ, 0 < total_degree (g i),
   { intro i,
-    rw g_S_lem_4,
+    rw total_degree_g_S,
     exact hS i,
   },
   have hm : ∀ i : σ, coeff (single i (g i).total_degree) (g i) = 1,
   { intro i,
-    simpa only [g, g_S_lem_4] using g_S_lem_8 (S i) i },
+    simpa only [g, total_degree_g_S] using g_S_monic (S i) i },
   cases reduce_degree' f g hg h0 hm with h hh,
   use h,
   split,
   { intro i,
-    rw ← g_S_lem_4 (S i) i,
+    rw ← total_degree_g_S (S i) i,
     exact hh.1 i, },
   { intro i,
-    rw ← g_S_lem_4 (S i) i,
+    rw ← total_degree_g_S (S i) i,
     exact hh.2 i },
 end
-
-/-
--- alternative proof avoiding reduce_degree'. not much is gained since we still need g_S_lem_1'
-begin
-  let g := λ i, ∏ s in S i, (X i - C s),
-  have hm : ∀ i : σ, dominant_monomial (single i (g i).total_degree) (g i),
-  { intro i,
-    simp only [ g ],
-    rw g_S_lem_4,
-    apply g_S_lem_1' },
-  have h0 : ∀ i : σ, 0 < total_degree (g i),
-  { intro i,
-    rw g_S_lem_4,
-    exact hS i,
-  },
-  have hmonic : ∀ i : σ, coeff (single i (g i).total_degree) (g i) = 1,
-  { intro i,
-    simpa only [g, g_S_lem_4] using g_S_lem_8 (S i) i },
-  cases reduce_degree f g hm h0 hmonic with h h_h,
-  use h,
-  split,
-  { intro i,
-    rw ← g_S_lem_4 (S i),
-    { exact h_h.1 i },
-    { exact _inst_4 } },
-  { intro i,
-    rw [degree_of_eq_sup, finset.sup_lt_iff],
-    { intros b hb,
-      have t := h_h.2 i,
-      simp only [is_reduced, single_le_iff, not_le, ne.def, g_S_lem_4] at t,
-      exact t b hb },
-    { rw ←g_S_lem_4,
-      exact h0 i } }
-end
--/
 
 end mv_polynomial
