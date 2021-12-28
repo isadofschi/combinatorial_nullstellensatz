@@ -15,6 +15,7 @@ import assorted_lemmas
 # Reduce degree
 
 ## Main results
+  # TODO UPDATE DOC
 
 - `reduce_degree`: Let F be a field and Sᵢ be finite nonempty subsets of $F$,
    defined for i ∈ {0, … , n - 1}. Let f ∈ F[x₀, … x_₁]. Let gᵢ = ∏ (xᵢ - s)
@@ -110,33 +111,40 @@ begin
     exact is_reduced_add (h_hab.2 i) (h_hf.2 i) }
 end
 
+lemma nat_lemma_2 { a b c : ℕ} (h' : c - a ≤ b):  c ≤ b + a :=
+begin
+  by_cases h : a ≤ c,
+  { zify,
+    rw [←sub_le_iff_le_add, ←int.coe_nat_sub],
+    { rw int.coe_nat_le,
+      exact h' },
+    { exact h } },
+  { linarith }
+end
+
+
 private lemma total_degree_p_aux_2 { σ : Type*} { m m' a: σ →₀ ℕ}
   (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  a ≤ m' + m:=
 begin
   intro i,
   simp only [pi.add_apply, coe_add], 
+  apply nat_lemma_2 (c i),
+end
+
+lemma nat_lemma_1 {a b c : ℕ} (h : c ≤ b) (h' : b - c ≤ a) : a - (b - c) = a + c - b :=
+begin
   zify,
-  rw [←sub_le_iff_le_add, ←int.coe_nat_sub],
-  { rw int.coe_nat_le,
-    exact c i },
-  { exact h_m_le_a i }
+  rw int.coe_nat_sub,
+  { rw [int.coe_nat_add, ←sub_add, sub_add_eq_add_sub] },
+  { apply nat_lemma_2 h' }
 end
 
 private lemma total_degree_p_aux_1 { σ : Type*} { m m' a: σ →₀ ℕ}
-  (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  m' - (a - m) = m + m' - a :=
+  (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  m' - (a - m) = m' + m - a :=
 begin
-   ext i,
-    -- maybe this is a lemma about nat?
-    rw add_comm,
-    simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
-    zify,
-    rw int.coe_nat_sub,
-    { rw int.coe_nat_sub,
-      { rw [←sub_add, int.coe_nat_sub],
-        { rw [int.coe_nat_add, sub_add_eq_add_sub] },
-        { exact total_degree_p_aux_2 h_m_le_a c i } },
-      { exact h_m_le_a i } },
-    { exact c i },
+  ext i,
+  simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
+  apply nat_lemma_1 (h_m_le_a i) (c i),
 end
 
 private lemma total_degree_p_aux { σ : Type*} { m m' a: σ →₀ ℕ}
@@ -145,7 +153,9 @@ private lemma total_degree_p_aux { σ : Type*} { m m' a: σ →₀ ℕ}
 (t: monomial_degree (m' - (a - m)) ≤ monomial_degree m 
     ∧ (monomial_degree (m' - (a - m)) = monomial_degree m → m = m' - (a - m))) : a = m' :=
 begin
-  have h' : m' - (a - m) = m + m' - a := total_degree_p_aux_1 h_m_le_a c,
+  have h' : m' - (a - m) = m + m' - a,
+  { rw add_comm,
+    exact total_degree_p_aux_1 h_m_le_a c },
   rw h' at t,
   clear h',
   have c' : a ≤ m + m',
@@ -252,20 +262,15 @@ begin
     begin
       rw zero_mul,
     end,
-    simp only [monomial_zero', sub_zero, finset.sum_const_zero],
-    rw is_reduced,
+    simp only [monomial_zero', sub_zero, finset.sum_const_zero, is_reduced],
     intros m' hm',
     simp only [exists_prop, coeff_C, mem_support_iff, ite_eq_right_iff, ne.def, not_forall] at hm',
-    rw ← hm'.1,
-    simp only [nonpos_iff_eq_zero],
+    simp only [← hm'.1, nonpos_iff_eq_zero],
     have hmi := (hm i).1,
     simp only [max_degree_monomial] at hmi,
     by_contra,
     rw h at hmi,
-    have t := h0 i,
-    rw ←hmi.2 at t,
-    rw monomial_degree at t,
-    simpa using t }
+    simpa [←hmi.2, monomial_degree] using h0 i }
 end
 
 private lemma reduce_degree_h_monomial {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
