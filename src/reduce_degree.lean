@@ -46,31 +46,12 @@ open set function finsupp add_monoid_algebra
 
 local attribute [instance] classical.prop_decidable
 
-lemma nat_lemma_2 { a b c : ℕ} (h' : c - a ≤ b):  c ≤ b + a :=
-begin
-  by_cases h : a ≤ c,
-  { zify,
-    rw [←sub_le_iff_le_add, ←int.coe_nat_sub],
-    { rw int.coe_nat_le,
-      exact h' },
-    { exact h } },
-  { linarith }
-end
-
-lemma nat_lemma_1 {a b c : ℕ} (h : c ≤ b) (h' : b - c ≤ a) : a - (b - c) = a + c - b :=
-begin
-  zify,
-  rw int.coe_nat_sub,
-  { rw [int.coe_nat_add, ←sub_add, sub_add_eq_add_sub] },
-  { apply nat_lemma_2 h' }
-end
-
-private def M {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
-  {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} {hm : ∀ i : τ, dominant_monomial (m i) (g i)}
-  (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
-  : mv_polynomial σ R → Prop :=
-  λ f, ∃ h : τ → mv_polynomial σ R, (∀ i : τ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
-    ∧ ∀ i : τ,  is_reduced (f - (∑ j : τ, h j * g j)) (m i)
+private def M {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ] {g : τ → mv_polynomial σ R}
+  {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
+  (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1) :
+  mv_polynomial σ R → Prop := λ f, ∃ h : τ → mv_polynomial σ R,
+    (∀ i : τ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
+     ∧ ∀ i : τ,  is_reduced (f - (∑ j : τ, h j * g j)) (m i)
 
 private lemma h_add_weak_aux_comp  {R σ τ : Type*} [comm_ring R] [fintype τ]
   (g : τ → mv_polynomial σ R) (p q : mv_polynomial σ R) 
@@ -96,11 +77,9 @@ calc p + q - (∑ (i : τ), (h1 + h2) i * g i)
 
 private lemma reduce_degree_h_add_weak {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
-  (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
-  (a : σ →₀ ℕ) (b : R) (f : mv_polynomial σ R) (ha : a ∉ f.support) (hb : b ≠ 0)
-  (Mf : @M R σ τ _ _ _ g m hm h0 hmonic f)
-  (Mab : @M R σ τ _ _ _ g m hm h0 hmonic (monomial a b)) 
-  : @M R σ τ _ _ _ g m hm h0 hmonic (monomial a b + f) := 
+  (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1) (a : σ →₀ ℕ)
+  (b : R) (f : mv_polynomial σ R) (ha : a ∉ f.support) (hb : b ≠ 0) (Mf : M hm h0 hmonic f)
+  (Mab : M hm h0 hmonic (monomial a b))  : M hm h0 hmonic (monomial a b + f) := 
 begin
   cases Mf with hf h_hf,
   cases Mab with hab h_hab,
@@ -129,22 +108,6 @@ begin
     exact is_reduced_add (h_hab.2 i) (h_hf.2 i) }
 end
 
-private lemma total_degree_p_aux_2 { σ : Type*} { m m' a: σ →₀ ℕ}
-  (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  a ≤ m' + m:=
-begin
-  intro i,
-  simp only [pi.add_apply, coe_add], 
-  apply nat_lemma_2 (c i),
-end
-
-private lemma total_degree_p_aux_1 { σ : Type*} { m m' a: σ →₀ ℕ}
-  (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  m' - (a - m) = m' + m - a :=
-begin
-  ext i,
-  simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
-  apply nat_lemma_1 (h_m_le_a i) (c i),
-end
-
 private lemma total_degree_p_aux { σ : Type*} { m m' a: σ →₀ ℕ}
 (h_m_le_a : m ≤ a) (h : monomial_degree a ≤ monomial_degree m')
 (c : a - m ≤ m')
@@ -153,7 +116,7 @@ private lemma total_degree_p_aux { σ : Type*} { m m' a: σ →₀ ℕ}
 begin
   have h' : m' - (a - m) = m + m' - a,
   { rw add_comm,
-    exact total_degree_p_aux_1 h_m_le_a c },
+    exact monomial_lemma_1 h_m_le_a c },
   rw h' at t,
   clear h',
   suffices h1 : monomial_degree (m + m' - a) = monomial_degree m,
@@ -169,7 +132,7 @@ begin
       rw int.coe_nat_sub,
       { rw int.coe_nat_add },
       { rw add_comm,
-        exact total_degree_p_aux_2 h_m_le_a c i } },
+        exact monomial_lemma_2 c i } },
     rw [← add_sub, self_eq_add_right, sub_eq_zero] at t'',
     symmetry,
     exact t'' },
@@ -230,7 +193,7 @@ end
 private lemma reduce_degree_h_monomial_a_eq_zero {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
   (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
-  (b : R)  : @M R σ τ _ _ _ g m hm h0 hmonic (monomial 0 b) :=
+  (b : R) : M hm h0 hmonic (monomial 0 b) :=
 begin
   use λ i, 0,
   split,
@@ -272,7 +235,7 @@ private lemma reduce_degree_h_monomial {R σ τ : Type*} [comm_ring R] [is_domai
   {g : τ → mv_polynomial σ R} {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
   (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1)
   (a : σ →₀ ℕ) (b : R) (hp : ∀ (p : mv_polynomial σ R), p.total_degree < monomial_degree a 
-    → @M R σ τ _ _ _ g m hm h0 hmonic p) : @M R σ τ _ _ _ g m hm h0 hmonic (monomial a b) :=
+    → M hm h0 hmonic p) : M hm h0 hmonic (monomial a b) :=
 begin
   by_cases c : ∀ i, is_reduced (monomial a b) (m i),
   { use λ i, 0,

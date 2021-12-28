@@ -93,27 +93,50 @@ begin
 end
 
 -- is this on mathlib? name?
-lemma sub_le_etc {a b c : ℕ } (h : a - b ≤ c) : a ≤ c + b :=
+lemma nat_lemma_2 { a b c : ℕ} (h' : c - a ≤ b):  c ≤ b + a :=
 begin
-  apply nat.le_of_sub_eq_zero,
-  rw [add_comm, ←nat.sub_sub],
-  exact nat.sub_eq_zero_of_le h,
+  by_cases h : a ≤ c,
+  { zify,
+    rw [←sub_le_iff_le_add, ←int.coe_nat_sub],
+    { rw int.coe_nat_le,
+      exact h' },
+    { exact h } },
+  { linarith }
+end
+
+lemma nat_lemma_1 {a b c : ℕ} (h : c ≤ b) (h' : b - c ≤ a) : a - (b - c) = a + c - b :=
+begin
+  zify,
+  rw int.coe_nat_sub,
+  { rw [int.coe_nat_add, ←sub_add, sub_add_eq_add_sub] },
+  { apply nat_lemma_2 h' }
+end
+
+lemma monomial_lemma_2 { σ : Type*} { m m' a: σ →₀ ℕ} (c : a - m ≤ m') :  a ≤ m' + m :=
+begin
+  intro i,
+  simp only [pi.add_apply, coe_add],
+  apply nat_lemma_2 (c i),
+end
+
+lemma monomial_lemma_3 { σ : Type*} { m m' : σ →₀ ℕ} : m ≤ (m - m') + m' :=
+monomial_lemma_2 (le_refl _)
+
+lemma monomial_lemma_1 { σ : Type*} { m m' a: σ →₀ ℕ}
+  (h_m_le_a : m ≤ a) (c : a - m ≤ m'):  m' - (a - m) = m' + m - a :=
+begin
+  ext i,
+  simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
+  apply nat_lemma_1 (h_m_le_a i) (c i),
 end
 
 lemma monomial_degree_sub_le {σ : Type*} (m m' : σ →₀ ℕ) : 
   monomial_degree m - monomial_degree m' ≤ monomial_degree (m - m') := 
 begin
-  have h : m ≤ (m - m') + m',
-  { intro i,
-    simp only [pi.add_apply, coe_tsub, coe_add, pi.sub_apply],
-    apply sub_le_etc,
-    refl },
-  have h' := monomial_degree_le_of_le h,
-  rw monomial_degree_add at h',
-  simp only [tsub_le_iff_right],
-  exact h',
+  simp only [tsub_le_iff_right, ←monomial_degree_add],
+  apply monomial_degree_le_of_le,
+  apply monomial_lemma_3,
 end
-
 
 lemma monomial_degree_zero_iff {σ : Type*} {m : σ →₀ ℕ} : monomial_degree m = 0 ↔ m = 0 :=
 begin
