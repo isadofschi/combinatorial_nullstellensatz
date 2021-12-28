@@ -330,7 +330,6 @@ begin
     { exact h.symm } }
  end
 
-
 lemma max_degree_monomial_iff {R σ : Type*} [comm_ring R]
 {f : mv_polynomial σ R} { m : σ →₀ ℕ} :
 max_degree_monomial m f ↔ m ∈ f.support ∧ ∀ m' ∈ f.support, 
@@ -396,9 +395,8 @@ local attribute [instance] classical.prop_decidable
 lemma induction_on_new {R σ : Type*} [comm_semiring R] {M : mv_polynomial σ R → Prop} (p : mv_polynomial σ R)
   (h_add_weak : ∀ (a : σ →₀ ℕ) (b : R) (f : (σ →₀ ℕ) →₀ R),
     a ∉ f.support → b ≠ 0 → M f → M (monomial a b) → M (monomial a b + f))
-  (h_monomial : ∀ m : σ →₀ ℕ, ∀ b : R,
-    (∀ p : mv_polynomial σ R, total_degree p < monomial_degree m → M p) → M (monomial m b)) 
-  : M p :=
+  (h_monomial : ∀ m : σ →₀ ℕ, ∀ b : R, 
+    (∀ p : mv_polynomial σ R, total_degree p < monomial_degree m → M p) → M (monomial m b)) : M p :=
   begin
     apply induction_on_total_degree,
     { intros p,
@@ -430,19 +428,4 @@ lemma induction_on_new {R σ : Type*} [comm_semiring R] {M : mv_polynomial σ R 
              using ha} } } },
   end
   
-def is_reduced {R σ : Type*} [comm_ring R] (f : mv_polynomial σ R) (m : σ →₀ ℕ) : Prop
-:= ∀ m' ∈ f.support, ¬ m ≤ m' -- would ∀ m', m≤ m' → m ∉ f.support be better?
-
-lemma is_reduced_add {R σ : Type*} [comm_ring R] {f g: mv_polynomial σ R} {m : σ →₀ ℕ}
-  (hf : is_reduced f m) (hg : is_reduced g m) : is_reduced (f + g) m :=
-begin
-  rw is_reduced,
-  intros m' hm',
-  have t:= (support_add hm'),
-  simp only [finset.mem_union] at t,
-  cases t,
-  { exact hf m' t },
-  { exact hg m' t }
-end
-
 end mv_polynomial

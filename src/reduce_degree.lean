@@ -15,23 +15,31 @@ import assorted_lemmas
 # Reduce degree
 
 ## Main results
-  # TODO UPDATE DOC
 
-- `reduce_degree_special_case`: Let F be a field and Sᵢ be finite nonempty subsets of $F$,
-   defined for i ∈ {0, … , n - 1}. Let f ∈ F[x₀, … x_₁]. Let gᵢ = ∏ (xᵢ - s)
+- `is_reduced`: A mv_polynomial f is reduced with respect to m : σ →₀ ℕ if no monomial m' in the
+  support of f satisfies m ≤ m'.
+
+- `reduce_degree`: Let R be a integral domain and let f ∈ R[xₛ] be a multivariable polynomial.
+   Suppose we are given a finite number of nonconstant polynomials gᵢ ∈ R[xₛ] each having a 
+   dominant monomial mᵢ with coefficient 1. Then we can find polynomials hᵢ ∈ R[xₛ] such that:
+  (i) For each i, either hᵢ = 0 or deg hᵢ + deg gᵢ ≤ deg f.
+  (ii) For each i, f - ∑ j : τ, hⱼ gⱼ is reduced with respect to mᵢ.
+
+- `reduce_degree_special_case`: Let R be a integral domain and Sᵢ be finite nonempty subsets of R,
+   defined for i ∈ {0, … , n - 1}. Let f ∈ R[x₀, … xₙ]. Let gᵢ = ∏ (xᵢ - s)
    where the product is taken over s ∈ Sᵢ.Then there are polynomials 
-   hᵢ ∈ F[x₀, … x_₁] such that:
+   hᵢ ∈ F[x₀, … xₙ] such that:
    (i) For each i, either hᵢ = 0 or deg hᵢ + |Sᵢ| ≤ deg f.
   (ii) For each j, the degⱼ (f - ∑ᵢ hᵢ gᵢ) < |Sⱼ|.
 
-This corresponds to the following paragraph in the proof of Theorem 1.1 in Alon's
-"Combinatorial Nullstellensatz" paper:
-'Let \bar{f} be the polynomial obtained by writing f as a linear combination of monomials and replacing,
-repeatedly, each occurrence of x ^ f_i (for 1 ≤ i ≤ n), where f_i > t_i, by a linear combination 
-of smaller powers of x_i, using the relations g_i = ∏ s in (S i), (X i - C s) = 0. The resulting
-polynomial \bar{f} is clearly of degree at most t_i in x_i, for each 1 ≤ i ≤ n, and is obtained from
-f by subtracting from it products of the form h_i * g_i, where the degree of each polynomial 
-h_i ∈ F[x_1 , ... , x_n] does not exceed deg(f) − deg(g_i)'.
+  This corresponds to the following paragraph in the proof of Theorem 1.1 in Alon's
+  "Combinatorial Nullstellensatz" paper:
+  'Let \bar{f} be the polynomial obtained by writing f as a linear combination of monomials and replacing,
+  repeatedly, each occurrence of x ^ f_i (for 1 ≤ i ≤ n), where f_i > t_i, by a linear combination 
+  of smaller powers of x_i, using the relations g_i = ∏ s in (S i), (X i - C s) = 0. The resulting
+  polynomial \bar{f} is clearly of degree at most t_i in x_i, for each 1 ≤ i ≤ n, and is obtained from
+  f by subtracting from it products of the form h_i * g_i, where the degree of each polynomial 
+  h_i ∈ F[x_1 , ... , x_n] does not exceed deg(f) − deg(g_i)'.
 
 -/
 
@@ -46,6 +54,21 @@ open set function finsupp add_monoid_algebra
 
 local attribute [instance] classical.prop_decidable
 
+def is_reduced {R σ : Type*} [comm_ring R] (f : mv_polynomial σ R) (m : σ →₀ ℕ) : Prop
+:= ∀ m' ∈ f.support, ¬ m ≤ m' -- would ∀ m', m≤ m' → m ∉ f.support be better?
+
+lemma is_reduced_add {R σ : Type*} [comm_ring R] {f g: mv_polynomial σ R} {m : σ →₀ ℕ}
+  (hf : is_reduced f m) (hg : is_reduced g m) : is_reduced (f + g) m :=
+begin
+  rw is_reduced,
+  intros m' hm',
+  have t:= (support_add hm'),
+  simp only [finset.mem_union] at t,
+  cases t,
+  { exact hf m' t },
+  { exact hg m' t }
+end
+
 private def M {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ] {g : τ → mv_polynomial σ R}
   {m : τ → (σ →₀ ℕ)} (hm : ∀ i : τ, dominant_monomial (m i) (g i))
   (h0 : ∀ i : τ, 0 < total_degree (g i)) (hmonic : ∀ i : τ, coeff (m i) (g i) = 1) :
@@ -54,11 +77,9 @@ private def M {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ] {g : τ
      ∧ ∀ i : τ,  is_reduced (f - (∑ j : τ, h j * g j)) (m i)
 
 private lemma h_add_weak_aux_comp  {R σ τ : Type*} [comm_ring R] [fintype τ]
-  (g : τ → mv_polynomial σ R) (p q : mv_polynomial σ R) 
-  (h1 h2 : τ → mv_polynomial σ R) : 
-  p + q - (∑ (i : τ), (h1 + h2) i * g i)
-  = (p - (∑ (i : τ), h1 i * g i))
-  + (q - (∑ (i : τ), h2 i * g i)) :=
+  (g : τ → mv_polynomial σ R) (p q : mv_polynomial σ R)  (h1 h2 : τ → mv_polynomial σ R) :
+  p + q - (∑ (i : τ), (h1 + h2) i * g i) = (p - (∑ (i : τ), h1 i * g i))
+   + (q - (∑ (i : τ), h2 i * g i)) :=
 calc p + q - (∑ (i : τ), (h1 + h2) i * g i)
      = p + q - (∑ (i : τ), (h1 i + h2 i) * g i) : by simp
 ...  = p + q - (∑ (i : τ), (h1 i * g i + h2 i * g i)) :
@@ -108,10 +129,9 @@ begin
     exact is_reduced_add (h_hab.2 i) (h_hf.2 i) }
 end
 
-private lemma total_degree_p_aux { σ : Type*} { m m' a: σ →₀ ℕ}
-(h_m_le_a : m ≤ a) (h : monomial_degree a ≤ monomial_degree m')
-(c : a - m ≤ m')
-(t: monomial_degree (m' - (a - m)) ≤ monomial_degree m 
+private lemma total_degree_p_aux { σ : Type*} { m m' a: σ →₀ ℕ} (h_m_le_a : m ≤ a) 
+  (h : monomial_degree a ≤ monomial_degree m') (c : a - m ≤ m') 
+  (t: monomial_degree (m' - (a - m)) ≤ monomial_degree m 
     ∧ (monomial_degree (m' - (a - m)) = monomial_degree m → m = m' - (a - m))) : a = m' :=
 begin
   have h' : m' - (a - m) = m + m' - a,
@@ -309,8 +329,7 @@ end
 lemma reduce_degree {R σ τ : Type*} [comm_ring R] [is_domain R] [fintype τ]
   (f : mv_polynomial σ R) (g : τ → mv_polynomial σ R) {m : τ → (σ →₀ ℕ)} 
   (hm : ∀ i : τ, dominant_monomial (m i) (g i) ) (h0 : ∀ i : τ, 0 < total_degree (g i))
-  (hmonic : ∀ i : τ, coeff (m i) (g i) = 1) :
-  ∃ h : τ → mv_polynomial σ R,
+  (hmonic : ∀ i : τ, coeff (m i) (g i) = 1) : ∃ h : τ → mv_polynomial σ R,
     (∀ i : τ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
       ∧ ∀ i : τ,  is_reduced (f - (∑ j : τ, h j * g j)) (m i) := 
 begin
@@ -321,8 +340,7 @@ end
 
 lemma reduce_degree' {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
   (f : mv_polynomial σ R) (g : σ → mv_polynomial σ R)
-  (hg : ∀ i : σ, g i ∈ supported R ({i} : set σ))
-  (h0 : ∀ i : σ, 0 < total_degree (g i))
+  (hg : ∀ i : σ, g i ∈ supported R ({i} : set σ)) (h0 : ∀ i : σ, 0 < total_degree (g i))
   (hm : ∀ i : σ, coeff (single i (g i).total_degree) (g i) = 1) :
   ∃ h : σ → mv_polynomial σ R,
     (∀ i : σ, h i = 0 ∨ total_degree (h i) + total_degree (g i) ≤ total_degree f)
@@ -343,13 +361,11 @@ begin
     { exact h0 i } }
 end
 
-lemma reduce_degree_special_case {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ] [decidable_eq σ]
-  (S : σ → finset R) (hS : ∀ i : σ, 0 < (S i).card)
-  (f : mv_polynomial σ R) :
+lemma reduce_degree_special_case {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ]
+  [decidable_eq σ] (S : σ → finset R) (hS : ∀ i : σ, 0 < (S i).card) (f : mv_polynomial σ R) :
   ∃ h : σ → mv_polynomial σ R,
-  (∀ i : σ, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
-  ∧ ∀ j : σ, 
-  degree_of j (f - (∑ i : σ, h i * ∏ s in S i, (X i - C s))) < (S j).card :=
+    (∀ i : σ, h i = 0 ∨ total_degree (h i) + (S i).card ≤ total_degree f)
+      ∧ ∀ j : σ, degree_of j (f - (∑ i : σ, h i * ∏ s in S i, (X i - C s))) < (S j).card :=
 begin
   let g : σ → mv_polynomial σ R := λ i, ∏ s in S i, (X i - C s),
   let hg : ∀ i : σ, g i ∈ supported R ({i} : set σ) := λ i,  g_S_mem_supported (S i) i,
