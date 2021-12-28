@@ -253,4 +253,173 @@ begin
     simp [←hg.2 mg h.2.1, ← h.2.2] },
 end
 
+-- near total_degree_eq
+lemma total_degree_eq' {R σ : Type*} [comm_semiring R] (p : mv_polynomial σ R) :
+  p.total_degree = p.support.sup (monomial_degree) :=
+begin
+  rw [total_degree],
+  congr, funext m,
+end
+
+lemma total_degree_lt_iff {R σ : Type*} [comm_semiring R] {f : mv_polynomial σ R} {d : ℕ} (h : 0 < d) :
+  total_degree f < d ↔ ∀ m : σ →₀ ℕ, m ∈ f.support → monomial_degree m < d :=
+by rwa [total_degree_eq', finset.sup_lt_iff]
+
+lemma total_degree_sub_lt {R σ : Type*} [comm_ring R] [is_domain R] 
+{f g : mv_polynomial σ R} {k : ℕ} (h : 0 < k)
+  (hf : ∀ (m : σ →₀ ℕ), m ∈ f.support → (k ≤ monomial_degree m) → coeff m f = coeff m g)
+  (hg : ∀ (m : σ →₀ ℕ), m ∈ g.support → (k ≤ monomial_degree m) → coeff m f = coeff m g) :
+  total_degree (f - g) < k :=
+begin
+  rw total_degree_lt_iff h,
+  intros m hm,
+  by_contra hc,
+  simp only [not_lt] at hc,
+  have h' := support_sub σ f g hm,
+  simp only [mem_support_iff, ne.def, coeff_sub, sub_eq_zero] at hm,
+  simp [mem_union] at h',
+  cases h' with cf cg,
+  { exact hm (hf m (by simpa using cf) hc) },
+  { exact hm (hg m (by simpa using cg) hc) }
+end
+
+lemma max_degree_monomial_iff_of_eq_degree' {R σ : Type*} [comm_semiring R] (p : mv_polynomial σ R)
+ {m m' : σ →₀ ℕ} (hm' : m' ∈ p.support) (h : monomial_degree m = monomial_degree m' ) : 
+ max_degree_monomial m p → max_degree_monomial m' p :=
+begin
+  intro h',
+  split,
+  { exact hm' },
+  { rw ← h,
+    exact h'.2 }
+ end
+
+lemma max_degree_monomial_iff_of_eq_degree {R σ : Type*} [comm_semiring R] (p : mv_polynomial σ R)
+ {m m' : σ →₀ ℕ} (hm : m ∈ p.support) (hm' : m' ∈ p.support) (h : monomial_degree m = monomial_degree m') : 
+ max_degree_monomial m p ↔ max_degree_monomial m' p :=
+begin
+  split,
+  { apply max_degree_monomial_iff_of_eq_degree',
+    { exact hm' },
+    { exact h } },
+  { apply max_degree_monomial_iff_of_eq_degree',
+    { exact hm },
+    { exact h.symm } }
+ end
+
+
+lemma max_degree_monomial_iff {R σ : Type*} [comm_ring R]
+{f : mv_polynomial σ R} { m : σ →₀ ℕ} :
+max_degree_monomial m f ↔ m ∈ f.support ∧ ∀ m' ∈ f.support, 
+  monomial_degree m' ≤ monomial_degree m :=
+begin
+  split,
+  { intro h,
+    split,
+    { exact h.1 },
+    { intros m' hm',
+      have t := h.2,
+      rw total_degree_eq' at t,
+      rw t,
+      apply finset.le_sup hm' } },
+  { intro h,
+    split,
+    { exact h.1 },
+    { rw total_degree_eq',
+      rw ← finset.sup'_eq_sup,
+      { apply le_antisymm,
+        { apply finset.le_sup',
+          exact h.1 },
+        { apply finset.sup'_le,
+          exact h.2 } } } },
+end
+
+lemma dominant_monomial_iff {R σ : Type*} [comm_ring R]  {f : mv_polynomial σ R} { m : σ →₀ ℕ} :
+  dominant_monomial m f → ∀ m' ∈ f.support, monomial_degree m' ≤ monomial_degree m 
+    ∧ (monomial_degree m' = monomial_degree m → m' = m) :=
+begin
+  intros h m' hm',
+  split,
+  { apply (max_degree_monomial_iff.1 h.1).2,
+    exact hm' },
+  { intro h1,
+    apply h.2,
+    rw max_degree_monomial_iff_of_eq_degree f hm' h.1.1 h1,
+    exact h.1}
+end
+
+lemma induction_on_total_degree {R σ : Type*} [comm_semiring R] {M : mv_polynomial σ R → Prop}
+ (p : mv_polynomial σ R) (h : ∀ (p' : mv_polynomial σ R),
+   (∀ q,  total_degree q < total_degree p' → M q) → M p') : M p :=
+begin
+  let P : ℕ → Prop := λ n, ∀ p : mv_polynomial σ R, total_degree p ≤ n → M p,
+  suffices l' : ∀ n, P n,
+  { apply l' (total_degree p),
+    refl },
+  { intro n,
+    induction n with d hd,
+    { intros p hp,
+      apply h p,
+      intros q hq,
+      simpa using lt_of_lt_of_le hq hp },
+    { intros p hp,
+      apply h p,
+      intros q hq,
+      exact hd q (nat.le_of_lt_succ (lt_of_lt_of_le hq hp)) } },
+end
+
+local attribute [instance] classical.prop_decidable
+
+lemma induction_on_new {R σ : Type*} [comm_semiring R] {M : mv_polynomial σ R → Prop} (p : mv_polynomial σ R)
+  (h_add_weak : ∀ (a : σ →₀ ℕ) (b : R) (f : (σ →₀ ℕ) →₀ R),
+    a ∉ f.support → b ≠ 0 → M f → M (monomial a b) → M (monomial a b + f))
+  (h_monomial : ∀ m : σ →₀ ℕ, ∀ b : R,
+    (∀ p : mv_polynomial σ R, total_degree p < monomial_degree m → M p) → M (monomial m b)) 
+  : M p :=
+  begin
+    apply induction_on_total_degree,
+    { intros p,
+      apply induction_on''' p,
+      { intros a h,
+        apply h_monomial,
+        intros x h2,
+        simpa [monomial_degree] using h2 },
+      { intros a b f ha hb hMf h,
+        apply h_add_weak a b f ha hb (hMf _),
+        { apply h_monomial,
+          intros p' hp',
+          suffices h' : p'.total_degree < (monomial a b).total_degree,
+          { apply (h p') ∘ (lt_of_lt_of_le h'),
+            rw total_degree_add_eq_of_disjoint_support,
+            { simp only [le_refl, true_or, le_max_iff] },
+            { simpa only [ support_monomial, hb, not_not, mem_support_iff, if_false, 
+                          finset.disjoint_singleton_left, not_not, finsupp.mem_support_iff]
+                using ha} },
+          rw total_degree_monomial_eq_monomial_degree,
+          { exact hp' },
+          { exact hb } },
+        { intros q hq,
+          apply (h q) ∘ (lt_of_lt_of_le hq),
+          rw total_degree_add_eq_of_disjoint_support,
+          { simp only [le_refl, or_true, le_max_iff] },
+          { simpa only [support_monomial, hb, not_not, mem_support_iff, if_false, 
+                        finset.disjoint_singleton_left, not_not, finsupp.mem_support_iff] 
+             using ha} } } },
+  end
+  
+def is_reduced {R σ : Type*} [comm_ring R] (f : mv_polynomial σ R) (m : σ →₀ ℕ) : Prop
+:= ∀ m' ∈ f.support, ¬ m ≤ m' -- would ∀ m', m≤ m' → m ∉ f.support be better?
+
+lemma is_reduced_add {R σ : Type*} [comm_ring R] {f g: mv_polynomial σ R} {m : σ →₀ ℕ}
+  (hf : is_reduced f m) (hg : is_reduced g m) : is_reduced (f + g) m :=
+begin
+  rw is_reduced,
+  intros m' hm',
+  have t:= (support_add hm'),
+  simp only [finset.mem_union] at t,
+  cases t,
+  { exact hf m' t },
+  { exact hg m' t }
+end
+
 end mv_polynomial
