@@ -39,15 +39,15 @@ theorem combinatorial_nullstellensatz' {R σ : Type*} [comm_ring R] [is_domain R
 begin
   cases (reduce_degree_special_case S hS f) with h h_h,
   use h,
-  apply and.intro,
-  exact h_h.1,
-  rw ← sub_eq_zero,
-  apply lemma_2_1 _ S (λ j, h_h.2 j) _,
-  intros s h_s,
-  simp only [ring_hom.map_sub, hz s h_s, eval_sum, zero_sub, neg_eq_zero, ring_hom.map_mul],
-  apply finset.sum_eq_zero,
-  intros i hi,
-  simp [eval_g_S_eq_zero (S i) (hS i) s i (h_s i)],
+  split,
+  { exact h_h.1 },
+  { rw ← sub_eq_zero,
+    apply lemma_2_1 _ S (λ j, h_h.2 j) _,
+    intros s h_s,
+    simp only [ring_hom.map_sub, hz s h_s, eval_sum, zero_sub, neg_eq_zero, ring_hom.map_mul],
+    apply finset.sum_eq_zero,
+    intros i hi,
+    simp [eval_g_S_eq_zero (S i) (hS i) s i (h_s i)] },
 end
 
 theorem combinatorial_nullstellensatz'' {R σ : Type*} [comm_ring R] [is_domain R]

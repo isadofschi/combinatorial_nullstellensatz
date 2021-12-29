@@ -55,14 +55,14 @@ open set function finsupp add_monoid_algebra
 local attribute [instance] classical.prop_decidable
 
 def is_reduced {R σ : Type*} [comm_ring R] (f : mv_polynomial σ R) (m : σ →₀ ℕ) : Prop
-:= ∀ m' ∈ f.support, ¬ m ≤ m' -- would ∀ m', m≤ m' → m ∉ f.support be better?
+:= ∀ m' ∈ f.support, ¬ m ≤ m' -- would ∀ m', m ≤ m' → m ∉ f.support be better?
 
 lemma is_reduced_add {R σ : Type*} [comm_ring R] {f g: mv_polynomial σ R} {m : σ →₀ ℕ}
   (hf : is_reduced f m) (hg : is_reduced g m) : is_reduced (f + g) m :=
 begin
   rw is_reduced,
   intros m' hm',
-  have t:= (support_add hm'),
+  have t := support_add hm',
   simp only [finset.mem_union] at t,
   cases t,
   { exact hf m' t },
@@ -262,7 +262,7 @@ begin
     simp only [true_and, zero_mul, implies_true_iff, true_or, eq_self_iff_true, sub_zero, 
                finset.sum_const_zero, c] },
   { by_cases b_eq_zero : b = 0,
-    { use λi, 0,
+    { use λ i, 0,
       simp only [is_reduced, b_eq_zero, finset.not_mem_empty, monomial_zero, forall_false_left,
                  zero_mul, implies_true_iff, true_or, eq_self_iff_true, sub_zero, support_zero,
                  and_self, finset.sum_const_zero] },

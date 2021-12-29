@@ -222,6 +222,7 @@ begin
   simp only [support_eq_empty, finset.not_nonempty_iff_eq_empty], 
 end
 
+-- see also flt-regular's exists_coeff_ne_zero_total_degree
 lemma exists_max_degree_monomial {R : Type*} [comm_semiring R] 
   {f : mv_polynomial σ R} (h : f ≠ 0) : ∃ t, max_degree_monomial t f :=
 begin
