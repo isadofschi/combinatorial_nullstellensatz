@@ -1,0 +1,82 @@
+
+lemma not_eq_symm {a b : α } (h: ¬ (a = b)) : ¬ (b = a) := λ h', h h'.symm 
+
+lemma g_S_lem_6 {R σ : Type*} [comm_semiring R] {p : mv_polynomial σ R} {m: σ →₀ ℕ} {i j : σ} 
+  (hp : p ∈ supported R ({i} : set σ)) (h_m : m ∈ p.support) (h : i ≠ j) : m j = 0 :=
+begin
+  by_contra c,
+  have hj : j ∈ p.vars := (mem_vars j).2 ⟨m, h_m, (by simp [c])⟩,
+  rw mem_singleton_iff.1 (mem_of_subset_of_mem (mem_supported.1 hp) hj) at h,
+  simpa using h,
+end
+
+lemma g_S_lem_6'{R σ : Type*} [comm_semiring R] {i j: σ}  {p : mv_polynomial σ R}
+  {m: σ →₀ ℕ} (hp : p ∈ supported R ({i} : set σ)) (h' : m j ≠ 0) (h : j ≠ i)  :
+    coeff m p = 0 :=
+begin
+  by_cases c : m ∈ p.support,
+  { rw g_S_lem_6 hp c h.symm at h',
+    simpa using h', },
+  simpa using c,
+end
+
+lemma g_S_lem_5 {R  σ : Type* } [comm_semiring R] {i : σ} {m: σ →₀ ℕ} {p : mv_polynomial σ R}
+  (h_m : m ∈ p.support) (h_m_i : m i = p.total_degree) : m = finsupp.single i p.total_degree :=
+begin
+  rw ←h_m_i,
+  apply (monomial_degree_le_iff_eq_single m i).1,
+  simpa [h_m_i] using monomial_degree_le_total_degree h_m,
+end
+
+lemma max_add {N : Type*} [linear_ordered_add_comm_monoid N] {a b c: N} : 
+  max a b + c = max (a+c) (b+c) :=
+begin
+  by_cases h : a ≤ b,
+  { rw [max_eq_right h, max_eq_right _],
+    rw [add_comm, add_comm b],
+    apply add_le_add_left h },
+  { rw not_le at h,
+    rw [max_eq_left h.le, max_eq_left _],
+    rw [add_comm, add_comm a],
+    apply add_le_add_left (le_of_lt  h) },
+end
+
+-- This is PR #10822 (closed)
+/-
+lemma eq_zero_iff_every_coeff_zero {R : Type*} [comm_semiring R] (p : polynomial R) :
+  (∀ (i : ℕ), polynomial.coeff p i = 0) ↔ p = 0 := by simp only [ext_iff, coeff_zero]
+-/
+
+-- alternative proof for reduce_degree_special_case 
+-- which avoids using reduce_degree'. not much is gained since we still need g_S_lem_1'
+begin
+  let g := λ i, ∏ s in S i, (X i - C s),
+  have hm : ∀ i : σ, dominant_monomial (single i (g i).total_degree) (g i),
+  { intro i,
+    simp only [ g ],
+    rw g_S_lem_4,
+    apply g_S_lem_1' },
+  have h0 : ∀ i : σ, 0 < total_degree (g i),
+  { intro i,
+    rw g_S_lem_4,
+    exact hS i,
+  },
+  have hmonic : ∀ i : σ, coeff (single i (g i).total_degree) (g i) = 1,
+  { intro i,
+    simpa only [g, g_S_lem_4] using g_S_lem_8 (S i) i },
+  cases reduce_degree f g hm h0 hmonic with h h_h,
+  use h,
+  split,
+  { intro i,
+    rw ← g_S_lem_4 (S i),
+    { exact h_h.1 i },
+    { exact _inst_4 } },
+  { intro i,
+    rw [degree_of_eq_sup, finset.sup_lt_iff],
+    { intros b hb,
+      have t := h_h.2 i,
+      simp only [is_reduced, single_le_iff, not_le, ne.def, g_S_lem_4] at t,
+      exact t b hb },
+    { rw ←g_S_lem_4,
+      exact h0 i } }
+end
