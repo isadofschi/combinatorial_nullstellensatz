@@ -30,7 +30,7 @@ import assorted_lemmas
    where the product is taken over s ∈ Sᵢ.Then there are polynomials 
    hᵢ ∈ F[x₀, … xₙ] such that:
    (i) For each i, either hᵢ = 0 or deg hᵢ + |Sᵢ| ≤ deg f.
-  (ii) For each j, the degⱼ (f - ∑ᵢ hᵢ gᵢ) < |Sⱼ|.
+  (ii) For each j, degⱼ (f - ∑ᵢ hᵢ gᵢ) < |Sⱼ|.
 
   This corresponds to the following paragraph in the proof of Theorem 1.1 in Alon's
   "Combinatorial Nullstellensatz" paper:
