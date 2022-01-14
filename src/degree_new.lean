@@ -249,9 +249,8 @@ lemma max_degree_monomial_mul {σ R : Type*}[comm_ring R][is_domain R] {f g : mv
   ∃ mf mg, max_degree_monomial mf f ∧ max_degree_monomial mg g ∧ mf + mg = m := 
 begin
   rw max_degree_monomial at h,
-  cases support_mul'' h.1 with mf mgh,
-  cases mgh with mg h',
-  use mf, 
+  rcases support_mul'' h.1 with ⟨mf, ⟨mg, h'⟩⟩,
+  use mf,
   use mg,
   suffices x : monomial_degree mf = f.total_degree ∧ monomial_degree mg = g.total_degree,
   { exact ⟨ ⟨h'.1, x.1⟩ , ⟨h'.2.1, x.2⟩, h'.2.2 ⟩, },
@@ -271,8 +270,7 @@ begin
   by_cases c : g = 0,
   { rw [c, dominant_monomial, max_degree_monomial] at hg,
     simpa using hg.1.1 },
-  { cases max_degree_monomial_mul hf c hfg with mf mgh,
-    cases mgh with mg h,
+  { rcases max_degree_monomial_mul hf c hfg with ⟨mf, ⟨mg,h⟩⟩,
     rw dominant_monomial at hg,
     simp [←hg.2 mg h.2.1, ← h.2.2] },
 end

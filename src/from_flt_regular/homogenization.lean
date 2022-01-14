@@ -50,15 +50,6 @@ open_locale big_operators
 noncomputable theory
 namespace mv_polynomial
 
--- TODO PR
-@[simp]
-lemma total_degree_monomial (s : ι →₀ ℕ) {r : R} (hr : r ≠ 0) :
-  total_degree (monomial s r) = s.sum (λ _ e, e) :=
-begin
-  classical,
-  simp [total_degree, support_monomial, if_neg, hr],
-end
-
 section leading_terms
 -- TODO is this the best def?
 /-- The sum of the monomials of highest degree of a multivariate polynomial. -/
@@ -117,16 +108,6 @@ begin
   simp,
 end
 
-@[simp]
-lemma leading_terms_monomial (s : ι →₀ ℕ) (r : R) : (monomial s r).leading_terms = monomial s r :=
-begin
-  by_cases hr : r = 0,
-  { simp [hr], },
-  rw leading_terms_eq_self_iff_is_homogeneous,
-  convert is_homogeneous_monomial _ _ _ _,
-  simpa [total_degree_monomial _ hr]
-end
-
 lemma is_homogeneous_leading_terms (p : mv_polynomial ι R) :
   p.leading_terms.is_homogeneous p.total_degree :=
 homogeneous_component_is_homogeneous (total_degree p) p
@@ -153,9 +134,6 @@ finsupp.support_eq_empty
 lemma support_add_eq [decidable_eq ι] {g₁ g₂ : mv_polynomial ι R}
   (h : disjoint g₁.support g₂.support) : (g₁ + g₂).support = g₁.support ∪ g₂.support :=
 finsupp.support_add_eq h
-
-@[simp] lemma monomial_eq_zero (a : ι →₀ ℕ) (b : R) : monomial a b = 0 ↔ b = 0 :=
-finsupp.single_eq_zero
 
 lemma support_sum_monomial_subset (S : finset (ι →₀ ℕ)) (f : (ι →₀ ℕ) → R) :
   support (∑ v in S, monomial v (f v)) ⊆ S :=
@@ -312,17 +290,6 @@ lemma leading_terms_add_of_total_degree_lt (p q : mv_polynomial ι R)
   (h : q.total_degree < p.total_degree) : (p + q).leading_terms = p.leading_terms :=
 by rw [leading_terms, leading_terms, total_degree_add_eq_left_of_total_degree_lt h,
   homogeneous_component_add, homogeneous_component_eq_zero _ q h, add_zero]
-
-lemma homogeneous_component_C_mul (n : ℕ) (p : mv_polynomial ι R) (r : R) :
-  homogeneous_component n (C r * p) = C r * homogeneous_component n p :=
-begin
-  rw homogeneous_component,
-  simp only [finsupp.restrict_dom_apply, submodule.subtype_apply, function.comp_app,
-    linear_map.coe_comp, set.mem_set_of_eq],
-  rw C_mul', -- TODO this has a weird name
-  rw finsupp.filter_smul,
-  rw C_mul', -- TODO this has a weird name
-end
 
 lemma finsupp.support_smul_eq {α M R : Type*} [semiring R] [add_comm_monoid M] [module R M]
   [no_zero_smul_divisors R M] {b : R} (hb : b ≠ 0) {g : α →₀ M} :

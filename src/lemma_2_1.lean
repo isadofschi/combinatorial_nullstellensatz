@@ -78,10 +78,7 @@ lemma lemma_2_1 {R σ : Type*} [comm_ring R] [is_domain R] [fintype σ] (f : mv_
   (S : σ → finset R) (hS : ∀ i : σ, degree_of i f < (S i).card) 
   (hz : ∀ s : σ → R, (∀ i : σ, s i ∈ S i ) → eval s f = 0) : f = 0 :=
 begin
-  cases exists_fin_rename f with n hn,
-  cases hn with ψ hψ,
-  cases hψ with hψ hq,
-  cases hq with g hg,
+  rcases exists_fin_rename f with ⟨n, ⟨ψ,⟨hψ,⟨g,hg⟩⟩⟩⟩,
   rw hg,
   rw hg at hS,
   rw hg at hz,
@@ -91,6 +88,7 @@ begin
     apply multiset.card_pos_iff_exists_mem.1,
     convert lt_of_le_of_lt (zero_le _) (hS i), },
   have hs0 : ∃ s0 : σ → R, (∀ i : σ, s0 i ∈ S i ) := by apply classical.skolem.1 h_S_nonempty,
+  cases hs0 with s0 hs0,
   by_cases c : nonempty (fin n),
   { have hS' : ∀ i : (fin n), degree_of i g < ((S ∘ ψ) i).card,
     { intro i,
@@ -99,7 +97,6 @@ begin
     suffices hz' : ∀ s : (fin n) → R, (∀ i : fin n, s i ∈ (S ∘ ψ) i ) → eval s g = 0,
       by simp [lemma_2_1_fin_n g (S ∘ ψ ) hS' hz'],
     intros s' h,
-    cases hs0 with s0 hs0,
     let φ := @function.inv_fun (fin n) σ c ψ,
     have φ_left_inv := @function.left_inverse_inv_fun (fin n) σ c ψ hψ,
     let s : σ → R := λ i, if h : ∃ j : fin n, ψ j = i then (s' ∘ φ) i else s0 i,
@@ -119,12 +116,10 @@ begin
     { simpa only [s, dite_eq_ite, if_neg, ch, not_false_iff] using hs0 i } },
   { simp only [not_nonempty_iff] at c,
     cases @C_surjective R _ (fin n) c g with a ha,
-    simp only [←ha, rename_C],
     simp only [←ha, rename_C] at hz,
-    cases hs0 with s0 hs0,
     have t := hz s0 hs0,
     rw [eval_C] at t,
-    simp [t] },
+    simp [←ha, rename_C, t] },
 end
 
 end mv_polynomial

@@ -62,8 +62,7 @@ lemma single_total_degree_mem_support_of_supported_singleton {R σ : Type*} [com
   {p : mv_polynomial σ R} {i : σ} (h : p ≠ 0) (hp : p ∈ supported R ({i} : set σ)) :
   finsupp.single i p.total_degree ∈ p.support :=
 begin
-  cases exists_max_degree_monomial h with m hm,
-  cases hm with h h',
+  rcases exists_max_degree_monomial h with ⟨m, ⟨h, h'⟩⟩,
   convert h,
   rw eq_single_of_mem_support_of_supported_singleton h hp,
   congr,
@@ -86,8 +85,7 @@ begin
     have x := eq_single_of_mem_support_of_supported_singleton ht'.1 hp,
     rw x,
     congr,
-    rw x at ht',
-    rw monomial_degree_single at ht',
+    rw [x, monomial_degree_single] at ht',
     exact ht'.2 },
 end
 

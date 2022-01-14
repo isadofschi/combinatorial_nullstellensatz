@@ -16,13 +16,6 @@ import algebra.algebra.basic
 
 import pr.cons_tail
 
-namespace polynomial
-
-lemma degree_mono {R S: Type*} [comm_semiring R][comm_semiring S] 
-{f : polynomial R}{g : polynomial S} (h : f.support ⊆ g.support) : f.degree ≤ g.degree :=
-by simpa only [degree] using finset.sup_mono h
-end polynomial
-
 namespace mv_polynomial
 
 universes u v
@@ -174,20 +167,9 @@ lemma coeff_eval_eq_eval_coeff {n : ℕ} {R : Type u} [comm_semiring R] (s' : fi
   polynomial.coeff (polynomial.map (eval s') f) i =  eval s' (polynomial.coeff f i) :=
 by simp only [polynomial.coeff_map]
 
-lemma support_eval' {n : ℕ} {R : Type u} [comm_semiring R] (s' : fin n → R)
-  (f : polynomial (mv_polynomial (fin n) R)) (i : ℕ) 
-  (h : i ∈ (polynomial.map (eval s') f).support) : i ∈ f.support :=
-begin
-  simp only [polynomial.mem_support_iff, polynomial.coeff_map, ne.def] at h,
-  by_contradiction c,
-  simp only [polynomial.mem_support_iff, not_not, ne.def] at c,
-  rw c at h,
-  simpa using h,
-end
-
 lemma support_eval {n : ℕ} {R : Type u} [comm_semiring R] (s' : fin n → R) 
   (f : polynomial (mv_polynomial (fin n) R)): (polynomial.map (eval s') f).support ⊆ f.support :=
-finset.subset_iff.1 (support_eval' s' f)
+ polynomial.support_map_subset _ _
 
 lemma degree_eval_le_degree {n : ℕ} {R : Type u} [comm_semiring R] (s' : fin n → R)
   (f : polynomial (mv_polynomial (fin n) R)) : 
