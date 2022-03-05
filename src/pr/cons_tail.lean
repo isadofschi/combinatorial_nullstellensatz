@@ -64,7 +64,7 @@ by simp [finsupp.cons, finsupp.equiv_fun_on_fintype]
 lemma cons_succ {n : ℕ} (i : fin n) (y : ℕ) (s : fin n →₀ ℕ) : finsupp.cons y s i.succ = s i :=
 begin 
   simp only [finsupp.cons, fin.cons, finsupp.equiv_fun_on_fintype, fin.cases_succ, finsupp.coe_mk],
-  rw [coe_fn, finsupp.has_coe_to_fun],
+  refl,
 end
 
 lemma tail_cons {n : ℕ} (y : ℕ) (s : fin n →₀ ℕ) : finsupp.tail (finsupp.cons y s) = s :=
@@ -73,7 +73,7 @@ begin
   ext,
   simp only [equiv_fun_on_fintype_symm_apply_to_fun, equiv.inv_fun_as_coe, 
   finsupp.coe_mk, fin.cases_succ, equiv_fun_on_fintype],
-  rw [coe_fn, finsupp.has_coe_to_fun],
+  refl,
 end
 
 lemma cons_tail {n : ℕ} (s : fin (n + 1) →₀ ℕ) :
