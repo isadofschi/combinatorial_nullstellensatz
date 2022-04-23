@@ -1,8 +1,8 @@
 [package]
 name = "combinatorial_nullstellensatz"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.40.0"
+lean_version = "leanprover-community/lean:3.42.1"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "974d23c227e98c8f5d65abcbc16777f44192a34b"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "afd8a525e0db02ff233c51c628b49a2a90b4a2be"}

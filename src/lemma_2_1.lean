@@ -10,10 +10,10 @@ import data.mv_polynomial.supported
 import data.polynomial.basic
 import data.polynomial.ring_division
 import algebra.algebra.basic
-import pr.fin_succ_equiv
+--import pr.fin_succ_equiv
 
 /-
-# Add one variable
+# Lemma 2.1
 
 ## Main results
 
@@ -56,8 +56,7 @@ begin
   suffices h1 : (S 0).val ⊆ (polynomial.map (eval (λ (i : fin n), s i)) (fin_succ_equiv R n f)).roots, 
   { simpa using lt_of_le_of_lt ((polynomial.card_le_degree_of_subset_roots h1).trans _) (hS 0),
     rw ← nat_degree_fin_succ_equiv f,
-    -- exact polynomial.nat_degree_le_nat_degree (polynomial.degree_mono (support_eval s (fin_succ_equiv R n f))),
-    exact nat_degree_eval_le_nat_degree s (fin_succ_equiv R n f) },
+    exact polynomial.nat_degree_le_nat_degree (polynomial.degree_mono (polynomial.support_map_subset _ _)),},
   suffices h0 : ∀ s' : fin n → R, (∀ i : fin n, s' i ∈ S i.succ) → ∀ y : R, y ∈ S 0 →  
     polynomial.eval y (polynomial.map (eval s') ((fin_succ_equiv R n) f)) = 0,
   { rw multiset.subset_iff,
